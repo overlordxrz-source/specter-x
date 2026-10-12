@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "specter-x"
+version = "0.1.0"
+description = "Handheld multisensor fusion device (Raspberry Pi 5): provenance-first HUD"
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.24", "opencv-python>=4.8"]
+
+[project.optional-dependencies]
+pose = ["ultralytics>=8.3"]
+dev = ["pytest>=7"]
+# On the Pi, picamera2 comes from apt (python3-picamera2), not pip.
+
+[project.scripts]
+specter = "specter.app:main"
+
+[tool.setuptools.packages.find]
+include = ["specter*"]
+
+[tool.setuptools.package-data]
+"specter.calibration" = ["*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

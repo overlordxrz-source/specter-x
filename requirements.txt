@@ -1,0 +1,6 @@
+# Desktop / Mac. On the Pi, use requirements-pi.txt (OpenCV + picamera2 from apt).
+numpy>=1.24
+opencv-python>=4.8
+pytest>=7
+# optional pose:
+# ultralytics>=8.3

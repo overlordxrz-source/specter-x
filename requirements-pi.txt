@@ -1,0 +1,5 @@
+# Inside a venv created with --system-site-packages, so apt's python3-picamera2,
+# python3-libcamera and python3-opencv (if installed) are visible.
+numpy>=1.24
+pytest>=7
+ultralytics>=8.3   # optional; pulls torch (CPU). Skip to run without pose.
