@@ -67,13 +67,21 @@ def main(argv=None) -> int:
     log.info("pose backend: %s", pose.name)
 
     events = EventLog(a.log_dir)
+    try:
+        from specter.hw.pinmap import PINMAP_PATH, load_pinmap
+
+        pinmap = load_pinmap()
+        log.info("pinmap ok: %s (%s)", pinmap.board, PINMAP_PATH)
+    except Exception as e:
+        log.warning("pinmap validation failed (wiring unverified): %s", e)
     cam_health = Health.SIMULATED if cam.source == "synthetic" else Health.OK
     cam_status = SensorStatus("nightvision", "NV CAM IMX462", cam_health, f"{cam.name} {cam.sensor_id}")
     pose_status = SensorStatus("pose", "POSE ENGINE",
                                Health.OK if pose.name != "none" else Health.NOT_INSTALLED,
                                pose.name if pose.name != "none" else "ultralytics missing")
-    sensors = [cam_status, pose_status, stubs.probe_thermal(), stubs.probe_radar(),
-               stubs.probe_wifi_csi(), stubs.probe_imu(), stubs.probe_hailo()]
+    sensors = [cam_status, pose_status, stubs.probe_thermal(), stubs.probe_senxor(),
+               stubs.probe_radar(), stubs.probe_wifi_csi(), stubs.probe_imu(),
+               stubs.probe_gnss(), stubs.probe_uwb(), stubs.probe_hailo()]
 
     events.log("session_start", {
         "version": __version__, "camera": cam.name, "sensor_id": cam.sensor_id,

@@ -22,6 +22,8 @@ SENSOR_LABELS = {
     "radar": "RADAR",
     "wifi_csi": "WIFI-CSI",
     "imu": "IMU",
+    "gnss": "GNSS",
+    "uwb": "UWB",
     "synthetic": "SYNTHETIC",
     "fusion": "FUSED",
 }

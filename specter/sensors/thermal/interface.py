@@ -1,0 +1,61 @@
+"""Shared thermal interface: TC001 and SenXor sit behind the same driver API.
+
+Every thermal driver yields Measurement(kind="thermal_frame") with per-frame
+min/mean/max °C plus covariance, and exposes read_celsius() for raw per-pixel
+temperature. The HUD renders only the Measurement, never the raw array.
+"""
+from __future__ import annotations
+
+import time
+from typing import Optional, Protocol, Tuple
+
+import numpy as np
+
+from specter.fusion.measurement import Measurement, Provenance
+
+SENSOR = "thermal"
+FRAME = "thermal"
+
+
+def thermal_measurement(
+    celsius: np.ndarray,
+    *,
+    sensor_id: str,
+    algorithm: str,
+    t_host: Optional[float] = None,
+    frame_index: Optional[int] = None,
+    sim: bool = False,
+    verified: bool = True,
+) -> Measurement:
+    c = np.asarray(celsius, dtype=float)
+    var = float(np.var(c)) if c.size else 0.0
+    return Measurement(
+        sensor=SENSOR,
+        kind="thermal_frame",
+        t_host=t_host if t_host is not None else time.time(),
+        frame_id=FRAME,
+        value={
+            "width": int(c.shape[1]) if c.ndim == 2 else 0,
+            "height": int(c.shape[0]) if c.ndim == 2 else 0,
+            "min_c": float(np.min(c)) if c.size else 0.0,
+            "mean_c": float(np.mean(c)) if c.size else 0.0,
+            "max_c": float(np.max(c)) if c.size else 0.0,
+            "sim": bool(sim),
+            "verified": bool(verified),
+        },
+        confidence=0.9 if verified else 0.3,
+        covariance=np.array([[max(var, 0.25)]]),
+        provenance=Provenance(
+            sensor_id=sensor_id, source=SENSOR, algorithm=algorithm,
+            frame_index=frame_index,
+            notes=None if verified else "UNVERIFIED: conversion not checked on hardware",
+        ),
+    )
+
+
+class ThermalDriver(Protocol):
+    sensor_id: str
+
+    def read_celsius(self) -> Tuple[np.ndarray, Measurement]:
+        """Return (H,W float32 °C array, provenance Measurement)."""
+        ...

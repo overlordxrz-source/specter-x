@@ -1,0 +1,58 @@
+# SPECTER-X Pi 5 Click Shield pin/bus map (MIKROE-6423, 2 sockets + Shuttle).
+#
+# Socket 1 = UWB (MIKROE-4199, DW1000). Socket 2 = GNSS (MIKROE-3922, NEO-M9N).
+# IMU (MIKROE-1996 LSM9DS1, or BNO085) lives on the shared I2C bus.
+# Validate at startup with: python -c "from specter.hw.pinmap import load_pinmap; load_pinmap()"
+board: "Raspberry Pi 5 + MIKROE Pi 5 Click Shield (MIKROE-6423)"
+revision: 1
+
+sockets:
+  socket_1:
+    mikrobus: 1
+    module: "UWB Click (MIKROE-4199, Qorvo DW1000)"
+    role: uwb
+    spi: "spi0.0"
+    pins:
+      CS: "GPIO8 (SPI0 CE0)"
+      SCK: "GPIO11 (SPI0 SCLK)"
+      MISO: "GPIO9 (SPI0 MISO)"
+      MOSI: "GPIO10 (SPI0 MOSI)"
+      RST: "GPIO17"
+      IRQ: "GPIO27"
+    notes: "DS-TWR ranging between unit IDs. Second socket free pin budget kept clear."
+
+  socket_2:
+    mikrobus: 2
+    module: "GNSS 7 Click (MIKROE-3922, u-blox NEO-M9N)"
+    role: gnss
+    uart: "/dev/serial0 (GPIO14 TX / GPIO15 RX @ 38400 8N1)"
+    i2c_alt: "0x42 (u-blox I2C, optional)"
+    pins:
+      TX: "GPIO14 (UART TXD)"
+      RX: "GPIO15 (UART RXD)"
+      PPS: "GPIO18"
+      RST: "GPIO23"
+    protocol: "UBX-NAV-PVT primary, NMEA fallback"
+    notes: "PPS time pulse optional; wire to GPIO18 if populated."
+
+imu:
+  module: "9DOF Click (MIKROE-1996, LSM9DS1) — BNO085 still supported"
+  bus: "i2c-1"
+  addresses:
+    accel_gyro: "0x6B (SA0 high) / 0x6A (SA0 low)"
+    mag: "0x1C (SA0 high) / 0x1E (SA0 low)"
+  pins:
+    SDA: "GPIO2"
+    SCL: "GPIO3"
+    INT_AG: "GPIO22"
+    INT_M: "GPIO24"
+  driver_select: "auto (lsm9ds1 preferred on this shield, bno085 if detected)"
+
+shuttle:
+  note: "Shuttle connector reserved for future sensor head / display."
+  pins: "see MIKROE-6423 manual; no assignments claimed here."
+
+constraints:
+  socket_1_role_must_be: uwb
+  socket_2_role_must_be: gnss
+  imu_bus_must_be: i2c-1
