@@ -13,6 +13,13 @@ import cv2
 import numpy as np
 
 from specter.fusion.measurement import Measurement
+from specter.hud.team_overlay import (
+    TeamOverlayState,
+    draw_minimap,
+    draw_offscreen_arrows,
+    draw_peer_contacts,
+    draw_teammate_panel,
+)
 from specter.sensors.base import SensorStatus
 from specter.sensors.nightvision.camera import COCO_SKELETON
 
@@ -39,6 +46,7 @@ class HudState:
     ticker: Sequence[str] = ()
     source_name: str = ""
     session: str = ""
+    team: object = None  # TeamOverlayState when networking is up; None hides team UI
 
 
 def _text(img, s, org, scale=0.55, color=WHITE, thick=1):
@@ -94,6 +102,9 @@ def render(image: np.ndarray, st: HudState) -> np.ndarray:
     _text(canvas, f"POSE {st.infer_ms:5.1f} ms", (550, 29), 0.6, DIM)
     _text(canvas, "TGT LOCK" if st.pose_active else "NO TGT", (740, 29), 0.6,
           GREEN if st.pose_active else DIM, 1)
+    team = st.team if isinstance(st.team, TeamOverlayState) else None
+    if team is not None:
+        _text(canvas, team.pose_badge[:24], (880, 29), 0.55, AMBER, 1)
     _text(canvas, time.strftime("%H:%M:%S"), (HUD_W - 110, 29), 0.6, WHITE)
 
     # --- sensor health panel -----------------------------------------------
@@ -110,6 +121,11 @@ def render(image: np.ndarray, st: HudState) -> np.ndarray:
             _text(canvas, ss.detail[:30], (px + 38, y + 19), 0.40, DIM)
         y += 48
 
+    # --- team block (teammates + peer tracks, provenance-tagged) ------------
+    if team is not None:
+        y = draw_teammate_panel(canvas, team, px + 14, y + 6) + 6
+        y = draw_peer_contacts(canvas, team, px + 14, y) + 6
+
     # --- event ticker ---------------------------------------------------------
     y = HUD_H - 18 * max(1, len(st.ticker)) - 30
     _text(canvas, "EVENTS", (px + 14, y), 0.5, GREEN)
@@ -117,4 +133,7 @@ def render(image: np.ndarray, st: HudState) -> np.ndarray:
         y += 18
         _text(canvas, line[:38], (px + 14, y), 0.36, DIM)
     _text(canvas, f"src:{st.source_name}  sess:{st.session[-6:]}", (12, HUD_H - 10), 0.42, DIM)
+    if team is not None and (team.teammates or team.contacts):
+        draw_minimap(canvas, team, 12, HUD_H - 252, 230)
+        draw_offscreen_arrows(canvas, team, 0, TOP_H, HUD_W - PANEL_W, HUD_H - TOP_H)
     return canvas
