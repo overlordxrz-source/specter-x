@@ -57,15 +57,17 @@ class PoseStamped(Message):
         default_factory=lambda: [[25.0, 0, 0], [0, 25.0, 0], [0, 0, 25.0]])
     mode: str = "REL"
     anchor: Optional[List[float]] = None  # shared ENU anchor [lat, lon, alt]
+    quat_wxyz: Optional[List[float]] = None  # body orientation, if IMU fused
 
     def __init__(self, unit_id: str, seq: int, t_host: float,
                  position_enu, velocity_enu, cov_pos_3x3,
-                 mode: str = "REL", anchor=None) -> None:
+                 mode: str = "REL", anchor=None, quat_wxyz=None) -> None:
         super().__init__(POSE, unit_id, seq, t_host)
         self.position_enu = [float(v) for v in position_enu]
         self.velocity_enu = [float(v) for v in velocity_enu]
         self.cov_pos_3x3 = [[float(c) for c in row] for row in cov_pos_3x3]
         self.mode, self.anchor = mode, anchor
+        self.quat_wxyz = [float(v) for v in quat_wxyz] if quat_wxyz else None
 
 
 @dataclass
@@ -128,7 +130,8 @@ def decode_message(s: str) -> Message:
         return PoseStamped(u, seq, th, d.get("position_enu", [0, 0, 0]),
                            d.get("velocity_enu", [0, 0, 0]),
                            d.get("cov_pos_3x3", [[25, 0, 0], [0, 25, 0], [0, 0, 25]]),
-                           d.get("mode", "REL"), d.get("anchor"))
+                           d.get("mode", "REL"), d.get("anchor"),
+                           d.get("quat_wxyz"))
     if t == TRACK:
         return TrackReport(u, seq, th, int(d.get("track_id", 0)),
                            d.get("position_enu", [0, 0, 0]),
