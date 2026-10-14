@@ -22,6 +22,7 @@ class Message:
     seq: int
     t_host: float
     schema: int = SCHEMA_V1
+    boot: str = ""  # sender boot id: ordered per boot, see security.generate_boot_id
 
     def body(self) -> Dict[str, Any]:
         d = asdict(self)
@@ -44,8 +45,9 @@ class Heartbeat(Message):
     health: str = "OK"
 
     def __init__(self, unit_id: str, seq: int, t_host: float,
-                 mode: str = "REL", pos_rmse: float = 99.0, health: str = "OK") -> None:
-        super().__init__(HEARTBEAT, unit_id, seq, t_host)
+                 mode: str = "REL", pos_rmse: float = 99.0, health: str = "OK",
+                 boot: str = "") -> None:
+        super().__init__(HEARTBEAT, unit_id, seq, t_host, boot=boot)
         self.mode, self.pos_rmse, self.health = mode, pos_rmse, health
 
 
@@ -61,8 +63,9 @@ class PoseStamped(Message):
 
     def __init__(self, unit_id: str, seq: int, t_host: float,
                  position_enu, velocity_enu, cov_pos_3x3,
-                 mode: str = "REL", anchor=None, quat_wxyz=None) -> None:
-        super().__init__(POSE, unit_id, seq, t_host)
+                 mode: str = "REL", anchor=None, quat_wxyz=None,
+                 boot: str = "") -> None:
+        super().__init__(POSE, unit_id, seq, t_host, boot=boot)
         self.position_enu = [float(v) for v in position_enu]
         self.velocity_enu = [float(v) for v in velocity_enu]
         self.cov_pos_3x3 = [[float(c) for c in row] for row in cov_pos_3x3]
@@ -85,8 +88,9 @@ class TrackReport(Message):
     def __init__(self, unit_id: str, seq: int, t_host: float, track_id: int,
                  position_enu, cov_3x3, source_unit: str = "",
                  source_sensor: str = "fusion", measurement_ids=(),
-                 confidence: float = 0.5, label: str = "contact") -> None:
-        super().__init__(TRACK, unit_id, seq, t_host)
+                 confidence: float = 0.5, label: str = "contact",
+                 boot: str = "") -> None:
+        super().__init__(TRACK, unit_id, seq, t_host, boot=boot)
         self.track_id = int(track_id)
         self.position_enu = [float(v) for v in position_enu]
         self.cov_3x3 = [[float(c) for c in row] for row in cov_3x3]
@@ -108,8 +112,9 @@ class Alert(Message):
     severity: str = "high"
 
     def __init__(self, unit_id: str, seq: int, t_host: float,
-                 kind: str = "man-down", detail=None, severity: str = "high") -> None:
-        super().__init__(ALERT, unit_id, seq, t_host)
+                 kind: str = "man-down", detail=None, severity: str = "high",
+                 boot: str = "") -> None:
+        super().__init__(ALERT, unit_id, seq, t_host, boot=boot)
         self.kind, self.detail, self.severity = kind, dict(detail or {}), severity
 
 
@@ -123,23 +128,26 @@ def decode_message(s: str) -> Message:
         raise ValueError(f"unsupported schema: {d.get('schema') if isinstance(d, dict) else type(d)}")
     t = d.get("type")
     u, seq, th = d.get("unit_id", "?"), int(d.get("seq", 0)), float(d.get("t_host", time.time()))
+    boot = str(d.get("boot", ""))
     if t == HEARTBEAT:
         return Heartbeat(u, seq, th, d.get("mode", "REL"),
-                         float(d.get("pos_rmse", 99.0)), d.get("health", "OK"))
+                         float(d.get("pos_rmse", 99.0)), d.get("health", "OK"),
+                         boot=boot)
     if t == POSE:
         return PoseStamped(u, seq, th, d.get("position_enu", [0, 0, 0]),
                            d.get("velocity_enu", [0, 0, 0]),
                            d.get("cov_pos_3x3", [[25, 0, 0], [0, 25, 0], [0, 0, 25]]),
                            d.get("mode", "REL"), d.get("anchor"),
-                           d.get("quat_wxyz"))
+                           d.get("quat_wxyz"), boot=boot)
     if t == TRACK:
         return TrackReport(u, seq, th, int(d.get("track_id", 0)),
                            d.get("position_enu", [0, 0, 0]),
                            d.get("cov_3x3", [[4, 0, 0], [0, 4, 0], [0, 0, 4]]),
                            d.get("source_unit", u), d.get("source_sensor", "fusion"),
                            d.get("measurement_ids", []),
-                           float(d.get("confidence", 0.5)), d.get("label", "contact"))
+                           float(d.get("confidence", 0.5)), d.get("label", "contact"),
+                           boot=boot)
     if t == ALERT:
         return Alert(u, seq, th, d.get("kind", "man-down"),
-                     d.get("detail", {}), d.get("severity", "high"))
+                     d.get("detail", {}), d.get("severity", "high"), boot=boot)
     raise ValueError(f"unknown message type: {t!r}")

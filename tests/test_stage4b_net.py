@@ -61,6 +61,53 @@ def test_transport_delivers_and_drops_self_stale_rogue():
     a.close(); b.close()
 
 
+def test_replay_guard_drops_exact_replay_and_old_seq():
+    from specter.net import ReplayGuard
+
+    g = ReplayGuard()
+    assert g.check("unit-9", "boot-A", 1)
+    assert not g.check("unit-9", "boot-A", 1)   # exact replay within window
+    assert g.check("unit-9", "boot-A", 2)       # fresh seq passes
+    assert not g.check("unit-9", "boot-A", 1)   # out-of-order old seq
+    assert g.check("unit-9", "boot-B", 1)       # reboot: new boot accepted
+    assert not g.check("unit-9", "boot-A", 99)  # superseded boot replayed: drop
+    assert not g.check("unit-9", "boot-B", "junk")  # malformed seq: fail closed
+
+
+def test_transport_drops_replayed_envelope():
+    key = generate_key()
+    hub = BusHub()
+    a = _tx("unit-1", key=key, hub=hub)
+    b = _tx("unit-2", key=key, hub=hub)
+    env = sign(Heartbeat("unit-1", 1, time.time(), boot=a.boot_id).to_json(),
+               key).encode()
+    hub.publish(env)
+    hub.publish(env)  # attacker replays the captured datagram <2 s later
+    got = b.receive()
+    assert len(got) == 1 and got[0].seq == 1  # replay dropped before decode
+    hub.publish(env)
+    assert b.receive() == []  # replayed again later: still dropped
+    a.close(); b.close()
+
+
+def test_transport_drops_old_seq_accepts_reboot():
+    key = generate_key()
+    hub = BusHub()
+    b = _tx("unit-2", key=key, hub=hub)
+    old_boot, new_boot = "00000000000000000001-aa", "00000000000000000002-bb"
+    hub.publish(sign(Heartbeat("unit-1", 5, time.time(), boot=old_boot).to_json(),
+                     key).encode())
+    assert len(b.receive()) == 1
+    hub.publish(sign(Heartbeat("unit-1", 3, time.time(), boot=old_boot).to_json(),
+                     key).encode())
+    assert b.receive() == []  # old seq on the same boot: dropped
+    hub.publish(sign(Heartbeat("unit-1", 1, time.time(), boot=new_boot).to_json(),
+                     key).encode())
+    got = b.receive()
+    assert len(got) == 1 and got[0].boot == new_boot  # rebooted sender: accepted
+    b.close()
+
+
 def test_clock_offsets_logged():
     c = ClockSync()
     assert c.is_stale(time.time() - 10.0)

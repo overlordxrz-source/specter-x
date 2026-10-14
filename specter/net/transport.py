@@ -2,13 +2,16 @@
 
 Real path: one multicast group (default 239.10.10.10:5007, TTL 2 = team LAN).
 Every datagram is an HMAC-signed envelope (see security.py); unsigned input
-is dropped before it can reach fusion. In CI / single-host sims the socket
-falls back to loopback broadcast so `python -m specter.sim.team` works with
-no network at all. Zenoh / ROS 2 DDS can replace this module later — the
-message API above it does not change.
+is dropped before it can reach fusion. Replays are dropped by ReplayGuard
+after verify() and before decode: only a new boot id or a strictly greater
+seq per sender is admitted. In CI / single-host sims the socket falls back
+to loopback broadcast so `python -m specter.sim.team` works with no network
+at all. Zenoh / ROS 2 DDS can replace this module later — the message API
+above it does not change.
 """
 from __future__ import annotations
 
+import json
 import socket
 import struct
 import time
@@ -68,10 +71,15 @@ class UdpMulticastTransport:
     loopback_only: bool = False
     hub: Optional[BusHub] = None  # shared in-process bus (team sim)
     _local: List[bytes] = field(default_factory=list, repr=False)  # self-check copies
+    _replay: security.ReplayGuard = field(default_factory=security.ReplayGuard,
+                                          repr=False)
+    boot_id: str = ""  # stamped on every outgoing message; fresh per boot
 
     def __post_init__(self) -> None:
         if len(self.key) < 16:
             raise ValueError("team key must be >= 16 bytes")
+        if not self.boot_id:
+            self.boot_id = security.generate_boot_id()
         if not self.loopback_only:
             try:
                 self._sock = self._open_multicast()
@@ -95,6 +103,8 @@ class UdpMulticastTransport:
 
     # -- send / receive -------------------------------------------------
     def send(self, msg: Message) -> int:
+        if not msg.boot:
+            msg.boot = self.boot_id  # bind every message to this boot epoch
         env = security.sign(msg.to_json(), self.key).encode()
         if len(env) > MAX_DATAGRAM:
             raise ValueError(f"signed datagram {len(env)}B exceeds UDP limit")
@@ -108,7 +118,11 @@ class UdpMulticastTransport:
         return n or len(env)
 
     def receive(self, clock=None) -> List[Message]:
-        """Return verified, fresh, non-self messages. Stale/rogue dropped."""
+        """Return verified, fresh, non-replayed, non-self messages.
+
+        Drops, in order: rogue/corrupt (verify), replays and old seq
+        (ReplayGuard, before decode), self copies, stale (clock).
+        """
         raw: List[bytes] = []
         if self.hub is not None:
             raw.extend(self.hub.drain(self.unit_id))
@@ -129,11 +143,16 @@ class UdpMulticastTransport:
         for env in raw:
             try:
                 inner = security.verify(env.decode(), self.key)
+                header = json.loads(inner)  # light header peek: replay before decode
+                sender = str(header.get("unit_id", "?"))
+                if sender == self.unit_id:
+                    continue  # our own loopback copy
+                if not self._replay.check(sender, str(header.get("boot", "")),
+                                          header.get("seq", 0)):
+                    continue  # replayed or superseded datagram
                 m = decode_message(inner)
             except ValueError:
-                continue  # rogue / corrupt: drop silently, counted by caller
-            if m.unit_id == self.unit_id:
-                continue  # our own loopback copy
+                continue  # rogue / corrupt / malformed: drop silently
             if clock is not None:
                 if clock.is_stale(m.t_host):
                     continue
