@@ -8,6 +8,12 @@ an optional NLOS bias flag.
 
 Every range is a Measurement(kind="range", frame "body") carrying the peer
 unit id, distance and std — provenance survives into team fusion.
+
+Hardware note: real DW1000 timestamps are 40-bit device ticks (~15.65 ps;
+the counter wraps about every 17.2 s). The SPI/hardware path MUST convert
+with tick_delta_s() and range via ds_twr_tof_ticks()/exchange_ticks() —
+never feed raw ticks, or seconds differenced across the wrap, into
+ds_twr_tof().
 """
 from __future__ import annotations
 
@@ -26,6 +32,16 @@ ALGORITHM_TWR = "ds-twr"
 SPEED_OF_LIGHT = 299_702_547.0  # m/s (DW1000 clock-compensated constant)
 NOMINAL_STD_M = 0.10  # ~10 cm in line of sight
 
+# DW1000 system clock: 499.2 MHz * 128 -> ~15.65 ps per tick, 40-bit counter.
+DW1000_TICK_S = 1.0 / 63_897_600_000.0
+TICK_MASK_40 = (1 << 40) - 1
+TICK_WRAP_S = (1 << 40) * DW1000_TICK_S  # ~17.2 s
+
+
+def tick_delta_s(newer_ticks: int, older_ticks: int) -> float:
+    """Wrap-safe (newer - older) of raw 40-bit DW1000 timestamps, in seconds."""
+    return ((int(newer_ticks) - int(older_ticks)) & TICK_MASK_40) * DW1000_TICK_S
+
 
 def tof_to_distance_m(tof_s: float) -> float:
     return float(tof_s) * SPEED_OF_LIGHT
@@ -40,35 +56,51 @@ def ds_twr_tof(t_round1: float, t_reply1: float, t_round2: float, t_reply2: floa
     return num / den
 
 
+def ds_twr_tof_ticks(t1: int, t2: int, t3: int, t4: int, t5: int, t6: int) -> float:
+    """DS-TWR time-of-flight from six raw 40-bit DW1000 timestamps (wrap-safe).
+
+    Initiator: t1 poll TX, t2 response RX, t3 final TX.
+    Responder: t4 poll RX, t5 response TX, t6 final RX.
+    Mapping to ds_twr_tof(): round1 = t2-t1 (initiator), reply1 = t5-t4
+    (responder), round2 = t6-t5 (responder), reply2 = t3-t2 (initiator).
+    """
+    r1 = tick_delta_s(t2, t1)
+    p1 = tick_delta_s(t5, t4)
+    r2 = tick_delta_s(t6, t5)
+    p2 = tick_delta_s(t3, t2)
+    return ds_twr_tof(r1, p1, r2, p2)
+
+
 # --- host-side air protocol (compact binary, also used on the wire in sims) ---
-# poll:  >BBH  (msg_type=1, src, dst) ; response: >BBHd ; final: >BBHdddd
+# Numeric unit ids are 16-bit on the wire for both ends (src and dst alike):
+# poll:  >BHH  (msg_type=1, src, dst) ; response: >BHHd ; final: >BHHdddd
 MSG_POLL, MSG_RESP, MSG_FINAL = 1, 2, 3
 
 
 def encode_poll(src: int, dst: int) -> bytes:
-    return struct.pack(">BBH", MSG_POLL, src & 0xFF, dst & 0xFFFF)
+    return struct.pack(">BHH", MSG_POLL, src & 0xFFFF, dst & 0xFFFF)
 
 
 def encode_response(src: int, dst: int, t_reply1: float) -> bytes:
-    return struct.pack(">BBHd", MSG_RESP, src & 0xFF, dst & 0xFFFF, t_reply1)
+    return struct.pack(">BHHd", MSG_RESP, src & 0xFFFF, dst & 0xFFFF, t_reply1)
 
 
 def encode_final(src: int, dst: int, r1: float, p1: float, r2: float, p2: float) -> bytes:
-    return struct.pack(">BBHdddd", MSG_FINAL, src & 0xFF, dst & 0xFFFF, r1, p1, r2, p2)
+    return struct.pack(">BHHdddd", MSG_FINAL, src & 0xFFFF, dst & 0xFFFF, r1, p1, r2, p2)
 
 
 def decode_frame(buf: bytes) -> tuple:
-    if len(buf) < 4:
+    if len(buf) < 5:
         raise ValueError("frame too short")
     kind = buf[0]
-    if kind == MSG_POLL and len(buf) == 4:
-        _, src, dst = struct.unpack(">BBH", buf)
+    if kind == MSG_POLL and len(buf) == 5:
+        _, src, dst = struct.unpack(">BHH", buf)
         return ("poll", src, dst)
-    if kind == MSG_RESP and len(buf) == 12:
-        _, src, dst, t = struct.unpack(">BBHd", buf)
+    if kind == MSG_RESP and len(buf) == 13:
+        _, src, dst, t = struct.unpack(">BHHd", buf)
         return ("response", src, dst, t)
-    if kind == MSG_FINAL and len(buf) == 36:
-        _, src, dst, r1, p1, r2, p2 = struct.unpack(">BBHdddd", buf)
+    if kind == MSG_FINAL and len(buf) == 37:
+        _, src, dst, r1, p1, r2, p2 = struct.unpack(">BHHdddd", buf)
         return ("final", src, dst, r1, p1, r2, p2)
     raise ValueError(f"unknown UWB frame kind={kind} len={len(buf)}")
 
@@ -127,6 +159,21 @@ class Dw1000Driver:
                  *, nlos: bool = False) -> Measurement:
         self._i += 1
         tof = ds_twr_tof(t_round1, t_reply1, t_round2, t_reply2)
+        d = tof_to_distance_m(tof)
+        return range_measurement(self.unit_id, peer_id, d, NOMINAL_STD_M,
+                                 sensor_id=self.sensor_id, frame_index=self._i,
+                                 nlos=nlos, tof_s=tof)
+
+    def exchange_ticks(self, peer_id: str, t1: int, t2: int, t3: int,
+                       t4: int, t5: int, t6: int,
+                       *, nlos: bool = False) -> Measurement:
+        """Hardware path: six raw 40-bit timestamps straight from the DW1000.
+
+        Wrap handling lives in ds_twr_tof_ticks(); callers must NOT
+        pre-convert to seconds.
+        """
+        self._i += 1
+        tof = ds_twr_tof_ticks(t1, t2, t3, t4, t5, t6)
         d = tof_to_distance_m(tof)
         return range_measurement(self.unit_id, peer_id, d, NOMINAL_STD_M,
                                  sensor_id=self.sensor_id, frame_index=self._i,

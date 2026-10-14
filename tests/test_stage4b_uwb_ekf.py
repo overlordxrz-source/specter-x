@@ -4,8 +4,9 @@ import numpy as np
 from specter.localization.ekf import PoseEKF, latlon_to_enu
 from specter.sensors.gnss.neom9n import build_nav_pvt, parse_nav_pvt, pvt_to_measurement
 from specter.sensors.uwb.dw1000 import (
-    Dw1000Driver, UwbSimulator, decode_frame, ds_twr_tof,
-    encode_final, encode_poll, encode_response, tof_to_distance_m,
+    DW1000_TICK_S, TICK_MASK_40, TICK_WRAP_S, Dw1000Driver, UwbSimulator,
+    decode_frame, ds_twr_tof, ds_twr_tof_ticks, encode_final, encode_poll,
+    encode_response, tick_delta_s, tof_to_distance_m,
 )
 
 
@@ -33,6 +34,36 @@ def test_protocol_roundtrip():
     assert decode_frame(encode_poll(1, 7)) == ("poll", 1, 7)
     assert decode_frame(encode_response(7, 1, 0.001))[0] == "response"
     assert decode_frame(encode_final(1, 7, 1, 2, 3, 4))[0] == "final"
+
+
+def test_protocol_ids_share_16bit_width():
+    # src and dst are both 16-bit: ids above 255 survive the round-trip.
+    assert decode_frame(encode_poll(300, 700)) == ("poll", 300, 700)
+    assert decode_frame(encode_poll(0x1234, 0xABCD)) == ("poll", 0x1234, 0xABCD)
+    assert len(encode_poll(1, 2)) == 5 and len(encode_response(1, 2, 0.0)) == 13
+    assert len(encode_final(1, 2, 0, 0, 0, 0)) == 37
+
+
+def test_ds_twr_across_40bit_wrap():
+    import pytest
+
+    assert TICK_WRAP_S == pytest.approx(17.2, abs=0.2)  # 2^40 ticks @15.65 ps
+    assert tick_delta_s(10, TICK_MASK_40 - 5) == pytest.approx(16 * DW1000_TICK_S)
+    M = TICK_MASK_40 + 1
+    tof_ticks = 5.0 / 299_702_547.0 / DW1000_TICK_S  # ~1066 ticks for 5 m
+    P1, P2 = 100_000, 110_000
+    t1 = M - 500  # poll TX just before the counter wraps
+    t4 = (t1 + round(tof_ticks)) % M
+    t5 = (t4 + P1) % M
+    t2 = (t1 + round(2 * tof_ticks) + P1) % M
+    t3 = (t2 + P2) % M
+    t6 = (t5 + P2 + round(2 * tof_ticks)) % M
+    assert min(t2, t4, t5) < 1_000_000  # the exchange really crossed the wrap
+    d = tof_to_distance_m(ds_twr_tof_ticks(t1, t2, t3, t4, t5, t6))
+    assert d == pytest.approx(5.0, abs=0.02)
+    m = Dw1000Driver(unit_id="A").exchange_ticks("B", t1, t2, t3, t4, t5, t6)
+    assert (m.sensor, m.kind) == ("uwb", "range")
+    assert m.value["distance_m"] == pytest.approx(5.0, abs=0.02)
 
 
 def test_driver_exchange_provenance():
