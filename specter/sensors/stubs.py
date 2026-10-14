@@ -53,3 +53,29 @@ def probe_hailo() -> SensorStatus:
     if glob.glob("/dev/hailo*"):
         return SensorStatus("hailo", "HAILO-8L", Health.OK, "device present (unused, stage 5)")
     return SensorStatus("hailo", "HAILO-8L", Health.NOT_INSTALLED, "optional")
+
+
+# --- EXPERIMENTAL (stage 6+ candidates; stubs only, never fabricated data) ---
+
+def probe_event_camera() -> SensorStatus:
+    return SensorStatus("event_camera", "EVENT GENX320", Health.NOT_INSTALLED, "EXPERIMENTAL")
+
+
+def probe_acoustic() -> SensorStatus:
+    return SensorStatus("acoustic", "ACOUSTIC UMA-16", Health.NOT_INSTALLED, "EXPERIMENTAL")
+
+
+def probe_vitals() -> SensorStatus:
+    return SensorStatus("vitals_radar", "VITALS IWR6843", Health.NOT_INSTALLED, "EXPERIMENTAL")
+
+
+def probe_gas() -> SensorStatus:
+    return SensorStatus("gas", "GAS CO/CO2", Health.NOT_INSTALLED, "EXPERIMENTAL")
+
+
+def probe_lora() -> SensorStatus:
+    return SensorStatus("lora", "LORA MESH", Health.NOT_INSTALLED, "EXPERIMENTAL fallback")
+
+
+def probe_ai_hat() -> SensorStatus:
+    return SensorStatus("vlm", "AI HAT+ VLM", Health.NOT_INSTALLED, "EXPERIMENTAL AI-SUMMARY")

@@ -24,6 +24,12 @@ SENSOR_LABELS = {
     "imu": "IMU",
     "gnss": "GNSS",
     "uwb": "UWB",
+    "event_camera": "EVENT",
+    "acoustic": "ACOUSTIC",
+    "vitals_radar": "VITALS",
+    "gas": "GAS",
+    "lora": "LORA",
+    "vlm": "AI-SUMMARY",
     "synthetic": "SYNTHETIC",
     "fusion": "FUSED",
 }

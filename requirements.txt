@@ -4,3 +4,8 @@ opencv-python>=4.8
 pytest>=7
 # optional pose:
 # ultralytics>=8.3
+# optional stage 4b (graceful fallback without them: internal UBX parser,
+# minimal YAML reader). Install for full tooling:
+# pyubx2>=1.2    # UBX helpers alongside the internal NAV-PVT parser
+# pyyaml>=6.0    # pinmap.yaml via PyYAML instead of the fallback reader
+# scipy>=1.10    # exact Hungarian assignment (greedy fallback otherwise)

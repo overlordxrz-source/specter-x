@@ -3,3 +3,11 @@
 numpy>=1.24
 pytest>=7
 ultralytics>=8.3   # optional; pulls torch (CPU). Skip to run without pose.
+pyubx2>=1.2        # optional; NEO-M9N helpers (internal UBX parser otherwise)
+pyyaml>=6.0        # optional; pinmap via PyYAML (fallback reader otherwise)
+scipy>=1.10        # optional; exact Hungarian team assignment (greedy otherwise)
+# Pi 5 Click Shield notes:
+#   - UWB Click (DW1000, socket 1): spidev via python3-spidev / pip spidev
+#   - GNSS 7 Click (NEO-M9N, socket 2): UART /dev/serial0 @38400, PPS GPIO18
+#   - 9DOF Click (LSM9DS1, i2c-1): smbus2 for autodetect (ImuLayer works without)
+#   - SenXor EVK: pysenxor-lite when Meridian ships the Python package

@@ -28,10 +28,28 @@ health records, so nothing unsourced reaches the screen (every overlay prints
 | Low-light camera | Arducam IMX462 (CSI, libcamera / Picamera2) | CSI-2 | 1 |
 | Display | 7" 1280x800 touchscreen | DSI/HDMI | 1 |
 | Thermal | TOPDON TC001 (256x192; UVC frames are 256x384, thermal words in lower half) | USB UVC | 2 |
-| IMU | BNO085 | I2C | 2 |
+| IMU | BNO085 (kept); 9DOF Click LSM9DS1 on the Click Shield (preferred) | I2C (`i2c-1`) | 2 / 4b |
 | Radar | TI IWR6843AOPEVM (TLV point clouds) | UART-over-USB | 3 |
 | RF sensing | ESP32-S3 Wi-Fi CSI | USB serial | 3 |
+| Click carrier | MIKROE Pi 5 Click Shield (MIKROE-6423): 2x mikroBUS + Shuttle | Pi 5 header | 4b |
+| UWB ranging | UWB Click (MIKROE-4199, Qorvo DW1000), mikroBUS socket 1 | SPI `spi0.0` | 4b |
+| GNSS | GNSS 7 Click (MIKROE-3922, u-blox NEO-M9N, UBX+NMEA) socket 2 | UART `/dev/serial0` @38400 / PPS `GPIO18` | 4b |
+| Thermal (candidate) | Meridian SenXor 160x120 EVK (~90 deg) — driver UNVERIFIED until hardware arrives | USB (`pysenxor-lite`) | 4b |
 | Accelerator | Hailo-8L (optional) | PCIe (M.2 HAT) | 5 |
+
+Pin/bus assignments live in `specter/hw/pinmap.yaml` (socket 1 = UWB, socket 2 = GNSS,
+IMU on `i2c-1`) and are validated at startup — wiring mistakes fail fast, not silently.
+
+### EXPERIMENTAL candidates (stub drivers + simulators only, Stage 6+)
+
+| Role | Part | Status |
+|---|---|---|
+| Event camera | Prophesee GenX320 Starter Kit for Pi 5 (MIPI, OpenEB) — glare-proof motion trigger | stub + sim |
+| Acoustic camera | miniDSP UMA-16 v2 16-mic USB array (Acoular) — voice/alarm direction | stub + sim |
+| Vitals radar | IWR6843 breathing/heart-rate mode for still, trapped people | stub + sim |
+| On-device VLM | Raspberry Pi AI HAT+ 2 (Hailo-10H) — spoken track summaries, always AI-SUMMARY labelled | template + sim |
+| Mesh fallback | LoRa (Meshtastic-compatible) — heartbeats + man-down when Wi-Fi drops | codec + sim |
+| Gas | CO/CO2 environmental danger overlay (advisory only) | stub + sim |
 
 ## Repo layout
 
@@ -39,24 +57,52 @@ health records, so nothing unsourced reaches the screen (every overlay prints
 firmware/esp32-csi/          ESP-IDF CSI streamer (stage 3, placeholder)
 specter/
   app.py                     Stage 1 entry point: python -m specter.app
+  hw/pinmap.yaml             Click Shield pin/bus map, validated at startup
   sensors/
     base.py                  Health enum + SensorStatus (feeds the HUD panel)
     stubs.py                 presence probes for not-yet-integrated sensors
     nightvision/camera.py    Picamera2 -> OpenCV -> synthetic camera sources
     thermal/tc001.py         TC001 frame split + raw->°C helper (stage 2)
+    thermal/senxor.py        SenXor 160x120 driver, UNVERIFIED (stage 4b)
+    thermal/interface.py     shared thermal driver interface
     radar/tlv.py             IWR6843 TLV header/point parser (stage 3)
-    wifi_csi/  imu/          stage 2/3 placeholders
-  calibration/               rig.json (PLACEHOLDER intrinsics/extrinsics) + loader
+    imu/                     lsm9ds1.py (raw + Mahony) + bno085.py behind ImuLayer
+    gnss/neom9n.py           UBX-NAV-PVT parser + NMEA fallback + synthetic
+    uwb/dw1000.py            DS-TWR ranging + two-unit simulator
+    experimental/            event/acoustic/vitals/VLM/LoRa/gas stubs + sims
+    wifi_csi/                stage 3 placeholder
+  localization/ekf.py        per-unit EKF: IMU predict, GNSS anchor, UWB ranges
+  net/                       signed UDP-multicast team link (heartbeat/pose/track/alert)
+  sim/team.py                CI demo: python -m specter.sim.team --units 2
   fusion/
     measurement.py           Measurement + Provenance dataclasses, JSON round-trip
     coordinate_frames.py     Transform (R,t), FrameGraph, PinholeCamera projection
     tracking.py              Track/Tracker interface (stage 4 stub)
+    team.py                  Mahalanobis + Hungarian team fusion, man-down
   ml/pose/estimator.py       YOLO11n-pose / synthetic-GT / none backends
   events/log.py              JSONL session log + acquired/lost hysteresis
   hud/renderer.py            OpenCV 1280x800 HUD
+  hud/team_overlay.py        teammates, peer tracks, mini-map, pose badge
 events/sessions/             one <session>.jsonl per run
-tests/                       pytest suite (projection, serialisation, smoke run)
+tests/                       pytest suite (projection, serialisation, smoke run, team)
 ```
+
+## Team data flow (Stage 4b)
+
+```
+sensors -> Measurements -> local tracks -> network -> team fusion -> HUD
+   |            |               |              |            |           |
+ TC001/      SRC + conf      Kalman in     signed UDP    Mahalanobis teammates,
+ SenXor      + frame         body frame    multicast:    + Hungarian  peer tracks
+ IMX462      SIM if          + ENU pose    Heartbeat     merged list  SRC:UNIT/
+ DW1000      synthetic       (EKF: IMU/    PoseStamped   cites every  SENSOR,
+ NEO-M9N                     GNSS/UWB)     TrackReport   Measurement  mini-map,
+ LSM9DS1                                   Alert         id           POSE badge
+```
+
+Compact tracks travel between units — video never does. Provenance (source
+unit, sensor, Measurement ids) survives the hop, so the HUD still prints
+`SRC: <UNIT>/<SENSOR> conf 0.xx` for peer detections.
 
 The Python subsystems live inside the `specter` package (rather than at the repo
 root) so `python -m specter.app` and imports work without path hacks.
@@ -71,7 +117,14 @@ pip install ultralytics                  # optional: real pose (downloads yolo11
 python -m specter.app --source synthetic --windowed     # test pattern, no camera needed
 python -m specter.app --windowed                        # webcam via OpenCV (auto fallback)
 python -m specter.app --source synthetic --frames 30 --headless   # CI smoke run
+python -m specter.sim.team --units 2                         # CI team demo (SIM)
 pytest -q
+```
+
+Optional desktop extras (graceful fallback when missing — CI does not need them):
+
+```bash
+pip install pyubx2 pyyaml     # UBX helpers / pinmap YAML (internal parsers otherwise)
 ```
 
 Keys: `q`/`Esc` quit, `m` cycle mode (`OPTICAL` / `NIGHT-GREEN` / `POD`),
@@ -153,14 +206,31 @@ Events in Stage 1: `session_start`, `pose_acquired` (3 consecutive frames with a
 4. **Stage 4: fusion and tracking.** Kalman tracks in the body frame fed by optical/thermal
    bearings, radar range/Doppler and CSI presence; each track lists the sensors and Measurement
    ids behind it; IMU-stabilised track display; session replay from the JSONL log.
+4b. **Stage 4b: team networking (this commit).** Pi 5 Click Shield carrier; DW1000 UWB
+   two-way ranging (~10 cm LOS) between units; NEO-M9N GNSS outdoors; LSM9DS1 IMU (BNO085
+   still supported); per-unit EKF in a shared ENU frame anchored at the first GNSS fix
+   (`POSE: GNSS` outdoors, `POSE: REL` indoors on UWB+IMU); signed UDP-multicast team link
+   (Heartbeat/PoseStamped/TrackReport/Alert, HMAC team key, chrony/PTP discipline, stale
+   rejection); Mahalanobis+Hungarian team fusion with provenance intact; man-down alerts;
+   HUD teammate markers, peer contacts, mini-map and pose badge. Demo:
+   `python -m specter.sim.team --units 2`. Target users: firefighters, rescue teams.
 5. **Stage 5: acceleration and field unit.** Hailo-8L pose/detection (HEF models), power and
    thermal budget, battery and enclosure, touchscreen controls, packaged systemd service.
+6. **Stage 6: wearable (helmet + chest + headset, then goggles).** Helmet sensor head
+   (thermal/event/acoustic), chest compute (Pi 5 + AI HAT+ 2 for on-device VLM summaries,
+   always `AI-SUMMARY` labelled with cited Measurement ids), headset display; LoRa mesh
+   fallback for heartbeats + man-down. Long-term form: goggles. EXPERIMENTAL modules
+   (event camera, acoustic camera, vitals radar, gas) graduate here only after bench validation.
 
 ## Honest limits
 
 - LWIR thermal sees surface temperature, not through things: it does **not** see through walls, glass, or much beyond thin fabric. Anyone claiming otherwise is selling something.
 - Radar (60 GHz) and Wi-Fi CSI cover presence and motion where optics can't, including through interior walls — that is why this device has them instead of a bigger thermal sensor.
 - Synthetic mode is a test pattern for development and CI. It proves the pipeline runs, not that any sensor works.
+- UWB ranging needs line-of-sight for its ~10 cm accuracy; NLOS measurements are flagged and de-weighted, not hidden.
+- GNSS fails indoors — the HUD says `POSE: REL` there and shows growing uncertainty instead of a confident dot.
+- The SenXor thermal path is UNVERIFIED until the EVK is checked against a reference target.
+- Gas readings are advisory only. This prototype is **not certified safety gear** and must not be treated as such on a fireground.
 
 ## Sponsors & support
 
