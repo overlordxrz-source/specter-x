@@ -232,6 +232,21 @@ Events in Stage 1: `session_start`, `pose_acquired` (3 consecutive frames with a
 - The SenXor thermal path is UNVERIFIED until the EVK is checked against a reference target.
 - Gas readings are advisory only. This prototype is **not certified safety gear** and must not be treated as such on a fireground.
 
+### Team link security limits (read before the field)
+
+- **No confidentiality.** The team key authenticates messages (HMAC-SHA256) but nothing
+  is encrypted: anyone listening on the Wi-Fi sees unit positions, tracks and alerts
+  in cleartext. Do not carry sensitive information beyond the tactical picture.
+- **One shared key means mutual impersonation.** Every unit holds the same team key, so
+  any compromised or rogue unit holding it can sign messages as *any* `unit_id`. HMAC
+  keeps outsiders out; it does not keep insiders honest. Mitigation is procedural for
+  now: guard the key, rotate it when membership changes.
+- **Replay is gated, not gone.** The receive path drops replays and old sequence numbers
+  (ordered boot ids + strictly increasing seq per sender), but the replay table is
+  in-memory: a *receiving* unit that reboots forgets it, briefly reopening the window.
+  Roadmap: persist the peer table, then per-message encryption (AES-GCM or
+  ChaCha20-Poly1305 via the optional `cryptography` package) — listed as work, not done.
+
 ## Sponsors & support
 
 No sponsors yet. If a company wants its logo here, it can fund hardware or build time first.
