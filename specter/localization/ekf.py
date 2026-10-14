@@ -150,7 +150,9 @@ class PoseEKF:
         if peer_cov3 is not None:
             Pp = np.asarray(peer_cov3, float).reshape(3, 3)
             r_eff += float(u @ Pp @ u)
-        self._linear_update(np.array([d_meas]), H, np.array([[r_eff]]))
+        # Nonlinear h(x) = |x - peer|: innovate against d_pred, not H @ x.
+        self._linear_update(np.array([d_meas]), H, np.array([[r_eff]]),
+                            z_pred=np.array([d_pred]))
         self.measurement_ids.append(m.id)
         if t is not None:
             self._t = t
@@ -169,10 +171,12 @@ class PoseEKF:
         return self.pose()
 
     # -- internals ------------------------------------------------------
-    def _linear_update(self, z: np.ndarray, H: np.ndarray, R: np.ndarray) -> None:
+    def _linear_update(self, z: np.ndarray, H: np.ndarray, R: np.ndarray,
+                       z_pred: Optional[np.ndarray] = None) -> None:
         S = H @ self.P @ H.T + R
         K = self.P @ H.T @ np.linalg.inv(S)
-        self.x = self.x + K @ (z - H @ self.x)
+        innov = z - (H @ self.x if z_pred is None else z_pred)
+        self.x = self.x + K @ innov
         self.P = (np.eye(6) - K @ H) @ self.P
         self.P = 0.5 * (self.P + self.P.T)  # keep symmetric
 

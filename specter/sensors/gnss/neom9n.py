@@ -11,6 +11,7 @@ and a large covariance, never a fake-precise point.
 """
 from __future__ import annotations
 
+import math
 import struct
 import time
 from dataclasses import dataclass, field
@@ -260,14 +261,31 @@ class SyntheticGnss:
     speed_m_s: float = 1.2
     h_acc_m: float = 2.5
     v_acc_m: float = 4.0
+    seed: int = 0
     _i: int = 0
 
+    def __post_init__(self) -> None:
+        import numpy as _np
+
+        self._rng = _np.random.default_rng(self.seed)
+
     def read(self, dt: float = 0.2) -> Measurement:
+        # Standalone: walk north from the origin.
+        return self.read_at(east_m=0.0, north_m=self._i * dt * self.speed_m_s, dt=dt)
+
+    def read_at(self, east_m: float, north_m: float, dt: float = 0.2) -> Measurement:
+        """Fix at team-origin + (east, north) metres + honest jitter.
+
+        Lets multi-unit sims drive each GNSS from ground truth so fixes stay
+        consistent with UWB ranges. read() walks north for standalone use.
+        """
         self._i += 1
-        # ~1e-5 deg lat ~= 1.11 m; walk north.
-        lat = self.lat0 + self._i * dt * self.speed_m_s / 111320.0
+        lat = (self.lat0 + north_m / 111320.0
+               + float(self._rng.normal(0, 0.05 / 111320.0)))
+        lon = (self.lon0 + east_m / (111320.0 * math.cos(math.radians(self.lat0)))
+               + float(self._rng.normal(0, 0.05 / 111320.0)))
         payload = build_nav_pvt(
-            lon_deg=self.lon0, lat_deg=lat, height_m=400.0,
+            lon_deg=lon, lat_deg=lat, height_m=400.0,
             h_acc_mm=int(self.h_acc_m * 1000), v_acc_mm=int(self.v_acc_m * 1000),
             fix_type=3, num_sv=14, tow_ms=self._i * int(dt * 1000),
         )
