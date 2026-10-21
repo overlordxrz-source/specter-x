@@ -50,6 +50,7 @@ class HudState:
     session: str = ""
     team: object = None  # TeamOverlayState when networking is up; None hides team UI
     analog: object = None  # DaqSnapshot when the DAQ is enabled; None hides the DAQ view
+    supervisor: object = None  # SupervisorSnapshot; None hides the supervisor block
 
 
 def _text(img, s, org, scale=0.55, color=WHITE, thick=1):
@@ -153,6 +154,43 @@ def draw_analog_view(canvas, snap, x0, y0, w, h):
                card_w - 32, max(40, card_h - 176), col)
 
 
+def draw_supervisor_block(canvas, snap, x, y):
+    """Compact supervisor telemetry in the right-hand panel.
+
+    The identity line is only drawn once the device has introduced itself -
+    an unknown identity is stated, never guessed.
+    """
+    if snap is None:
+        return y
+    state = getattr(snap, "state", None)
+    value = getattr(state, "value", "N/A")
+    col = {"OK": GREEN, "DEGRADED": AMBER, "OFFLINE": RED}.get(value, DIM)
+    _text(canvas, "SUPERVISOR", (x, y), 0.58, GREEN, 1)
+    _text(canvas, value, (x + 190, y), 0.5, col, 1)
+    y += 20
+    ident = getattr(snap, "identity", None)
+    if ident is None:
+        _text(canvas, "identity not reported", (x, y), 0.44, AMBER, 1)
+        y += 17
+    else:
+        _text(canvas, f"{ident.board[:22]} {ident.chip[:12]}", (x, y), 0.42, WHITE, 1)
+        y += 16
+        _text(canvas, f"mac {ident.mac}", (x, y), 0.40, DIM, 1)
+        y += 15
+        _text(canvas, f"fw {ident.fw_version} ({ident.fw_build[:12]})", (x, y),
+              0.40, DIM, 1)
+        y += 16
+    _text(canvas, f"up {snap.uptime_s:.1f}s   hb {snap.heartbeat_seq}",
+          (x, y), 0.42, WHITE, 1)
+    y += 16
+    _text(canvas, f"hb age {snap.heartbeat_age_s:.1f}s   missed {snap.missed_heartbeats}",
+          (x, y), 0.40, DIM, 1)
+    y += 15
+    _text(canvas, f"dev health {snap.device_health}", (x, y), 0.40, DIM, 1)
+    y += 16
+    return y
+
+
 def render(image: np.ndarray, st: HudState) -> np.ndarray:
     canvas = np.zeros((HUD_H, HUD_W, 3), np.uint8)
     view_w, view_h = HUD_W - PANEL_W, HUD_H - TOP_H
@@ -206,6 +244,10 @@ def render(image: np.ndarray, st: HudState) -> np.ndarray:
         if ss.detail:
             _text(canvas, ss.detail[:30], (px + 38, y + 19), 0.40, DIM)
         y += 48
+
+    # --- supervisor block -----------------------------------------------------
+    if st.supervisor is not None:
+        y = draw_supervisor_block(canvas, st.supervisor, px + 14, y + 6) + 6
 
     # --- team block (teammates + peer tracks, provenance-tagged) ------------
     if team is not None:

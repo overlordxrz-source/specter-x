@@ -52,6 +52,12 @@ def parse_args(argv=None):
     p.add_argument("--daq-channels", default="0,1,2,3", help="DI-188 channel numbers")
     p.add_argument("--daq-log-hz", type=float, default=1.0,
                    help="how often an analog Measurement is written to the event log")
+    p.add_argument("--supervisor", default="off", choices=["off", "esp32"],
+                   help="enable the ESP32-S3 supervisor as a SPECTER-X sensor")
+    p.add_argument("--supervisor-port", default=None,
+                   help="supervisor serial node (default: auto-detect the Espressif USB port)")
+    p.add_argument("--supervisor-log-hz", type=float, default=1.0,
+                   help="how often a supervisor Measurement is written to the event log")
     p.add_argument("--polarity", default="WHT", choices=POLARITIES, help="POD mode: white-hot or black-hot")
     p.add_argument("--zoom", type=int, default=1, choices=ZOOMS, help="POD mode digital zoom")
     p.add_argument("--log-dir", default=str(REPO_ROOT / "events" / "sessions"))
@@ -115,6 +121,21 @@ def main(argv=None) -> int:
         # rather than "N/A": the DAQ was requested and is on its way.
         sensors.append(SensorStatus("analog", "ANALOG DI-188", Health.DEGRADED,
                                     "connecting"))
+
+    # --- ESP32-S3 supervisor --------------------------------------------------
+    # The supervisor's own device heartbeat (over USB). It is a different
+    # thing from the unit-level network heartbeat in specter/net/messages.py.
+    supervisor = None
+    if a.supervisor == "esp32":
+        try:
+            from specter.sensors.esp32.supervisor import SupervisorSource
+            supervisor = SupervisorSource(port=a.supervisor_port,
+                                         log_interval=1.0 / max(a.supervisor_log_hz, 0.01))
+            supervisor.start()
+            sensors.append(supervisor.status())
+        except Exception as e:
+            log.warning("supervisor could not be started: %s", e)
+            supervisor = None
 
     events.log("session_start", {
         "version": __version__, "camera": cam.name, "sensor_id": cam.sensor_id,
@@ -198,6 +219,18 @@ def main(argv=None) -> int:
                 if m is not None:
                     events.log("analog_sample", {"channels": m.value.get("frames", 0)},
                                measurement=m)
+            if supervisor is not None:
+                st.supervisor = supervisor.snapshot()
+                for ss in sensors:
+                    if ss.key == "supervisor":
+                        sup_status = supervisor.status()
+                        ss.health, ss.detail = sup_status.health, sup_status.detail
+                sm = supervisor.take_measurement()
+                if sm is not None:
+                    events.log("supervisor_status",
+                               {"state": sm.value.get("state"),
+                                "hb": sm.value.get("heartbeat_seq")},
+                               measurement=sm)
             if st.mode == "POD":
                 hud = render_pod(frame.image, pod, pod_tel, st.fps)
             else:
@@ -227,6 +260,8 @@ def main(argv=None) -> int:
         cam.close()
         if daq is not None:
             daq.stop()
+        if supervisor is not None:
+            supervisor.stop()
         if hud is not None and a.save_frame:
             out = os.path.dirname(os.path.abspath(a.save_frame))
             if out:

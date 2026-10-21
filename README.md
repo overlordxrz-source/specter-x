@@ -30,7 +30,8 @@ health records, so nothing unsourced reaches the screen (every overlay prints
 | Thermal | TOPDON TC001 (256x192; UVC frames are 256x384, thermal words in lower half) | USB UVC | 2 |
 | IMU | BNO085 (kept); 9DOF Click LSM9DS1 on the Click Shield (preferred) | I2C (`i2c-1`) | 2 / 4b |
 | Radar | TI IWR6843AOPEVM (TLV point clouds) | UART-over-USB | 3 |
-| RF sensing | ESP32-S3 Wi-Fi CSI | USB serial | 3 |
+| RF sensing | ESP32-S3 Wi-Fi CSI | USB serial (native USB CDC) | 3 |
+| Device supervisor | ESP32-S3 — identity, uptime, heartbeat, health | USB serial (`0x303A:0x1001`) | 6 (Alpha 002-A: host only) |
 | Click carrier | MIKROE Pi 5 Click Shield (MIKROE-6423): 2x mikroBUS + Shuttle | Pi 5 header | 4b |
 | UWB ranging | UWB Click (MIKROE-4199, Qorvo DW1000), mikroBUS socket 1 | SPI `spi0.0` | 4b |
 | GNSS | GNSS 7 Click (MIKROE-3922, u-blox NEO-M9N, UBX+NMEA) socket 2 | UART `/dev/serial0` @38400 / PPS `GPIO18` | 4b |
@@ -92,6 +93,27 @@ tools/di188.py               DI-188 CLI: probe | monitor | dashboard | record |
                              stability | calibrate
 tests/                       pytest suite (projection, serialisation, smoke run, team)
 ```
+
+## ESP32-S3 supervisor (Alpha 002-A, host side)
+
+The ESP32-S3 can act as a **supervisor**: a device that reports on itself -
+identity, uptime, heartbeat and health - so the HUD can show that the board
+is alive. The host half is implemented; the firmware that produces these
+packets does not exist yet.
+
+```bash
+python -m specter.app --source synthetic --supervisor esp32 --headless
+```
+
+Packets are one ASCII line each, `HELLO` / `STAT` / `HB`, and the host
+derives a health state from both the device's own health word and its own
+view of the heartbeat. An identity that has not been reported is shown as
+*unknown*, never guessed.
+
+The supervisor's **device heartbeat** (over USB) is deliberately a different
+thing from the unit-level **network heartbeat** in the team link; they are
+never merged. Protocol, health model and evidence:
+[`docs/checkpoints/003-alpha002a-esp32-supervisor.md`](docs/checkpoints/003-alpha002a-esp32-supervisor.md).
 
 ## DI-188 USB DAQ (stage 5, macOS bench tool)
 

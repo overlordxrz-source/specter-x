@@ -33,6 +33,9 @@ SENSOR_LABELS = {
     "synthetic": "SYNTHETIC",
     "fusion": "FUSED",
     "analog": "ANALOG",       # DI-188 USB DAQ analog channels
+    # The ESP32-S3 supervisor's DEVICE heartbeat (over USB). Distinct from the
+    # unit-level NETWORK heartbeat in specter/net/messages.py.
+    "supervisor": "SUPERVISOR",
 }
 
 
