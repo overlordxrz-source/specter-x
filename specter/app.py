@@ -20,6 +20,7 @@ from specter.hud.pod import POLARITIES, ZOOMS, PodState, PodTelemetry, render_po
 from specter.hud.renderer import MODES, HUD_H, HUD_W, HudState, render
 from specter.ml.pose.estimator import PoseEstimator, make_pose_estimator
 from specter.sensors import stubs
+from specter.sensors.esp32.csi import csi_summary_measurement, subcarrier_amplitudes
 from specter.sensors.base import Health, SensorStatus
 from specter.sensors.nightvision.camera import open_camera
 
@@ -53,9 +54,14 @@ def parse_args(argv=None):
     p.add_argument("--daq-log-hz", type=float, default=1.0,
                    help="how often an analog Measurement is written to the event log")
     p.add_argument("--supervisor", default="off", choices=["off", "esp32"],
-                   help="enable the ESP32-S3 supervisor as a SPECTER-X sensor")
+                   help="enable the ESP32-S3 as a SPECTER-X sensor (supervisor "
+                        "telemetry; unavailable until the firmware emits it)")
+    p.add_argument("--csi", default="off", choices=["off", "esp32"],
+                   help="enable the ESP32-S3 Wi-Fi CSI stream")
     p.add_argument("--supervisor-port", default=None,
-                   help="supervisor serial node (default: auto-detect the Espressif USB port)")
+                   help="ESP32 serial node (default: auto-detect the Espressif USB port)")
+    p.add_argument("--csi-log-hz", type=float, default=1.0,
+                   help="how often a CSI summary Measurement is written to the event log")
     p.add_argument("--supervisor-log-hz", type=float, default=1.0,
                    help="how often a supervisor Measurement is written to the event log")
     p.add_argument("--polarity", default="WHT", choices=POLARITIES, help="POD mode: white-hot or black-hot")
@@ -122,20 +128,26 @@ def main(argv=None) -> int:
         sensors.append(SensorStatus("analog", "ANALOG DI-188", Health.DEGRADED,
                                     "connecting"))
 
-    # --- ESP32-S3 supervisor --------------------------------------------------
-    # The supervisor's own device heartbeat (over USB). It is a different
-    # thing from the unit-level network heartbeat in specter/net/messages.py.
-    supervisor = None
-    if a.supervisor == "esp32":
+    # --- ESP32-S3 -------------------------------------------------------------
+    # Exactly ONE reader owns the ESP32's USB serial port. The CSI stream and
+    # any future supervisor packets both arrive on that same link, so they are
+    # routed by the shared dispatcher rather than by two readers fighting.
+    # The supervisor's device heartbeat (over USB) is a different thing from
+    # the unit-level network heartbeat in specter/net/messages.py.
+    esp32 = None
+    if a.supervisor == "esp32" or a.csi == "esp32":
         try:
-            from specter.sensors.esp32.supervisor import SupervisorSource
-            supervisor = SupervisorSource(port=a.supervisor_port,
-                                         log_interval=1.0 / max(a.supervisor_log_hz, 0.01))
-            supervisor.start()
-            sensors.append(supervisor.status())
+            from specter.sensors.esp32.reader import Esp32SerialReader
+            esp32 = Esp32SerialReader(port=a.supervisor_port)
+            esp32.start()
+            # the stub already provides a "wifi_csi" row; the supervisor gets
+            # its own so its unavailability is visible in the health list
+            sensors.append(SensorStatus("supervisor", "SUPERVISOR ESP32",
+                                        Health.NOT_INSTALLED,
+                                        "no supervisor packets yet"))
         except Exception as e:
-            log.warning("supervisor could not be started: %s", e)
-            supervisor = None
+            log.warning("ESP32 reader could not be started: %s", e)
+            esp32 = None
 
     events.log("session_start", {
         "version": __version__, "camera": cam.name, "sensor_id": cam.sensor_id,
@@ -161,6 +173,8 @@ def main(argv=None) -> int:
     misses = 0
     daq_snapshot_at = 0.0
     daq_state = None
+    csi_last_log = 0.0
+    csi_last_count = 0
     t_start = time.monotonic()
     try:
         while a.frames <= 0 or n < a.frames or (time.monotonic() - t_start) < a.min_seconds:
@@ -219,18 +233,68 @@ def main(argv=None) -> int:
                 if m is not None:
                     events.log("analog_sample", {"channels": m.value.get("frames", 0)},
                                measurement=m)
-            if supervisor is not None:
-                st.supervisor = supervisor.snapshot()
+            if esp32 is not None:
+                health = esp32.health()
+                # the supervisor is reported as unavailable until the firmware
+                # actually emits it - never as a simulated heartbeat
+                st.supervisor = esp32.supervisor_view()
                 for ss in sensors:
-                    if ss.key == "supervisor":
-                        sup_status = supervisor.status()
-                        ss.health, ss.detail = sup_status.health, sup_status.detail
-                sm = supervisor.take_measurement()
-                if sm is not None:
-                    events.log("supervisor_status",
-                               {"state": sm.value.get("state"),
-                                "hb": sm.value.get("heartbeat_seq")},
-                               measurement=sm)
+                    if ss.key == "wifi_csi":
+                        ss.health = (Health.OK if health.state.healthy
+                                     else Health.DEGRADED)
+                        ss.detail = f"{health.state.value} | {health.packets} pkt"
+                    elif ss.key == "supervisor":
+                        view = st.supervisor or {}
+                        if view.get("available"):
+                            ss.health = Health.OK
+                            ss.detail = "supervisor telemetry"
+                        else:
+                            ss.health = Health.NOT_INSTALLED
+                            ss.detail = "telemetry not available"
+                if a.csi == "esp32":
+                    records = esp32.drain_csi()
+                    if records:
+                        latest = records[-1]
+                        amps = subcarrier_amplitudes(latest.iq)
+                        st.csi = {
+                            "link_state": health.state.value,
+                            "link_detail": health.detail,
+                            "ap_mac": latest.mac,
+                            "channel": latest.channel,
+                            "rssi": latest.rssi,
+                            "board_mac": health.board_mac,
+                            "local_timestamp": latest.local_timestamp,
+                            "amplitudes": [round(x, 1) for x in amps],
+                            "packets": health.packets,
+                            "packets_per_s": health.packets_per_s,
+                            "first_id": health.first_id,
+                            "last_id": health.last_id,
+                            "gaps": health.gaps,
+                            "missing_packets": health.missing_packets,
+                            "malformed": health.malformed,
+                            "dropped": health.dropped,
+                            "unknown_lines": health.unknown_lines,
+                            "silence_s": health.silence_s,
+                            "reconnects": health.reconnects,
+                            "uptime_s": health.uptime_s,
+                            "bytes": health.bytes,
+                        }
+                    if (time.monotonic() - csi_last_log) >= (1.0 / max(a.csi_log_hz, 0.01)):
+                        csi_last_log = time.monotonic()
+                        if records:
+                            m = csi_summary_measurement(
+                                latest, health, health.board_mac,
+                                packets=health.packets - csi_last_count,
+                                first_id=health.first_id,
+                                gaps=health.gaps, missing=health.missing_packets,
+                                malformed=health.malformed, dropped=health.dropped,
+                                unknown_lines=health.unknown_lines)
+                            events.log("csi_summary",
+                                       {"packets": m.value.get("packets"),
+                                        "id": m.value.get("id"),
+                                        "link": m.value.get("link_state")},
+                                       measurement=m)
+                            csi_last_count = health.packets
             if st.mode == "POD":
                 hud = render_pod(frame.image, pod, pod_tel, st.fps)
             else:
@@ -260,8 +324,8 @@ def main(argv=None) -> int:
         cam.close()
         if daq is not None:
             daq.stop()
-        if supervisor is not None:
-            supervisor.stop()
+        if esp32 is not None:
+            esp32.stop()
         if hud is not None and a.save_frame:
             out = os.path.dirname(os.path.abspath(a.save_frame))
             if out:

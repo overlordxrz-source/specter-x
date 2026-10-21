@@ -115,6 +115,35 @@ thing from the unit-level **network heartbeat** in the team link; they are
 never merged. Protocol, health model and evidence:
 [`docs/checkpoints/003-alpha002a-esp32-supervisor.md`](docs/checkpoints/003-alpha002a-esp32-supervisor.md).
 
+## ESP32-S3 Wi-Fi CSI (Alpha 002, macOS bench tool)
+
+The ESP32-S3 running Espressif's `csi_recv_router` example streams Wi-Fi CSI
+over its native USB CDC port. It is now a first-class SPECTER-X sensor:
+instrument → `Measurement` → HUD → JSONL, with **exactly one reader** owning
+the port and the CSI and supervisor streams routed off it independently.
+
+```bash
+python -m specter.app --source synthetic --csi esp32 --mode CSI --headless
+```
+
+The HUD's `CSI` mode shows the subcarrier amplitude spectrum and the packet
+statistics; the event log gets one `csi_summary` Measurement per second that
+carries the packet id range, the device's own timestamp, the provenance and
+the acquisition health. The supervisor is reported as **explicitly
+unavailable** until firmware actually emits it — no simulated heartbeats in a
+real-hardware session.
+
+```bash
+python3 tools/esp32_csi_baseline.py --seconds 60 --rate 100   # baseline
+python3 tools/esp32_csi_visualize.py runs/session.jsonl      # offline plot
+```
+
+Measured on the hardware: **176.37 packets/s integrated** (99.0 % of the
+178.15 packets/s baseline), with **0 sequence gaps, 0 missing packets, 0
+malformed records and 0 dropped queue entries** over 70 s.
+
+Evidence: [`docs/checkpoints/006-alpha002b-csi-integration.md`](docs/checkpoints/006-alpha002b-csi-integration.md).
+
 ## DI-188 USB DAQ (stage 5, macOS bench tool)
 
 A DATAQ DI-188 — 4 differential ±10 V channels, 12-bit — is attached over USB

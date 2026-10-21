@@ -279,14 +279,26 @@ class SupervisorSource:
         except Exception:
             return b""
 
+    def ingest(self, line: str) -> None:
+        """Feed one protocol line (used by the standalone reader)."""
+        self._handle_line(line)
+
+    def ingest_packet(self, packet) -> None:
+        """Feed an already-parsed packet (used by the shared reader)."""
+        self._apply_packet(packet)
+
     def _handle_line(self, line: str) -> None:
         packet = parse_line(line)
+        if packet is None:
+            if line.strip():
+                with self._lock:
+                    self._malformed += 1
+            return
+        self._apply_packet(packet)
+
+    def _apply_packet(self, packet) -> None:
         now = time.time()
         with self._lock:
-            if packet is None:
-                if line.strip():
-                    self._malformed += 1
-                return
             if isinstance(packet, SupervisorIdentity):
                 self._identity = packet
                 self._set_state_locked(SupervisorState.DEGRADED,
