@@ -452,7 +452,8 @@ function render(s){
       : badge('CONNECTED','b-ok');
     card.querySelector('.cv').textContent = fmt(ch.counts.last,1);
     card.querySelector('.vv').textContent = ch.volts===null||ch.volts===undefined
-      ? 'volts: not claimed (unknown front end)'
+      ? (ch.is_measurement ? 'volts: not claimed (unknown front end)'
+                           : 'volts: none - floating input, not a measurement')
       : ('volts: '+fmt(ch.volts,4)+' V  (nominal, uncertified)');
     card.querySelector('.rm').textContent = fmt(ch.counts.mean,2);
     card.querySelector('.rs').textContent = fmt(ch.counts.std,2);

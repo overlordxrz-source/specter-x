@@ -21,6 +21,7 @@ from specter.hud.team_overlay import (
     draw_teammate_panel,
 )
 from specter.sensors.base import SensorStatus
+from specter.sensors.di188.stats import ChannelState
 from specter.sensors.nightvision.camera import COCO_SKELETON
 
 HUD_W, HUD_H = 1280, 800
@@ -31,8 +32,9 @@ GREEN = (90, 255, 120)
 AMBER = (40, 200, 255)
 WHITE = (235, 235, 235)
 DIM = (140, 140, 140)
+RED = (60, 60, 235)
 
-MODES = ["OPTICAL", "NIGHT-GREEN", "POD"]
+MODES = ["OPTICAL", "NIGHT-GREEN", "POD", "ANALOG"]
 
 
 @dataclass
@@ -47,6 +49,7 @@ class HudState:
     source_name: str = ""
     session: str = ""
     team: object = None  # TeamOverlayState when networking is up; None hides team UI
+    analog: object = None  # DaqSnapshot when the DAQ is enabled; None hides the DAQ view
 
 
 def _text(img, s, org, scale=0.55, color=WHITE, thick=1):
@@ -71,15 +74,98 @@ def _apply_mode(img: np.ndarray, mode: str) -> np.ndarray:
     return img
 
 
+def _spark(canvas, points, x, y, w, h, color):
+    """Draw a bounded trace of (t, value) pairs."""
+    cv2.rectangle(canvas, (x, y), (x + w, y + h), (26, 26, 26), -1)
+    vals = [p[1] for p in points]
+    if len(vals) < 2:
+        return
+    lo, hi = min(vals), max(vals)
+    if hi - lo < 1e-9:
+        hi, lo = lo + 1.0, lo - 1.0
+    pad = (hi - lo) * 0.15
+    lo, hi = lo - pad, hi + pad
+    n = len(vals)
+    pts = []
+    for i, v in enumerate(vals):
+        px = int(x + (i / (n - 1)) * (w - 2) + 1)
+        py = int(y + h - 2 - ((v - lo) / (hi - lo)) * (h - 4))
+        pts.append((px, py))
+    cv2.polylines(canvas, [np.array(pts, np.int32)], False, color, 1, cv2.LINE_AA)
+
+
+def draw_analog_view(canvas, snap, x0, y0, w, h):
+    """The DI-188 view: four channels, their state, and the calibration basis.
+
+    A channel with no source attached is drawn as FLOATING / NOISE. Its counts
+    are still shown (they are real ADC readings) but no volt value is drawn
+    and the panel says in words that the reading is noise, not a measurement.
+    """
+    if snap is None:
+        _text(canvas, "DAQ DISABLED", (x0 + 30, y0 + 60), 0.9, DIM, 2)
+        return
+
+    head = (f"{snap.model or 'DI-188'}  serial {snap.serial or '?'}  port {snap.port or '?'}"
+            f"   {snap.rate_hz:g} Hz   frames {snap.frames}")
+    _text(canvas, head, (x0 + 24, y0 + 26), 0.58, WHITE, 1)
+    _text(canvas, f"CAL: {snap.calibration_basis}", (x0 + 24, y0 + 52), 0.55,
+          AMBER if "UNCALIBRATED" in snap.calibration_basis else GREEN, 1)
+
+    banner_y = y0 + 76
+    if not snap.any_measurement:
+        cv2.rectangle(canvas, (x0 + 20, banner_y), (x0 + w - 20, banner_y + 34),
+                      (30, 22, 6), -1)
+        cv2.rectangle(canvas, (x0 + 20, banner_y), (x0 + w - 20, banner_y + 34),
+                      AMBER, 1)
+        _text(canvas, "FLOATING INPUTS - VALUES ARE ADC NOISE, NOT MEASUREMENTS",
+              (x0 + 34, banner_y + 23), 0.62, AMBER, 1)
+
+    grid_y = banner_y + 48
+    card_w = (w - 60) // 2
+    card_h = (h - (grid_y - y0) - 40) // 2
+    # the DI-188 has four channels; if more are configured, draw the first
+    # four rather than letting the grid overflow the panel
+    for i, ch in enumerate(snap.channels[:4]):
+        cx = x0 + 20 + (i % 2) * (card_w + 20)
+        cy = grid_y + (i // 2) * (card_h + 16)
+        floating = ch.state is not ChannelState.CONNECTED
+        col = AMBER if floating else GREEN
+        cv2.rectangle(canvas, (cx, cy), (cx + card_w, cy + card_h), (20, 20, 20), -1)
+        cv2.rectangle(canvas, (cx, cy), (cx + card_w, cy + card_h), col, 1)
+        _text(canvas, f"{ch.label}  {ch.terminal}", (cx + 16, cy + 30), 0.62, WHITE, 1)
+        badge = "FLOATING / NOISE" if floating else "CONNECTED"
+        _text(canvas, badge, (cx + 16, cy + 56), 0.55, col, 1)
+        counts = ch.stats.last if ch.stats.last is not None else 0.0
+        _text(canvas, f"{counts:+.1f}", (cx + 16, cy + 100), 0.95, WHITE, 2)
+        _text(canvas, "counts", (cx + 130, cy + 100), 0.5, DIM, 1)
+        if floating:
+            _text(canvas, "no source connected - not a measurement",
+                  (cx + 16, cy + 124), 0.44, AMBER, 1)
+        else:
+            volts = "n/a" if ch.volts is None else f"{ch.volts:+.4f} V"
+            _text(canvas, f"{volts}  ({ch.calibration_basis})",
+                  (cx + 16, cy + 124), 0.5, GREEN, 1)
+        _text(canvas, f"mean {ch.stats.mean:+.2f}   std {ch.stats.std:.2f}"
+                      f"   min {ch.stats.minimum if ch.stats.n else 0:+.1f}"
+                      f"   max {ch.stats.maximum if ch.stats.n else 0:+.1f}",
+              (cx + 16, cy + 148), 0.46, DIM, 1)
+        _spark(canvas, snap.series.get(ch.index, []), cx + 16, cy + 160,
+               card_w - 32, max(40, card_h - 176), col)
+
+
 def render(image: np.ndarray, st: HudState) -> np.ndarray:
     canvas = np.zeros((HUD_H, HUD_W, 3), np.uint8)
     view_w, view_h = HUD_W - PANEL_W, HUD_H - TOP_H
-    view, s, ox, oy = _letterbox(_apply_mode(image, st.mode), view_w, view_h)
-    oy += TOP_H
-    canvas[oy:oy + view.shape[0], ox:ox + view.shape[1]] = view
+    if st.mode == "ANALOG":
+        draw_analog_view(canvas, st.analog, 0, TOP_H, view_w, view_h)
+        view, s, ox, oy = None, 1.0, 0, TOP_H
+    else:
+        view, s, ox, oy = _letterbox(_apply_mode(image, st.mode), view_w, view_h)
+        oy += TOP_H
+        canvas[oy:oy + view.shape[0], ox:ox + view.shape[1]] = view
 
     # --- pose overlays (each carries its own provenance tag) ---------------
-    for m in st.poses:
+    for m in (st.poses if st.mode != "ANALOG" else []):
         kps = np.asarray(m.value["keypoints_xy"], float) * s + (ox, oy)
         kc = np.asarray(m.value["keypoint_conf"], float)
         col = GREEN if m.sensor != "synthetic" else AMBER

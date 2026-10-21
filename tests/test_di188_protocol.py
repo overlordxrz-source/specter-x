@@ -24,6 +24,10 @@ class FakeSerial:
         self.baudrate = 0
         self.closed = False
 
+    @property
+    def in_waiting(self):
+        return len(self.buf)
+
     # -- pyserial-ish API -------------------------------------------------
     def write(self, data):
         self.written += data
@@ -71,13 +75,15 @@ def make_driver(responses=None, frame_values=None):
     dev.ser = FakeSerial(responses, frame_values)
     dev.identity = DI188Identity(port="/dev/fake")
     # fast drain: return whatever is buffered instead of waiting out the timeout
-    def fast_drain(self, seconds):
+    def fast_drain(self, seconds, stop_when=None):
         out = b""
         while True:
             chunk = self.ser.read(4096)
             if not chunk:
                 break
             out += chunk
+            if stop_when is not None and stop_when(out):
+                break
         return out
     dev._drain = fast_drain.__get__(dev)
     return dev

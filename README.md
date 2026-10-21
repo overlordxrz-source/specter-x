@@ -35,7 +35,7 @@ health records, so nothing unsourced reaches the screen (every overlay prints
 | UWB ranging | UWB Click (MIKROE-4199, Qorvo DW1000), mikroBUS socket 1 | SPI `spi0.0` | 4b |
 | GNSS | GNSS 7 Click (MIKROE-3922, u-blox NEO-M9N, UBX+NMEA) socket 2 | UART `/dev/serial0` @38400 / PPS `GPIO18` | 4b |
 | Thermal (candidate) | Meridian SenXor 160x120 EVK (~90 deg) — driver UNVERIFIED until hardware arrives | USB (`pysenxor-lite`) | 4b |
-| Analog DAQ | DATAQ DI-188 — 4-ch ±10 V differential, 12-bit, open-source firmware | USB CDC-ACM (`/dev/cu.usbmodem*`) | 5 |
+| Analog DAQ | DATAQ DI-188 — 4-ch ±10 V differential, 12-bit, open-source firmware | USB CDC-ACM (`/dev/cu.usbmodem*`) | 5 (Alpha 001) |
 | Accelerator | Hailo-8L (optional) | PCIe (M.2 HAT) | 5 |
 
 Pin/bus assignments live in `specter/hw/pinmap.yaml` (socket 1 = UWB, socket 2 = GNSS,
@@ -109,9 +109,23 @@ python3 tools/di188.py stability     # 30-minute link stability report
 python3 tools/di188.py calibrate     # two-point calibration vs a known reference
 ```
 
-Provenance rules hold here too: an input with no declared source is reported
-as **FLOATING / NOISE**, never as a measurement, and volt values are labelled
-`UNCALIBRATED (nominal)` until they are fitted against a real reference.
+### Alpha 001 — the DAQ inside SPECTER-X
+
+The DAQ is now a first-class sensor: it produces provenance-tagged
+`Measurement`s that reach the HUD and the JSONL session log.
+
+```bash
+python -m specter.app --source synthetic --daq di188 --mode ANALOG \
+    --frames 400 --min-seconds 12 --headless --save-frame docs/alpha001/app.png
+```
+
+`--mode ANALOG` shows the four channels with their state. A channel with
+nothing plugged in is badged **FLOATING / NOISE**, carries no volt value and
+is never counted as a measurement — while the health row still reports the
+instrument as `OK`, because the instrument is fine and the input is not.
+Measurements are logged at ~1 Hz, not per ADC sample.
+
+Evidence: [`docs/checkpoints/002-alpha001-daq-end-to-end.md`](docs/checkpoints/002-alpha001-daq-end-to-end.md).
 Wiring, terminal map and the safe first-measurement procedure:
 [`docs/di188-wiring.md`](docs/di188-wiring.md). Progress log:
 [`docs/checkpoints/001-hardware-di188.md`](docs/checkpoints/001-hardware-di188.md).
@@ -256,6 +270,7 @@ Events in Stage 1: `session_start`, `pose_acquired` (3 consecutive frames with a
 - LWIR thermal sees surface temperature, not through things: it does **not** see through walls, glass, or much beyond thin fabric. Anyone claiming otherwise is selling something.
 - Radar (60 GHz) and Wi-Fi CSI cover presence and motion where optics can't, including through interior walls — that is why this device has them instead of a bigger thermal sensor.
 - Synthetic mode is a test pattern for development and CI. It proves the pipeline runs, not that any sensor works.
+- The DI-188 panel currently shows **floating-input noise**: the instrument streams for real, but nothing is plugged into the four analog inputs and no reference source has been applied. Those traces are ADC noise, not measurements, and the HUD says so on every channel.
 - UWB ranging needs line-of-sight for its ~10 cm accuracy; NLOS measurements are flagged and de-weighted, not hidden.
 - GNSS fails indoors — the HUD says `POSE: REL` there and shows growing uncertainty instead of a confident dot.
 - The SenXor thermal path is UNVERIFIED until the EVK is checked against a reference target.

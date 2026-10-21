@@ -163,10 +163,18 @@ class Sample:
 
 
 def find_serial_ports() -> List[str]:
-    """Candidate DI-188 CDC-ACM nodes on macOS."""
+    """Candidate CDC-ACM nodes, on macOS and Linux.
+
+    The instrument has been exercised on macOS only, but the discovery is
+    not macOS-specific: Linux exposes CDC-ACM devices as ``/dev/ttyACM*`` and
+    offers stable ``/dev/serial/by-id`` names, which are preferred because
+    they survive re-plugging.
+    """
     out: List[str] = []
+    out.extend(sorted(glob.glob("/dev/serial/by-id/*")))
     for pattern in ("/dev/cu.usbmodem*", "/dev/cu.usbserial*", "/dev/cu.SLAB_USBtoUART*",
-                    "/dev/cu.usb-FTDI*", "/dev/cu.wchusbserial*", "/dev/tty.usbmodem*"):
+                    "/dev/cu.usb-FTDI*", "/dev/cu.wchusbserial*", "/dev/tty.usbmodem*",
+                    "/dev/ttyACM*", "/dev/ttyUSB*"):
         out.extend(sorted(glob.glob(pattern)))
     seen, uniq = set(), []
     for p in out:
@@ -293,16 +301,36 @@ class DI188Driver:
             raise DI188Error("driver is not open")
         return self.ser
 
-    def _drain(self, seconds: float) -> bytes:
+    def _read_available(self) -> bytes:
+        """Read whatever is already buffered, without blocking.
+
+        ``Serial.read(n)`` waits for n bytes or for the full port timeout, so
+        asking for more than has arrived blocks for a whole second. Only ever
+        asking for what is buffered keeps every read non-blocking.
+        """
         s = self._require()
+        waiting = s.in_waiting
+        if not waiting:
+            return b""
+        return s.read(waiting)
+
+    def _drain(self, seconds: float, stop_when=None) -> bytes:
+        """Read for up to ``seconds``.
+
+        ``stop_when`` is called with the accumulated bytes and lets a caller
+        finish early once it has everything it needs - the instrument answers
+        in milliseconds, so waiting out the full timeout is wasted time.
+        """
         end = time.time() + seconds
         buf = bytearray()
         while time.time() < end:
-            chunk = s.read(4096)
+            chunk = self._read_available()
             if chunk:
                 buf += chunk
+                if stop_when is not None and stop_when(bytes(buf)):
+                    break
             else:
-                time.sleep(0.005)
+                time.sleep(0.002)
         return bytes(buf)
 
     def command(self, cmd: str, wait: float = 0.6, echo: bool = True) -> str:
@@ -311,12 +339,33 @@ class DI188Driver:
         The instrument echoes every typed character while idle, so the echo is
         stripped here. While scanning, the instrument does not echo and
         ``echo`` must be False.
+
+        The reply is read until it is *complete* rather than for a fixed
+        window: the instrument terminates a response with CR, and the bare
+        ``stop`` reply has no terminator at all, so a few milliseconds of
+        silence also ends the reply. That is both faster and far less flaky
+        than guessing a timeout.
         """
         s = self._require()
         s.reset_input_buffer()
         s.write((cmd + "\r\n").encode())
         s.flush()
-        raw = self._drain(wait).decode("utf-8", "replace")
+        deadline = time.time() + wait
+        buf = b""
+        idle = 0
+        while time.time() < deadline:
+            chunk = self._read_available()
+            if chunk:
+                buf += chunk
+                idle = 0
+                if b"\r" in buf:
+                    break
+            else:
+                idle += 1
+                if buf and idle >= 3:
+                    break
+                time.sleep(0.002)
+        raw = buf.decode("utf-8", "replace")
         if echo:
             # The instrument echoes every typed character (except the CR) as
             # they arrive, so the raw reply starts with the command text and
@@ -333,8 +382,11 @@ class DI188Driver:
         ident = self.identity
 
         def once(cmd: str) -> str:
-            body = self.command(cmd, wait=0.4)
-            return body.split()[-1] if body else ""
+            for _ in range(3):
+                body = self.command(cmd, wait=0.3)
+                if body:
+                    return body.split()[-1]
+            return ""
 
         ident.vendor_tag = once("info 0")
         ident.model = once("info 1")
@@ -357,7 +409,11 @@ class DI188Driver:
         s.reset_input_buffer()
         s.write(b"readflash\r\n")
         s.flush()
-        raw = self._drain(2.5).decode("utf-8", "replace")
+        raw = self._drain(
+            2.5,
+            stop_when=lambda b: len(re.findall(r"-?\d+", b.decode("utf-8", "replace")))
+            >= _FLASH_LEN,
+        ).decode("utf-8", "replace")
         if raw.startswith("readflash"):
             raw = raw[len("readflash"):]
         nums = [int(x) for x in re.findall(r"-?\d+", raw)]
@@ -392,7 +448,7 @@ class DI188Driver:
             s = self._require()
             s.write(b"stop\r\n")
             s.flush()
-            self._drain(0.25)
+            self._drain(0.15)
         finally:
             self._streaming = False
 
@@ -401,13 +457,13 @@ class DI188Driver:
         if not channels:
             raise DI188Error("no channels requested")
         self.stop()
-        self.command("eol 0", wait=0.3)        # CR terminator
-        self.command("encode 1", wait=0.3)     # ASCII output mode
-        self.command(f"slist 0 {channels[0]}", wait=0.25)
+        self.command("eol 0", wait=0.12)        # CR terminator
+        self.command("encode 1", wait=0.12)     # ASCII output mode
+        self.command(f"slist 0 {channels[0]}", wait=0.12)
         for pos, ch in enumerate(channels[1:], start=1):
-            self.command(f"slist {pos} {ch}", wait=0.25)
-        self.command(f"srate {rate:g}", wait=0.4)
-        true_rate = self.command("srate", wait=0.4)   # no-arg form reports realised rate
+            self.command(f"slist {pos} {ch}", wait=0.12)
+        self.command(f"srate {rate:g}", wait=0.2)
+        true_rate = self.command("srate", wait=0.2)   # no-arg form reports realised rate
         m = re.search(r"(\d+(?:\.\d+)?)", true_rate)
         return float(m.group(1)) if m else float(rate)
 
@@ -462,7 +518,7 @@ class DI188Driver:
         index = 0
         last_byte = time.time()
         while True:
-            chunk = s.read(8192)
+            chunk = self._read_available()
             now = time.time()
             if chunk:
                 last_byte = now
