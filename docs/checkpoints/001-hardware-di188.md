@@ -1,10 +1,12 @@
 # SPECTER-X hardware checkpoint 001 — DI-188 USB DAQ
 
 **Date:** 2026-10-21
-**Status:** device detected, protocol verified, live acquisition working.
+**Status:** device detected, protocol verified, live acquisition working,
+30-minute stability soak passed with zero frame loss.
 **Hardware connected:** DATAQ DI-188 (open-source DI-188 firmware) on a Seeed
 XIAO M0 / SAMD21, over USB CDC-ACM.
 **Analog inputs:** none connected — all four channels are floating.
+**Branch:** `feature/di188-usb-daq`
 
 ---
 
@@ -107,6 +109,64 @@ second on a link that was in fact losing nothing. The metric now reports
 
 ---
 
+### 1.7 30-minute stability soak — final result
+
+Run: 2026-10-21 17:52:51 → 18:23:02 UTC, 500 Hz, channels 0–3, USB CDC-ACM.
+Raw report committed alongside this file as
+[`001-hardware-di188-stability.json`](001-hardware-di188-stability.json).
+
+| Metric | Value |
+|---|---|
+| Duration | 1801.3 s (30.0 min) |
+| Requested / realised rate | 500 / 500 Hz |
+| **Achieved rate** | **500.2413 Hz (+0.048 %)** |
+| Frames received | **901 080** |
+| Frames expected | 900 645 |
+| **Frame shortfall** | **0 (0.0000 %)** |
+| Stalls (> 5 s) | 0 (worst 0.000 s) |
+| Arrival bursts (> 10x median) | 4 752, worst 1.099 s — host-side batching, no loss |
+| Arrival interval | median 0.002 ms, p95 0.004 ms, max 1099.043 ms |
+| Malformed lines | 0 |
+| Serial errors / disconnects | 0 / 0 |
+| **Verdict** | **NO FRAME LOSS — PASS** |
+
+Two things this settles:
+
+* **The link is sound.** 901 080 frames with not one lost, malformed or
+  dropped in half an hour, at four channels and 500 Hz.
+* **The "~1 % shortfall" seen in short runs was the device's clock, not
+  loss.** Early in a run the cumulative rate read 496 Hz; over the full
+  30 minutes it settled at 500.24 Hz — slightly *above* nominal. The
+  instrument derives its advertised rate from a nominal timer constant
+  (8000 burst/s) while the SAMD21 paces the ADC from its internal 48 MHz RC
+  oscillator, which drifts. The effect is a slowly varying rate, not a
+  constant loss fraction — which is exactly what the per-window rate spread
+  (0.745 %) is there to distinguish.
+
+### 1.8 Grounding instructions re-verified against the schematic
+
+`docs/di188-wiring.md` was corrected after reading `DI-188 Schematic.pdf`
+directly:
+
+* The **8-position strip carries no GND** — J1's eight pins map to
+  AIN0…AIN7 only. This was already stated; it is now backed by the schematic.
+* The board's only ground points are the **XIAO GND pin 13** (tied to the
+  board ground through **R21 = 10 Ω**) and **pin 4 of each Grove connector**
+  (J2 I2C, J3 I2C, J4 UART). Both need extra hardware: the XIAO is a
+  castellated module whose pads are on the underside, and the manual states
+  the Grove connectors must be *"order and install the connector yourself"*.
+* **The USB-C shell was removed** from the grounding guidance — it is not a
+  signal-ground point in this schematic.
+* The input nodes have **no DC path to ground** (only 100 pF capacitors), so
+  a floating input drifts. That is the physical reason all four channels
+  currently read noise rather than a stable zero.
+* The ±30 V input protection comes from the **1 MΩ series resistors** plus the
+  amplifier's own clamp diodes — no external clamp network is drawn.
+
+Consequence: the first hookup is now explicitly documented as a
+**channel-response smoke test, not a measurement**, because with no ground
+reference the common mode is undefined.
+
 ## 2. What was built
 
 | Path | What |
@@ -147,9 +207,10 @@ The repo rule is *provenance first*. Concretely, in this subsystem:
 ## 4. Hardware facts and caveats
 
 * **Terminal strip:** 8-position screw block, silkscreened
-  `+CH1 −CH1 +CH2 −CH2 +CH3 −CH3 +CH4 −CH4` (landscape) or
-  `+CH1 +CH2 +CH3 +CH4` / `−CH1 −CH2 −CH3 −CH4` (portrait). **No GND terminal**
-  — a ground reference must come from elsewhere on the board.
+  `+CH1 −CH1 +CH2 −CH2 +CH3 −CH3 +CH4 −CH4` (landscape) or the same linear
+  order running down the block (portrait). **No GND terminal** — the board's
+  only grounds are the XIAO GND pad (underside) and the Grove connectors'
+  pin 4, both needing extra hardware. See §1.8.
 * **Specs:** 4 differential channels, ±10 V fixed full scale, 1 MΩ input
   impedance, protected to ±30 V, 12-bit (2047/2048 counts), 7.8 mV rms system
   noise, ±50 mV typical accuracy, 8/4/2 kHz max rate for 1/2/4 channels.
@@ -163,14 +224,35 @@ The repo rule is *provenance first*. Concretely, in this subsystem:
 
 ---
 
-## 5. Open items
+## 5. Open items and remaining limitations
 
-| # | Item | Blocked by |
-|---|---|---|
-| 1 | Physical wiring + first signal | no jumper wires, meter or test source |
-| 2 | Two-point calibration | needs a reference source with a DMM reading |
-| 3 | 30-minute stability run | none — runnable now |
-| 4 | Confirm DI-188 PCB vs bare XIAO | physical inspection |
+| # | Item | Blocked by | Status |
+|---|---|---|---|
+| 1 | Physical wiring + first signal | no jumper wires, meter or test source | **open** — software-side checks only |
+| 2 | Two-point calibration | needs a reference source with a DMM reading **and** a ground reference | **open** |
+| 3 | 30-minute stability run | — | **done** — 901 080 frames, 0 lost, 0 malformed, 0 errors (§1.7) |
+| 4 | Confirm DI-188 PCB vs bare XIAO | physical inspection (blue 8-way screw block) | **open** |
+| 5 | Quantify the common-mode budget | needs a ground reference; the strip has no GND | **open** |
+
+### Limitations that remain, stated plainly
+
+* **Nothing has been measured yet.** Every number the software has produced
+  comes from a floating input and is ADC noise. The instrument is detected,
+  identified, streaming and stable — but it has not yet measured a *signal*.
+* **The volt scale is unproven.** `UNCALIBRATED (nominal)` assumes the ±10 V
+  datasheet mapping. It is right only if this board has the DI-188 front end.
+* **The instrument carries no DATAQ calibration** — key `0123456789ABCDEF` and
+  calibration date `6214F19E` are the open-source firmware's own defaults, so
+  its counts are device-calibrated but its volt scale is uncorrected.
+* **Frame accounting cannot be made exact in ASCII mode.** There are no
+  sequence numbers, and because macOS delivers CDC-ACM data in ~1 s bursts the
+  host timestamps cannot resolve frame timing either. The 30-minute run shows
+  no loss, but proving "no loss" in general would need binary mode and the
+  WinDaq sync bits.
+* **The dashboard is a browser page, not the OpenCV HUD.** It is a macOS bench
+  tool; integrating it into the Pi HUD is not done.
+* **Only one instrument model is supported.** The DI-2008/2108/4108 family
+  needs a LibUSB→CDC mode switch first and a different command set.
 
 ---
 
