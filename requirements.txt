@@ -1,5 +1,7 @@
 # Desktop / Mac. On the Pi, use requirements-pi.txt (OpenCV + picamera2 from apt).
 numpy>=1.24
+# DI-188 USB DAQ (CDC-ACM serial)
+pyserial>=3.5
 opencv-python>=4.8
 pytest>=7
 # optional pose:

@@ -12,6 +12,8 @@ dependencies = ["numpy>=1.24", "opencv-python>=4.8"]
 [project.optional-dependencies]
 pose = ["ultralytics>=8.3"]
 dev = ["pytest>=7"]
+# DI-188 USB DAQ (CDC-ACM serial)
+daq = ["pyserial>=3.5"]
 # On the Pi, picamera2 comes from apt (python3-picamera2), not pip.
 
 [project.scripts]

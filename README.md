@@ -35,6 +35,7 @@ health records, so nothing unsourced reaches the screen (every overlay prints
 | UWB ranging | UWB Click (MIKROE-4199, Qorvo DW1000), mikroBUS socket 1 | SPI `spi0.0` | 4b |
 | GNSS | GNSS 7 Click (MIKROE-3922, u-blox NEO-M9N, UBX+NMEA) socket 2 | UART `/dev/serial0` @38400 / PPS `GPIO18` | 4b |
 | Thermal (candidate) | Meridian SenXor 160x120 EVK (~90 deg) — driver UNVERIFIED until hardware arrives | USB (`pysenxor-lite`) | 4b |
+| Analog DAQ | DATAQ DI-188 — 4-ch ±10 V differential, 12-bit, open-source firmware | USB CDC-ACM (`/dev/cu.usbmodem*`) | 5 |
 | Accelerator | Hailo-8L (optional) | PCIe (M.2 HAT) | 5 |
 
 Pin/bus assignments live in `specter/hw/pinmap.yaml` (socket 1 = UWB, socket 2 = GNSS,
@@ -71,6 +72,9 @@ specter/
     uwb/dw1000.py            DS-TWR ranging + two-unit simulator
     experimental/            event/acoustic/vitals/VLM/LoRa/gas stubs + sims
     wifi_csi/                stage 3 placeholder
+    di188/                   DATAQ DI-188 USB DAQ: protocol driver, calibration,
+                             stats, CSV recorder, stability harness, dashboard
+  calibration/di188.json     DI-188 counts->volts calibration (optional)
   localization/ekf.py        per-unit EKF: IMU predict, GNSS anchor, UWB ranges
   net/                       signed UDP-multicast team link (heartbeat/pose/track/alert)
   sim/team.py                CI demo: python -m specter.sim.team --units 2
@@ -84,8 +88,33 @@ specter/
   hud/renderer.py            OpenCV 1280x800 HUD
   hud/team_overlay.py        teammates, peer tracks, mini-map, pose badge
 events/sessions/             one <session>.jsonl per run
+tools/di188.py               DI-188 CLI: probe | monitor | dashboard | record |
+                             stability | calibrate
 tests/                       pytest suite (projection, serialisation, smoke run, team)
 ```
+
+## DI-188 USB DAQ (stage 5, macOS bench tool)
+
+A DATAQ DI-188 — 4 differential ±10 V channels, 12-bit — is attached over USB
+CDC-ACM. It needs **no driver and no kext**; it appears as
+`/dev/cu.usbmodemXXXX`. The driver speaks the published DI-188 ASCII protocol
+and never flashes firmware.
+
+```bash
+python3 tools/di188.py probe         # identity + the instrument's own calibration
+python3 tools/di188.py monitor       # live statistics in the terminal
+python3 tools/di188.py dashboard     # real-time dashboard at http://127.0.0.1:8765/
+python3 tools/di188.py record        # CSV with a provenance header
+python3 tools/di188.py stability     # 30-minute link stability report
+python3 tools/di188.py calibrate     # two-point calibration vs a known reference
+```
+
+Provenance rules hold here too: an input with no declared source is reported
+as **FLOATING / NOISE**, never as a measurement, and volt values are labelled
+`UNCALIBRATED (nominal)` until they are fitted against a real reference.
+Wiring, terminal map and the safe first-measurement procedure:
+[`docs/di188-wiring.md`](docs/di188-wiring.md). Progress log:
+[`docs/checkpoints/001-hardware-di188.md`](docs/checkpoints/001-hardware-di188.md).
 
 ## Team data flow (Stage 4b)
 

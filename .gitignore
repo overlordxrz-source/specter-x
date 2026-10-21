@@ -7,3 +7,8 @@ events/sessions/*.jsonl
 *.pt
 *.hef
 firmware/esp32-csi/build/
+
+# DI-188 acquisition artefacts
+runs/
+di188_*.csv
+di188_recording.csv
