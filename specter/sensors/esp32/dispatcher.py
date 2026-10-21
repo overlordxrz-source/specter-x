@@ -131,6 +131,7 @@ class CsiParser:
     """
 
     def __init__(self):
+        self.first_seq: Optional[int] = None
         self.last_seq: Optional[int] = None
         self.gaps = 0
         self.missing = 0
@@ -169,6 +170,8 @@ class CsiParser:
                 except ValueError:
                     raise ValueError("IQ blob is not numeric") from None
 
+        if self.first_seq is None:
+            self.first_seq = seq
         if self.last_seq is not None and seq != self.last_seq + 1:
             self.gaps += 1
             if seq > self.last_seq:
@@ -284,6 +287,7 @@ class SerialDispatcher:
             data["csi_queued"] = len(self.csi)
             data["supervisor_queued"] = len(self.supervisor)
             data["csi_last_seq"] = self.csi_parser.last_seq
+            data["csi_first_seq"] = self.csi_parser.first_seq
             return data
 
 

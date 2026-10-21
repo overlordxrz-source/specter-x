@@ -168,10 +168,25 @@ stale bytes in the host's buffer that corrupt the next connection.
 | File | Region | Size | SHA-256 |
 |---|---|---|---|
 | `~/Downloads/esp32s3-csi-image-0x0-0x110000.bin` | `0x0`–`0x110000` (bootloader + partition table + the CSI app) | 1 114 112 B | `c99b6ab650d0ad4310c65fd4cd07dec8ee2429a2e73987b52458853d83b50833` |
-| `~/Downloads/esp32s3-csi-flash-backup-20261021-full.bin` | the whole 16 MB | 16 777 216 B | (in progress at the time of writing) |
+| `~/Downloads/esp32s3-csi-flash-backup-20261021-full.bin` | the whole 16 MB | **16 777 216 B** | **`51ae09689e19217aa52ff7d136313d2354345f9faf42ec50ee75324e602458f0`** |
 
-The meaningful image was read in nine 128 KB chunks, **all on the first
-attempt**. The full-flash backup is being read the same way.
+The full-flash backup was read as **128 chunks of 128 KB, every one of them
+succeeding on the first attempt** over the UART bridge.
+
+### Read-back integrity: **MATCH**
+
+A fresh 16 KB read of `0x10000` (the start of the app partition) was taken
+after the backup and compared with the same region of the backup file:
+
+```
+full image  : 16777216 bytes  sha256 51ae09689e19217aa52ff7d136313d2354345f9faf42ec50ee75324e602458f0
+re-read     :     16384 bytes  sha256 21644cad048995a73ed9295494e3c7f7424cd3e0b43bd9f8a34889759f5bb31c
+from backup :     16384 bytes  sha256 21644cad048995a73ed9295494e3c7f7424cd3e0b43bd9f8a34889759f5bb31c
+READ-BACK MATCH
+```
+
+The backup is therefore a faithful copy of the device's flash and can be
+written back verbatim.
 
 ### Restore procedure (not executed — it is a write)
 
@@ -191,8 +206,8 @@ change recoverable.
 
 ### Backup integrity
 
-A read-back verification (re-read a region and compare byte-for-byte with the
-backup) is recorded in §7.
+Verified by read-back: a fresh 16 KB read of the app partition matches the
+backup byte-for-byte (see §4). **The flash can be backed up and restored.**
 
 ---
 

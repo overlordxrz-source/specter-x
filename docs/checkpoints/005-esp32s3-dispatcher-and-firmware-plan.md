@@ -157,13 +157,44 @@ and the report records the outage so it can be compared against a manual
 reset. It exits non-zero if packets went missing.
 
 ```bash
-python3 tools/esp32_csi_baseline.py --seconds 60 --rate 120 --out runs/csi_baseline.json
+python3 tools/esp32_csi_baseline.py --seconds 60 --rate 100 --out runs/csi_baseline.json
 ```
 
-The baseline could not be run to completion during this checkpoint because the
-flash backup holds the board in a reset loop (esptool hard-resets the chip
-after every 128 KB chunk, so the CSI stream is absent between chunks). It must
-be run with the board idle.
+### Measured baseline (2026-10-21, board idle, 60 s window)
+
+```
+port                     /dev/cu.usbmodem1101
+packets                  10690          (178.15 packets/s)
+link throughput          81124.8 B/s    (IQ values: 524288)
+sequence                 first_id 37222, last_id 47911
+gaps                     0
+missing packets          0
+arrival interval         median 5.203 ms, p95 8.022 ms, max 68.321 ms
+device interval          median 5218 us, p95 14922 us
+outages (>1 s silent)    0
+malformed lines          0
+unknown lines            1   (the truncated final line of the read)
+queue dropped            6594 (the bounded CSI queue, capacity 4096)
+```
+
+Readings:
+
+* **The link is stable.** 10 690 packets in 60 s with **zero sequence gaps and
+  zero missing packets**, and not one second of silence. The `id` counter is
+  provably consecutive across the whole window.
+* The device's own cadence is ~5.2 ms per packet (≈192 packets/s); the host
+  sees ~178 packets/s, the difference being the USB link's batching.
+* The largest arrival gap was 68 ms — the CDC link delivers in bursts, and
+  the *count* is unaffected.
+* **The upstream CSV header is not printed on the wire** (`headers_seen: 0`),
+  so the dispatcher must rely on its built-in field names. Good to know: the
+  header exists in the binary but the example does not emit it here.
+* The bounded queue dropped 6 594 records during the run — which is the
+  dispatcher behaving as designed (the consumer is slower than 178 packets/s),
+  and the counters still account for every packet.
+
+A baseline of **178 packets/s with zero loss and zero outages** is now the
+reference to compare against after any firmware change.
 
 ---
 
@@ -270,15 +301,19 @@ for reading.** No step depends on the native USB link that has been failing.
    equality.
 3. **`ets_printf` tearing** between the CSI callback and the supervisor task
    is possible and is accepted by the minimal change (§4).
-4. **The CSI baseline could not be run** while the backup held the board in a
-   reset loop. It must be re-run on an idle board.
+4. **The full-flash backup is done and verified** — 16 777 216 B, SHA-256
+   `51ae09689e19217aa52ff7d136313d2354345f9faf42ec50ee75324e602458f0`, and a
+   fresh read-back of the app partition matches it byte-for-byte. The
+   baseline has been measured on the idle board: **178 packets/s, 0 gaps, 0
+   missing packets, 0 outages in 60 s** (§3).
 5. **The DI-188 is still disconnected**, so its 1200-baud-touch hypothesis
    remains untested.
 6. **UART0's binary stream is unexplained** — not the CSI format, not
    ESP-IDF logs, origin unknown. It is not usable as a second channel, but it
    is not understood either.
-7. **The full-flash backup is still running**; its hash and the read-back
-   verification land with it.
+7. **The dispatcher is not yet wired into the app** (§2). The app still runs
+   the standalone `SupervisorSource` with its own reader, because two readers
+   on one CDC node would fight. The next step is one reader, two consumers.
 
 ---
 

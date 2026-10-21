@@ -91,20 +91,22 @@ def run(port: Optional[str], seconds: float, rate_hz: float) -> dict:
     device_intervals = [device_ts[i] - device_ts[i - 1] for i in range(1, len(device_ts))]
 
     bytes_total = counters.get("bytes", 0)
+    # the bounded queue may have dropped records, so the authoritative count is
+    # the parser's, not the queue depth
+    parsed = counters.get("csi_parsed", 0)
     report = {
         "port": port,
         "window_s": round(elapsed, 3),
         "throughput": {
-            "packets": len(records),
-            "packets_per_s": round(len(records) / elapsed, 2) if elapsed else 0.0,
+            "packets": parsed,
+            "packets_per_s": round(parsed / elapsed, 2) if elapsed else 0.0,
             "bytes_per_s": round(bytes_total / elapsed, 1) if elapsed else 0.0,
-            "csi_bytes_per_s": round(
-                sum(len(str(r.fields.get("data", ""))) for r in records) / elapsed, 1)
-            if elapsed else 0.0,
+            "csi_iq_values": sum(len(r.iq) for r in records),
+            "queue_dropped": counters.get("csi_dropped", 0),
         },
         "sequence": {
-            "first_id": records[0].seq if records else None,
-            "last_id": records[-1].seq if records else None,
+            "first_id": counters.get("csi_first_seq"),
+            "last_id": counters.get("csi_last_seq"),
             "gaps": counters.get("csi_sequence_gaps", 0),
             "missing_packets": counters.get("csi_missing_packets", 0),
         },
