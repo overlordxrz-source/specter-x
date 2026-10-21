@@ -30,7 +30,8 @@ from specter.fusion.measurement import Measurement, Provenance
 from specter.sensors.base import Health, SensorStatus
 
 from .calibration import CalibrationSet
-from .driver import DI188Driver, DI188Error, find_serial_ports
+from .driver import (DI188Driver, DI188Error, find_di188_ports, find_serial_ports,
+                     probe_di188_port)
 from .stats import ChannelMonitor, ChannelReport, ChannelSpec, ChannelState, default_specs
 
 #: Source key used in SENSOR_LABELS / Provenance.source.
@@ -44,6 +45,7 @@ class DeviceState(str, Enum):
 
     CONNECTED = "CONNECTED"
     CONNECTING = "CONNECTING"
+    SILENT = "SILENT"
     ABSENT = "ABSENT"
     BUSY = "BUSY"
     ERROR = "ERROR"
@@ -54,6 +56,7 @@ class DeviceState(str, Enum):
             DeviceState.CONNECTED: Health.OK,
             DeviceState.CONNECTING: Health.DEGRADED,
             DeviceState.BUSY: Health.DEGRADED,
+            DeviceState.SILENT: Health.OFFLINE,
             DeviceState.ABSENT: Health.NOT_INSTALLED,
             DeviceState.ERROR: Health.OFFLINE,
         }[self]
@@ -121,18 +124,24 @@ class AnalogSource:
     def __init__(self, port: Optional[str] = None, channels: Sequence[int] = (0, 1, 2, 3),
                  rate: float = 100.0, specs: Optional[Sequence[ChannelSpec]] = None,
                  calibration: Optional[CalibrationSet] = None,
-                 log_interval: float = 1.0, history: int = 240):
+                 log_interval: float = 1.0, history: int = 240,
+                 probe_candidates: bool = False,
+                 stall_timeout: Optional[float] = None):
         self.port = port
         self.channels = list(channels)
         self.rate = rate
         self.log_interval = log_interval
         self.history = history
+        self.probe_candidates = probe_candidates
+        self.stall_timeout = stall_timeout
         self.specs = list(specs) if specs else default_specs(max(self.channels) + 1)
         self.calibration = calibration   # None -> derived from the instrument
 
         self._lock = threading.Lock()
         self._thread: Optional[threading.Thread] = None
         self._stop = threading.Event()
+        self._cancel = threading.Event()
+        self._driver: Optional[DI188Driver] = None
         self._device = DeviceState.ABSENT
         self._detail = "not started"
         self._model = ""
@@ -157,12 +166,17 @@ class AnalogSource:
         return self
 
     def stop(self, timeout: float = 2.0) -> None:
+        """Stop acquisition and **always** release the serial port."""
         self._stop.set()
+        self._cancel.set()
         thread = self._thread
         if thread is not None and thread.is_alive():
             thread.join(timeout=timeout)
-        # only clear the handle once the thread is down, so a start() right
-        # after a stop() cannot leave two acquisition threads running
+        if thread is not None and thread.is_alive():
+            driver = self._driver
+            if driver is not None:
+                driver.force_close()
+            thread.join(timeout=timeout)
         if thread is not None and not thread.is_alive():
             self._thread = None
 
@@ -183,18 +197,38 @@ class AnalogSource:
     def _run(self) -> None:
         try:
             self._acquire()
+        except DI188Error as exc:
+            # the instrument stopped sending bytes - that is a dead link, not
+            # a configuration error
+            text = str(exc).lower()
+            state = DeviceState.SILENT if ("silent" in text or "no data" in text) \
+                else DeviceState.ERROR
+            self._set_device(state, str(exc))
         except Exception as exc:  # pragma: no cover - defensive
             self._set_device(DeviceState.ERROR, f"{type(exc).__name__}: {exc}")
 
+    def _select_port(self) -> Optional[str]:
+        """Pick the serial node that really is the DAQ."""
+        matched = find_di188_ports()
+        if matched:
+            return matched[0]
+        if not self.probe_candidates:
+            return None
+        for cand in find_serial_ports():
+            if probe_di188_port(cand):
+                return cand
+        return None
+
     def _acquire(self) -> None:
-        ports = find_serial_ports()
-        if not ports:
-            self._set_device(DeviceState.ABSENT, "no DI-188 serial node found")
+        port = self.port or self._select_port()
+        if not port:
+            self._set_device(DeviceState.ABSENT, "no DI-188 found on USB")
             return
-        port = self.port or ports[0]
         self._set_device(DeviceState.CONNECTING, f"{port}: opening")
         try:
             driver = DI188Driver(port).open()
+            with self._lock:
+                self._driver = driver
         except DI188Error as exc:
             # the node exists but could not be opened: almost always another
             # process holds the port (the dashboard, the CLI, a soak run)
@@ -233,7 +267,10 @@ class AnalogSource:
                 self._port = ident.port
                 self._rate_real = realised
             driver.start()
-            for sample in driver.stream():
+            stall = self.stall_timeout
+            if stall is None:
+                stall = max(5.0, 10.0 / max(self.rate, 1.0))
+            for sample in driver.stream(stall_timeout=stall, cancel=self._cancel):
                 if self._stop.is_set():
                     break
                 with self._lock:
@@ -251,6 +288,9 @@ class AnalogSource:
                 driver.close()
             except Exception:
                 pass
+            with self._lock:
+                if self._driver is driver:
+                    self._driver = None
             if self._stop.is_set():
                 self._set_device(DeviceState.ABSENT, "stopped")
 

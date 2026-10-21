@@ -69,10 +69,15 @@ class FakeDriver:
     def close(self):
         self.stopped = True
 
-    def stream(self, max_frames=None, stall_timeout=None):
+    def force_close(self):
+        self.stopped = True
+
+    def stream(self, max_frames=None, stall_timeout=None, cancel=None):
         i = 0
         while max_frames is None or i < max_frames:
             if self.stopped:
+                return
+            if cancel is not None and cancel.is_set():
                 return
             yield Sample(t=i * 0.01, index=i, values=list(self._values[i % len(self._values)]),
                          host_time=time.time())
@@ -92,6 +97,8 @@ def fake_device(monkeypatch):
 
     monkeypatch.setattr(measure_mod, "DI188Driver", factory)
     monkeypatch.setattr(measure_mod, "find_serial_ports", lambda: ["/dev/fake"])
+    # discovery matches on the USB VID:PID of the DAQ
+    monkeypatch.setattr(measure_mod, "find_di188_ports", lambda: ["/dev/fake"])
     return created
 
 
@@ -108,6 +115,7 @@ def _wait_for(predicate, timeout=5.0):
 
 def test_absent_device_is_reported_not_crashed(monkeypatch):
     monkeypatch.setattr(measure_mod, "find_serial_ports", lambda: [])
+    monkeypatch.setattr(measure_mod, "find_di188_ports", lambda: [])
     src = AnalogSource(rate=100.0).start()
     try:
         assert _wait_for(lambda: src.snapshot(0).device_state is DeviceState.ABSENT)
@@ -125,6 +133,7 @@ def test_contended_port_is_reported_as_busy(monkeypatch):
         raise measure_mod.DI188Error(f"cannot open {port}: Resource busy")
     monkeypatch.setattr(measure_mod, "DI188Driver", boom)
     monkeypatch.setattr(measure_mod, "find_serial_ports", lambda: ["/dev/fake"])
+    monkeypatch.setattr(measure_mod, "find_di188_ports", lambda: ["/dev/fake"])
     src = AnalogSource(rate=100.0).start()
     try:
         assert _wait_for(lambda: src.snapshot(0).device_state is DeviceState.BUSY)
@@ -264,6 +273,7 @@ def test_hud_renders_floating_inputs_as_noise(fake_device):
 
 def test_hud_draws_nothing_invented_when_the_daq_is_absent(monkeypatch):
     monkeypatch.setattr(measure_mod, "find_serial_ports", lambda: [])
+    monkeypatch.setattr(measure_mod, "find_di188_ports", lambda: [])
     src = AnalogSource(rate=100.0).start()
     try:
         assert _wait_for(lambda: src.snapshot(0).device_state is DeviceState.ABSENT)

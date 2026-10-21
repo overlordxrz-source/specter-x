@@ -16,7 +16,7 @@ import pytest
 
 from specter.events.log import EventLog
 from specter.hud.renderer import HudState, render
-from specter.sensors.di188.driver import find_serial_ports
+from specter.sensors.di188.driver import find_di188_ports
 from specter.sensors.di188.measure import AnalogSource, DeviceState
 from specter.sensors.di188.stats import ChannelState
 
@@ -30,8 +30,8 @@ OUT = os.environ.get("SPECTER_ALPHA001_OUT", "docs/alpha001")
 RUNTIME_S = float(os.environ.get("SPECTER_ALPHA001_SECONDS", "6"))
 
 pytestmark = pytest.mark.skipif(
-    not HAVE_PYSERIAL or not find_serial_ports(),
-    reason="no DI-188 attached (this test needs the real instrument and pyserial)")
+    not HAVE_PYSERIAL or not find_di188_ports(),
+    reason="no DI-188 attached (needs the real instrument and pyserial)")
 
 
 def _wait_for(predicate, timeout=20.0):

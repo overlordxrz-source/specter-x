@@ -162,6 +162,96 @@ class Sample:
         return [float(v) for v in self.values]
 
 
+#: USB VID:PID of the Seeed XIAO M0 module the DI-188 is built on. The
+#: DI-188 and a bare XIAO M0 share it; both speak the DI-188 protocol.
+DI188_USB_VID = 0x2846
+DI188_USB_PID = 0x8037
+
+
+def serial_port_usb_ids() -> Dict[str, Dict]:
+    """Map every USB serial node to its USB identity (macOS, via IOKit).
+
+    Returns ``{callout_path: {product, vendor, vid, pid, serial}}``. This is
+    what lets discovery refuse to touch a device that is not the DAQ - an
+    ESP32 on the same hub, a GPS, a bootloader - instead of grabbing whichever
+    node happens to sort first.
+    """
+    out: Dict[str, Dict] = {}
+    try:
+        import plistlib
+        import subprocess
+        raw = subprocess.run(["ioreg", "-a", "-l"], capture_output=True,
+                             text=True, timeout=20).stdout
+        data = plistlib.loads(raw.encode())
+    except Exception:
+        return out
+
+    def walk(node, usb=None):
+        if not isinstance(node, dict):
+            return
+        if ("idVendor" in node and "idProduct" in node
+                and "USB Product Name" in node):
+            usb = node
+        callout = node.get("IOCalloutDevice")
+        if callout and usb:
+            out[callout] = {
+                "product": usb.get("USB Product Name") or "",
+                "vendor": usb.get("USB Vendor Name") or "",
+                "vid": usb["idVendor"],
+                "pid": usb["idProduct"],
+                "serial": usb.get("USB Serial Number") or "",
+            }
+        for child in (node.get("IORegistryEntryChildren") or []):
+            walk(child, usb)
+
+    walk(data)
+    return out
+
+
+def find_di188_ports(vid: int = DI188_USB_VID,
+                      pid: int = DI188_USB_PID) -> List[str]:
+    """Serial nodes whose USB identity matches the DI-188.
+
+    Filtering on the USB VID:PID is what stops discovery from selecting an
+    ESP32, a GPS or any other serial device that happens to be plugged in.
+    """
+    ids = serial_port_usb_ids()
+    matched = sorted(p for p, info in ids.items()
+                     if info["vid"] == vid and info["pid"] == pid)
+    return matched
+
+
+def probe_di188_port(port: str, timeout: float = 0.6) -> Optional[Dict]:
+    """Ask a serial node whether it speaks the DI-188 protocol.
+
+    Read-only: the only command sent is ``info 1``, and the node is closed
+    again immediately. Returns the identity when the node answers with a
+    model number, otherwise ``None`` - so an ESP32, a GPS or a silent device
+    is never mistaken for the DAQ.
+    """
+    try:
+        dev = DI188Driver(port, timeout=timeout)
+        dev.open()
+    except Exception:
+        return None
+    try:
+        body = dev.command("info 1", wait=timeout)
+        m = re.search(r"\b(\d{2,4})\b", body)
+        if not m:
+            return None
+        info = dev.identity.as_dict()
+        info["model"] = m.group(1)
+        info["model_name"] = f"DI-{m.group(1)}"
+        return info
+    except Exception:
+        return None
+    finally:
+        try:
+            dev.force_close()
+        except Exception:
+            pass
+
+
 def find_serial_ports() -> List[str]:
     """Candidate CDC-ACM nodes, on macOS and Linux.
 
@@ -274,6 +364,7 @@ class DI188Driver:
         return self
 
     def close(self) -> None:
+        """Close the port politely (asks the instrument to stop streaming)."""
         if self.ser is None:
             return
         try:
@@ -286,6 +377,22 @@ class DI188Driver:
         finally:
             self.ser = None
             self._streaming = False
+
+    def force_close(self) -> None:
+        """Drop the port without talking to the instrument.
+
+        Used to release a serial node whose reader is stuck: closing the
+        underlying file descriptor interrupts the blocked read, so the
+        acquisition thread can exit and the OS frees the node. It is the
+        escape hatch for an instrument that has stopped answering.
+        """
+        ser, self.ser = self.ser, None
+        self._streaming = False
+        if ser is not None:
+            try:
+                ser.close()
+            except Exception:
+                pass
 
     def __enter__(self):
         return self.open()
@@ -506,11 +613,21 @@ class DI188Driver:
     # -- streaming ---------------------------------------------------------
 
     def stream(self, max_frames: Optional[int] = None,
-               stall_timeout: Optional[float] = None) -> Iterator[Sample]:
+               stall_timeout: float = 5.0,
+               cancel=None) -> Iterator[Sample]:
         """Yield :class:`Sample` frames until stopped.
 
-        ``stall_timeout`` (seconds) aborts the iteration if no byte arrives
-        for that long - used by the stability harness to detect a dead link.
+        The iteration is **bounded on both sides**:
+
+        * ``stall_timeout`` (seconds, default 5) raises :class:`DI188Error`
+          if the instrument stops sending bytes. A silent device must not
+          turn into an endless wait.
+        * ``cancel`` may be a :class:`threading.Event`; when it is set the
+          generator returns promptly, whether or not a frame has arrived.
+
+        The cancel check happens on *every* loop iteration, not only when a
+        frame arrives - otherwise a device that has gone quiet would never
+        notice a shutdown request.
         """
         s = self._require()
         buf = b""
@@ -518,6 +635,8 @@ class DI188Driver:
         index = 0
         last_byte = time.time()
         while True:
+            if cancel is not None and cancel.is_set():
+                return
             chunk = self._read_available()
             now = time.time()
             if chunk:
@@ -540,7 +659,9 @@ class DI188Driver:
                     if max_frames is not None and index >= max_frames:
                         return
             else:
+                if cancel is not None and cancel.is_set():
+                    return
                 if stall_timeout is not None and (now - last_byte) > stall_timeout:
                     raise DI188Error(
-                        f"stream stalled for {now - last_byte:.1f}s (link likely dropped)")
+                        f"no data for {now - last_byte:.1f}s (instrument is silent)")
                 time.sleep(0.002)
