@@ -31,6 +31,7 @@ if REPO not in sys.path:
     sys.path.insert(0, REPO)
 
 from specter.sensors.esp32.dispatcher import SerialDispatcher
+from specter.sensors.esp32.diagnostics import collect_stall_evidence
 from specter.hw.usb import find_usb_serial_ports
 
 ESP32_USB_VID = 0x303A
@@ -45,7 +46,8 @@ def _percentile(values: List[float], pct: float) -> float:
     return ordered[idx]
 
 
-def run(port: Optional[str], seconds: float, rate_hz: float) -> dict:
+def run(port: Optional[str], seconds: float, rate_hz: float,
+        evidence: bool = False) -> dict:
     import serial
 
     if not port:
@@ -59,21 +61,31 @@ def run(port: Optional[str], seconds: float, rate_hz: float) -> dict:
     t_start = time.time()
     t_last_byte = t_start
     outages: List[dict] = []
+    arrived = 0
+    seen: List = []
     try:
         while time.time() - t_start < seconds:
             waiting = ser.in_waiting
             if waiting:
                 data = ser.read(waiting)
                 now = time.time()
-                if now - t_last_byte > 1.0 and not outages:
-                    pass
                 t_last_byte = now
                 dispatcher.feed(data)
+                # drain every iteration: the queue is a safety net, not a sink.
+                # Leaving it to fill would silently discard real packets and
+                # make the measured rate wrong.
+                recs = dispatcher.drain_csi()
+                if recs:
+                    arrived += len(recs)
+                    seen.extend(recs)
             else:
                 now = time.time()
-                if now - t_last_byte > 1.0:
-                    outages.append({"at_s": round(now - t_start, 3),
-                                    "silent_for_s": round(now - t_last_byte, 3)})
+                if now - t_last_byte > 1.0 and not outages:
+                    ev = {"at_s": round(now - t_start, 3),
+                          "silent_for_s": round(now - t_last_byte, 3)}
+                    if evidence:
+                        ev.update(collect_stall_evidence(now - t_last_byte))
+                    outages.append(ev)
                 time.sleep(0.002)
     finally:
         try:
@@ -83,7 +95,7 @@ def run(port: Optional[str], seconds: float, rate_hz: float) -> dict:
 
     elapsed = time.time() - t_start
     counters = dispatcher.snapshot()
-    records = dispatcher.csi.drain()
+    records = seen
 
     arrivals = [r.received_at for r in records]
     intervals = [arrivals[i] - arrivals[i - 1] for i in range(1, len(arrivals))]
@@ -91,9 +103,8 @@ def run(port: Optional[str], seconds: float, rate_hz: float) -> dict:
     device_intervals = [device_ts[i] - device_ts[i - 1] for i in range(1, len(device_ts))]
 
     bytes_total = counters.get("bytes", 0)
-    # the bounded queue may have dropped records, so the authoritative count is
-    # the parser's, not the queue depth
-    parsed = counters.get("csi_parsed", 0)
+    # every packet that arrived, whether or not it was still in the queue
+    parsed = arrived or counters.get("csi_parsed", 0)
     report = {
         "port": port,
         "window_s": round(elapsed, 3),
@@ -103,6 +114,7 @@ def run(port: Optional[str], seconds: float, rate_hz: float) -> dict:
             "bytes_per_s": round(bytes_total / elapsed, 1) if elapsed else 0.0,
             "csi_iq_values": sum(len(r.iq) for r in records),
             "queue_dropped": counters.get("csi_dropped", 0),
+            "packets_parsed": counters.get("csi_parsed", 0),
         },
         "sequence": {
             "first_id": counters.get("csi_first_seq"),
@@ -143,9 +155,11 @@ def main(argv=None) -> int:
     ap.add_argument("--rate", type=float, default=0.0,
                     help="expected packet rate, for a pass/fail check (0 = no check)")
     ap.add_argument("--out", default=None)
+    ap.add_argument("--evidence", action="store_true",
+                    help="collect read-only stall evidence when an outage is seen")
     args = ap.parse_args(argv)
 
-    report = run(args.port, args.seconds, args.rate)
+    report = run(args.port, args.seconds, args.rate, args.evidence)
     text = json.dumps(report, indent=2)
     print(text)
     if args.out:
