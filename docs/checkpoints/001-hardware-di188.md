@@ -1,12 +1,26 @@
 # SPECTER-X hardware checkpoint 001 — DI-188 USB DAQ
 
 **Date:** 2026-10-21
-**Status:** device detected, protocol verified, live acquisition working,
-30-minute stability soak passed with zero frame loss.
+**Branch:** `feature/di188-usb-daq`
 **Hardware connected:** DATAQ DI-188 (open-source DI-188 firmware) on a Seeed
 XIAO M0 / SAMD21, over USB CDC-ACM.
 **Analog inputs:** none connected — all four channels are floating.
-**Branch:** `feature/di188-usb-daq`
+
+## Checkpoint verdict
+
+| Capability | State | Evidence |
+|---|---|---|
+| USB enumeration & identification | **VERIFIED** | `Seeed XIAO M0` 0x2846:0x8037, CDC-ACM, `/dev/cu.usbmodem101`; `info 0`→`DATAQ`, `info 1`→`188`, `info 6`→`022D9B0B` |
+| Protocol | **VERIFIED** | documented ASCII protocol: CR-terminated commands, idle echo, `slist`/`srate`/`start`/`stop`/`read`, read-only `readflash` calibration |
+| Streaming | **VERIFIED** | 30-min soak, 500 Hz × 4 ch: 901 080 frames, **0 lost, 0 malformed, 0 errors, 0 disconnects** (§1.7) |
+| Analog measurement | **PENDING** | no source connected; all four inputs floating and reading ADC noise. Needs a known low-voltage source **and** a ground reference |
+| Calibration (counts→volts) | **PENDING** | no reference source available; the instrument carries no DATAQ calibration (firmware defaults). Nominal datasheet mapping only, labelled `UNCALIBRATED` |
+
+**Overall: USB / protocol / streaming VERIFIED. Analog measurement and
+calibration PENDING.**
+
+Nothing in this checkpoint is a measurement of an external signal. Every
+value the software has produced so far is ADC noise from a floating input.
 
 ---
 
