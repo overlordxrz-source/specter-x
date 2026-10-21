@@ -181,7 +181,7 @@ def main(argv=None) -> int:
                 if now - daq_snapshot_at >= 0.1:
                     daq_snapshot_at = now
                     st.analog = daq.snapshot()
-                    status = daq.status()
+                    status = daq.status(st.analog)
                     for ss in sensors:
                         if ss.key == "analog":
                             ss.health, ss.detail = status.health, status.detail

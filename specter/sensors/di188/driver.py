@@ -163,10 +163,18 @@ class Sample:
 
 
 def find_serial_ports() -> List[str]:
-    """Candidate DI-188 CDC-ACM nodes on macOS."""
+    """Candidate CDC-ACM nodes, on macOS and Linux.
+
+    The instrument has been exercised on macOS only, but the discovery is
+    not macOS-specific: Linux exposes CDC-ACM devices as ``/dev/ttyACM*`` and
+    offers stable ``/dev/serial/by-id`` names, which are preferred because
+    they survive re-plugging.
+    """
     out: List[str] = []
+    out.extend(sorted(glob.glob("/dev/serial/by-id/*")))
     for pattern in ("/dev/cu.usbmodem*", "/dev/cu.usbserial*", "/dev/cu.SLAB_USBtoUART*",
-                    "/dev/cu.usb-FTDI*", "/dev/cu.wchusbserial*", "/dev/tty.usbmodem*"):
+                    "/dev/cu.usb-FTDI*", "/dev/cu.wchusbserial*", "/dev/tty.usbmodem*",
+                    "/dev/ttyACM*", "/dev/ttyUSB*"):
         out.extend(sorted(glob.glob(pattern)))
     seen, uniq = set(), []
     for p in out:

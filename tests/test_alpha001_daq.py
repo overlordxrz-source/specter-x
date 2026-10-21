@@ -23,6 +23,7 @@ from specter.sensors.di188.measure import AnalogSource, DeviceState
 from specter.sensors.di188.stats import ChannelState, default_specs
 
 AMBER = (40, 200, 255)     # BGR, as the HUD draws it
+GREEN = (90, 255, 120)
 
 
 class FakeDriver:
@@ -269,6 +270,70 @@ def test_hud_draws_nothing_invented_when_the_daq_is_absent(monkeypatch):
         st = HudState(mode="ANALOG", analog=src.snapshot())
         frame = render(np.zeros((720, 1280, 3), np.uint8), st)
         assert frame.shape == (HUD_H, HUD_W, 3)
+    finally:
+        src.stop()
+
+
+def _card_region(frame):
+    """The first channel card, in frame coordinates."""
+    return frame[168:464, 20:495]
+
+
+def _has_colour(frame, bgr):
+    return (frame == np.array(bgr, np.uint8)).all(axis=2).any()
+
+
+def test_hud_draws_a_connected_channel_as_a_measurement(fake_device):
+    """The connected case must look different from the floating case."""
+    specs = default_specs(4)
+    for s in specs:
+        s.connected = True
+        s.source = "1.5 V cell"
+    src = AnalogSource(rate=100.0, specs=specs).start()
+    try:
+        assert _wait_for(lambda: src.snapshot(0).frames > 5)
+        snap = src.snapshot()
+        assert snap.any_measurement is True
+        for ch in snap.channels:
+            assert ch.volts is not None
+        st = HudState(mode="ANALOG", analog=snap, sensors=[src.status()])
+        frame = render(np.zeros((720, 1280, 3), np.uint8), st)
+        assert frame.shape == (HUD_H, HUD_W, 3)
+        card = _card_region(frame)
+        assert _has_colour(card, GREEN), "a CONNECTED channel must be drawn in the healthy colour"
+        # the calibration badge elsewhere on the frame is legitimately amber
+        # (the volts are nominal), but the channel card itself must not be
+        assert not _has_colour(card, AMBER), "a CONNECTED channel must not carry the floating styling"
+    finally:
+        src.stop()
+
+
+def test_hud_draws_a_floating_channel_with_the_floating_styling(fake_device):
+    src = AnalogSource(rate=100.0).start()
+    try:
+        assert _wait_for(lambda: src.snapshot(0).frames > 5)
+        st = HudState(mode="ANALOG", analog=src.snapshot(), sensors=[src.status()])
+        frame = render(np.zeros((720, 1280, 3), np.uint8), st)
+        card = _card_region(frame)
+        assert _has_colour(card, AMBER), "a floating channel must be badged FLOATING / NOISE"
+        assert not _has_colour(card, GREEN)
+    finally:
+        src.stop()
+
+
+def test_volts_are_withheld_from_an_unconnected_channel(fake_device):
+    """The rule lives in the stats layer, so every consumer inherits it."""
+    specs = default_specs(4)
+    specs[0].connected = True
+    specs[1].connected = False
+    src = AnalogSource(rate=100.0, specs=specs).start()
+    try:
+        assert _wait_for(lambda: src.snapshot(0).frames > 5)
+        snap = src.snapshot()
+        by_index = {c.index: c for c in snap.channels}
+        assert by_index[0].volts is not None
+        assert by_index[1].volts is None
+        assert by_index[1].state is ChannelState.FLOATING
     finally:
         src.stop()
 

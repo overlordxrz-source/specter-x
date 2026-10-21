@@ -123,7 +123,9 @@ def draw_analog_view(canvas, snap, x0, y0, w, h):
     grid_y = banner_y + 48
     card_w = (w - 60) // 2
     card_h = (h - (grid_y - y0) - 40) // 2
-    for i, ch in enumerate(snap.channels):
+    # the DI-188 has four channels; if more are configured, draw the first
+    # four rather than letting the grid overflow the panel
+    for i, ch in enumerate(snap.channels[:4]):
         cx = x0 + 20 + (i % 2) * (card_w + 20)
         cy = grid_y + (i // 2) * (card_h + 16)
         floating = ch.state is not ChannelState.CONNECTED

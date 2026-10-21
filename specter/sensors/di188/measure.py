@@ -159,9 +159,12 @@ class AnalogSource:
     def stop(self, timeout: float = 2.0) -> None:
         self._stop.set()
         thread = self._thread
-        self._thread = None
         if thread is not None and thread.is_alive():
             thread.join(timeout=timeout)
+        # only clear the handle once the thread is down, so a start() right
+        # after a stop() cannot leave two acquisition threads running
+        if thread is not None and not thread.is_alive():
+            self._thread = None
 
     def __enter__(self):
         return self.start()
@@ -216,9 +219,11 @@ class AnalogSource:
             # one from the instrument's own front-end profile. It stays
             # UNCALIBRATED either way - this only fixes the volts-per-count.
             if self.calibration is None and device_cal is not None:
-                self.calibration = CalibrationSet.nominal(
-                    device_cal.profile, self.channels,
-                    device_serial=ident.serial_number, device_model=ident.model_name)
+                with self._lock:
+                    self.calibration = CalibrationSet.nominal(
+                        device_cal.profile, self.channels,
+                        device_serial=ident.serial_number,
+                        device_model=ident.model_name)
             self._set_device(DeviceState.CONNECTING, f"{port}: configuring")
             realised = driver.configure(self.channels, self.rate)
             with self._lock:
@@ -277,14 +282,17 @@ class AnalogSource:
                 updated_at=self._updated,
             )
 
-    def status(self) -> SensorStatus:
+    def status(self, snap: Optional[DaqSnapshot] = None) -> SensorStatus:
         """Sensor-health row: device connectivity only.
 
         Measurement validity is deliberately *not* folded into the health
         colour - a connected instrument with floating inputs is ``OK``
         because the instrument is fine; the channel badges say the rest.
+
+        Pass an existing snapshot to avoid taking a second one.
         """
-        snap = self.snapshot(series_points=0)
+        if snap is None:
+            snap = self.snapshot(series_points=0)
         if snap.device_state is DeviceState.CONNECTED:
             floating = sum(1 for c in snap.channels
                            if c.state is not ChannelState.CONNECTED)
