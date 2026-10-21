@@ -32,6 +32,7 @@ SENSOR_LABELS = {
     "vlm": "AI-SUMMARY",
     "synthetic": "SYNTHETIC",
     "fusion": "FUSED",
+    "analog": "ANALOG",       # DI-188 USB DAQ analog channels
 }
 
 

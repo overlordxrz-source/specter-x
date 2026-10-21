@@ -189,22 +189,27 @@ class ChannelMonitor:
             st.reset()
 
     def report(self, calibration=None, index: int = 0) -> List[ChannelReport]:
-        """Build a report for every channel, applying the calibration basis."""
+        """Build a report for every channel, applying the calibration basis.
+
+        A channel with no source attached gets **no** volt value at all: its
+        reading is ADC noise, and turning noise into volts would dress it up
+        as a measurement.
+        """
         out: List[ChannelReport] = []
         for idx in self.channels:
             spec = self.specs[idx]
             st = self.stats[idx]
+            state = spec.state()
             volts = volts_mean = volts_std = unc = None
             basis = "nominal"
             if calibration is not None:
                 cal = calibration.for_channel(idx)
                 basis = cal.basis
-                if cal.gain != 0.0 and st.n:
+                if state is ChannelState.CONNECTED and cal.gain != 0.0 and st.n:
                     volts = cal.to_volts(st.last if st.last is not None else 0.0)
                     volts_mean = cal.to_volts(st.mean)
                     volts_std = abs(cal.gain) * st.std
                     unc = cal.uncertainty_v or None
-            state = spec.state()
             note = ""
             if state is ChannelState.UNDECLARED:
                 note = "no source declared - readings are noise, not a measurement"

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import sys
 import time
 from pathlib import Path
@@ -38,9 +39,19 @@ def parse_args(argv=None):
     p.add_argument("--model", default="yolo11n-pose.pt")
     p.add_argument("--conf", type=float, default=0.4, help="pose detection threshold")
     p.add_argument("--frames", type=int, default=0, help="stop after N frames (0 = run forever)")
+    p.add_argument("--min-seconds", type=float, default=0.0,
+                   help="run at least this long, even if --frames is reached first "
+                        "(useful for headless runs that wait on a sensor)")
     p.add_argument("--headless", action="store_true", help="no window (CI / ssh)")
     p.add_argument("--windowed", action="store_true", help="window instead of fullscreen")
     p.add_argument("--mode", default="OPTICAL", choices=MODES)
+    p.add_argument("--daq", default="off", choices=["off", "di188"],
+                   help="enable the DI-188 USB DAQ as a SPECTER-X sensor")
+    p.add_argument("--daq-port", default=None, help="DI-188 serial node (default: auto)")
+    p.add_argument("--daq-rate", type=float, default=100.0, help="DI-188 sample rate, Hz")
+    p.add_argument("--daq-channels", default="0,1,2,3", help="DI-188 channel numbers")
+    p.add_argument("--daq-log-hz", type=float, default=1.0,
+                   help="how often an analog Measurement is written to the event log")
     p.add_argument("--polarity", default="WHT", choices=POLARITIES, help="POD mode: white-hot or black-hot")
     p.add_argument("--zoom", type=int, default=1, choices=ZOOMS, help="POD mode digital zoom")
     p.add_argument("--log-dir", default=str(REPO_ROOT / "events" / "sessions"))
@@ -83,6 +94,28 @@ def main(argv=None) -> int:
                stubs.probe_radar(), stubs.probe_wifi_csi(), stubs.probe_imu(),
                stubs.probe_gnss(), stubs.probe_uwb(), stubs.probe_hailo()]
 
+    # --- DI-188 USB DAQ ------------------------------------------------------
+    # Acquisition runs on its own thread; the HUD only ever reads a bounded
+    # snapshot, so a slow or absent instrument can never stall the frame loop.
+    daq = None
+    if a.daq == "di188":
+        try:
+            from specter.sensors.di188.measure import AnalogSource
+            from specter.sensors.di188.stats import default_specs
+            channels = [int(c) for c in a.daq_channels.split(",") if c.strip() != ""]
+            daq = AnalogSource(port=a.daq_port, channels=channels, rate=a.daq_rate,
+                               specs=default_specs(max(channels) + 1),
+                               log_interval=1.0 / max(a.daq_log_hz, 0.01))
+            daq.start()
+        except Exception as e:
+            log.warning("DI-188 could not be started: %s", e)
+            daq = None
+    if daq is not None:
+        # The instrument has not connected yet at this point. Say "connecting"
+        # rather than "N/A": the DAQ was requested and is on its way.
+        sensors.append(SensorStatus("analog", "ANALOG DI-188", Health.DEGRADED,
+                                    "connecting"))
+
     events.log("session_start", {
         "version": __version__, "camera": cam.name, "sensor_id": cam.sensor_id,
         "pose_backend": pose.name, "argv": sys.argv[1:],
@@ -105,8 +138,11 @@ def main(argv=None) -> int:
     t_prev = time.perf_counter()
     hud = None
     misses = 0
+    daq_snapshot_at = 0.0
+    daq_state = None
+    t_start = time.monotonic()
     try:
-        while a.frames <= 0 or n < a.frames:
+        while a.frames <= 0 or n < a.frames or (time.monotonic() - t_start) < a.min_seconds:
             frame = cam.read()
             if frame is None:
                 misses += 1
@@ -137,6 +173,31 @@ def main(argv=None) -> int:
             cam_status.touch(st.fps)
 
             st.poses, st.pose_active, st.ticker = dets, presence.active, list(events.recent)
+            if daq is not None:
+                # The DAQ snapshot is refreshed at ~10 Hz, not per frame: the
+                # HUD must never spend its budget copying a series buffer, and
+                # the acquisition thread keeps running regardless.
+                now = time.monotonic()
+                if now - daq_snapshot_at >= 0.1:
+                    daq_snapshot_at = now
+                    st.analog = daq.snapshot()
+                    status = daq.status()
+                    for ss in sensors:
+                        if ss.key == "analog":
+                            ss.health, ss.detail = status.health, status.detail
+                    # device connectivity transitions are logged; measurement
+                    # validity lives on the channels, not on the device
+                    new_state = st.analog.device_state
+                    if new_state is not daq_state:
+                        events.log("analog_online" if new_state.value == "CONNECTED"
+                                   else "analog_state",
+                                   {"state": new_state.value,
+                                    "detail": st.analog.device_detail[:80]})
+                        daq_state = new_state
+                m = daq.take_measurement()
+                if m is not None:
+                    events.log("analog_sample", {"channels": m.value.get("frames", 0)},
+                               measurement=m)
             if st.mode == "POD":
                 hud = render_pod(frame.image, pod, pod_tel, st.fps)
             else:
@@ -164,7 +225,12 @@ def main(argv=None) -> int:
         events.log("session_end", {"frames": n, "event_counts": dict(events.counts)})
         events.close()
         cam.close()
+        if daq is not None:
+            daq.stop()
         if hud is not None and a.save_frame:
+            out = os.path.dirname(os.path.abspath(a.save_frame))
+            if out:
+                os.makedirs(out, exist_ok=True)
             cv2.imwrite(a.save_frame, hud)
         if not a.headless:
             cv2.destroyAllWindows()
