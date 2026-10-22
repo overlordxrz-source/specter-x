@@ -163,9 +163,16 @@ def separability(stats: List[Dict]) -> Dict:
         return {"verdict": "need at least two trials with data"}
     n_carriers = min(len(s["per_carrier_mean"]) for s in usable)
     ratios = []
+    null_carriers = []
     for c in range(n_carriers):
         means = [s["per_carrier_mean"][c] for s in usable]
         stds = [s["per_carrier_std"][c] for s in usable]
+        # the ESP32 leaves a guard band of subcarriers unpopulated (zero
+        # amplitude in every trial). They carry no information and would drag
+        # the ratio towards zero, so they are excluded and reported.
+        if all(m == 0.0 for m in means):
+            null_carriers.append(c)
+            continue
         within = statistics.mean([x * x for x in stds]) or 1e-9
         between = statistics.pvariance(means) if len(means) > 1 else 0.0
         ratios.append(between / within)
@@ -173,6 +180,8 @@ def separability(stats: List[Dict]) -> Dict:
     return {
         "labels": labels,
         "carriers": n_carriers,
+        "carriers_used": len(ratios),
+        "null_carriers": null_carriers,
         "per_carrier_f": [round(r, 3) for r in ratios],
         "top_f_carriers": ratios_sorted[:8],
         "max_f": round(max(ratios), 3) if ratios else 0.0,
@@ -230,6 +239,65 @@ def cmd_record(args) -> int:
     return 0
 
 
+def _figure(stats: List[Dict], out_path: str, title: str = "") -> str:
+    """Per-carrier reference profile: mean with a +/- std band, per trial.
+
+    This is the reference a motion trial is compared against - the stationary
+    condition's spectral shape, with its natural spread.
+    """
+    import numpy as np
+    import cv2
+    usable = [s for s in stats if s.get("carriers")]
+    if not usable:
+        raise SystemExit("no trial with per-carrier data")
+    n_carriers = min(s["carriers"] for s in usable)
+    W, H = 1400, 760
+    canvas = np.full((H, W, 3), 12, np.uint8)
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    palette = [(150, 200, 255), (120, 255, 140), (80, 160, 255), (100, 255, 120)]
+
+    # the spread of every trial, to scale the plot
+    lo = min(min(s["per_carrier_mean"]) for s in usable)
+    hi = max(max(s["per_carrier_mean"]) for s in usable)
+    lo, hi = min(lo, 0.0), hi
+    span = (hi - lo) or 1.0
+    px0, py0, pw, ph = 90, 90, W - 140, H - 200
+
+    for t_i, st in enumerate(usable):
+        col = palette[t_i % len(palette)]
+        means = st["per_carrier_mean"][:n_carriers]
+        stds = st["per_carrier_std"][:n_carriers]
+        pts = []
+        for c in range(n_carriers):
+            x = int(px0 + c / max(n_carriers - 1, 1) * pw)
+            y = int(py0 + ph - (means[c] - lo) / span * ph)
+            pts.append((x, y))
+        # +/- std band as a vertical whisker per carrier
+        for c in range(n_carriers):
+            x = int(px0 + c / max(n_carriers - 1, 1) * pw)
+            y_hi = int(py0 + ph - ((means[c] + stds[c]) - lo) / span * ph)
+            y_lo = int(py0 + ph - (max(means[c] - stds[c], lo) - lo) / span * ph)
+            cv2.line(canvas, (x, y_hi), (x, y_lo), col, 1, cv2.LINE_AA)
+        cv2.polylines(canvas, [np.array(pts, np.int32)], False, col, 2, cv2.LINE_AA)
+        cv2.putText(canvas, st["label"], (px0 + pw + 14, py0 + 20 + t_i * 24),
+                    font, 0.55, col, 1)
+
+    cv2.putText(canvas, "per-carrier mean amplitude (whisker = +/-1 std within the trial)",
+                (px0, 40), font, 0.6, (235, 235, 235), 1)
+    cv2.putText(canvas, f"carriers 0..{n_carriers - 1}   amplitude {lo:.0f}..{hi:.0f}",
+                (px0, 64), font, 0.5, (140, 140, 140), 1)
+    if title:
+        cv2.putText(canvas, title[:90], (px0, H - 18), font, 0.45, (120, 120, 120), 1)
+    for c in range(0, n_carriers, max(1, n_carriers // 12)):
+        x = int(px0 + c / max(n_carriers - 1, 1) * pw)
+        cv2.putText(canvas, str(c), (x - 8, py0 + ph + 22), font, 0.4, (140, 140, 140), 1)
+    cv2.line(canvas, (px0, py0 + ph), (px0 + pw, py0 + ph), (70, 70, 70), 1)
+
+    os.makedirs(os.path.dirname(os.path.abspath(out_path)), exist_ok=True)
+    cv2.imwrite(out_path, canvas)
+    return out_path
+
+
 def cmd_analyse(args) -> int:
     with open(args.path, "r", encoding="utf-8") as fh:
         data = json.load(fh)
@@ -248,6 +316,9 @@ def cmd_analyse(args) -> int:
     print(f"  labels {sep.get('labels')}")
     print(f"  max F {sep.get('max_f')}  median F {sep.get('median_f')}")
     print(f"  verdict: {sep.get('verdict')}")
+    if args.figure:
+        path = _figure(stats, args.figure, data.get("consent", "")[:60])
+        print(f"\nreference profile -> {path}")
     return 0
 
 
@@ -269,6 +340,8 @@ def main(argv=None) -> int:
 
     a = sub.add_parser("analyse", help="analyse a recording offline")
     a.add_argument("path")
+    a.add_argument("--figure", default=None,
+                   help="also write a per-carrier reference profile PNG")
     a.set_defaults(func=cmd_analyse)
 
     args = ap.parse_args(argv)

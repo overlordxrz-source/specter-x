@@ -52,6 +52,8 @@ def main(argv=None) -> int:
     ap.add_argument("--stall-after", type=float, default=5.0,
                     help="seconds of silence that count as a stall")
     ap.add_argument("--port", default=None)
+    ap.add_argument("--reopen-delay", type=float, default=2.0,
+                    help="seconds to wait before reopening the port after a stall")
     ap.add_argument("-o", "--out", default="runs/usb_health.json")
     args = ap.parse_args(argv)
 
@@ -69,6 +71,7 @@ def main(argv=None) -> int:
     ser = serial.Serial(port, baudrate=115200, timeout=0.5)
 
     t0 = time.time()
+    reopen_pending = False
     last_byte = t0
     last_state = "OK"
     events: List[Dict] = []
@@ -101,20 +104,44 @@ def main(argv=None) -> int:
                     dispatcher.feed(data)
                     if last_state != "OK":
                         events.append({"t": round(now - t0, 2), "event": "recovered",
-                                       "silent_for_s": round(last_byte - t0, 2)})
-                        print(f"  [{now - t0:7.1f}s] recovered", flush=True)
+                                       "silent_for_s": round(last_byte - t0, 2),
+                                       "after_reopen": reopen_pending})
+                        print(f"  [{now - t0:7.1f}s] recovered "
+                              f"(after_reopen={reopen_pending})", flush=True)
                         last_state = "OK"
+                        reopen_pending = False
             else:
                 silence = now - last_byte
                 if silence > args.stall_after and last_state != "STALLED":
                     last_state = "STALLED"
                     ev = {"t": round(now - t0, 2)}
                     ev.update(collect_stall_evidence(silence))
+                    # Non-destructive probe: close and reopen the port. This is
+                    # a host-side action only - no reset, no bootloader. If the
+                    # device resumes, the fault is in the host's view of the
+                    # link; if it stays silent, the device needs a reset.
+                    reopen_pending = True
                     events.append({"t": round(now - t0, 2), "event": "stall",
                                    "evidence": ev})
                     stall_evidence.append(ev)
                     print(f"  [{now - t0:7.1f}s] STALL {silence:.1f}s -> "
                           f"{ev['diagnosis']}", flush=True)
+                    print(f"  [{now - t0:7.1f}s] reopening the port "
+                          f"(no reset, no flash)...", flush=True)
+                    try:
+                        ser.close()
+                    except Exception:
+                        pass
+                    time.sleep(args.reopen_delay)
+                    try:
+                        ser = serial.Serial(port, baudrate=115200, timeout=0.5)
+                        with self._lock:
+                            self._last_byte = time.time()
+                        print(f"  [{now - t0:7.1f}s] reopened", flush=True)
+                    except Exception as exc:
+                        print(f"  [{now - t0:7.1f}s] reopen failed: {exc}",
+                              flush=True)
+                        break
             if int(now - t0) % 30 < 1.0:
                 c = dispatcher.snapshot()
                 samples.append({"t": round(now - t0, 2),
