@@ -19,6 +19,19 @@ Evidence: `runs/alpha002_hw_validation_20261022/` (gitignored).
 
 ---
 
+## 0. Correction, later the same day
+
+Two things in this record were wrong or incomplete and are corrected in
+checkpoint 016:
+
+- **The subcarrier check was defective**, not the link. Scoring v2 replaces the
+  exact-set test with a structural null check plus aggregate coverage. The v1
+  score below is preserved unchanged and is **not comparable** to a v2 score.
+- **The cause of the packet cadence is a hypothesis, not a finding.** This
+  checkpoint originally called it "textbook power-save (DTIM)". No 802.11
+  frame capture was taken and the phone's power-save state was never observed.
+  The cadence itself is measured; the mechanism is not.
+
 ## 1. Conditions
 
 A phone joined `SPECTER-LAB` as the station. The Mac stayed on Kent State
@@ -71,15 +84,20 @@ PREFLIGHT: FAIL
 
 ## 4. Why each failure happened
 
-### 4.1 Inter-packet gaps — the phone's power save, not the firmware
+### 4.1 Inter-packet gaps — measured cadence, unexplained mechanism
 
 Inter-packet intervals over 123 s: median **0.011 s**, p95 0.956 s, and 63 gaps
 > 0.5 s, recurring roughly every 2 s, the longest 1.96 s. The mean rate is
-5.5/s only because the phone transmits in bursts and then sleeps between DTIM
-beacons. The ESP32 cannot receive frames the station did not send.
+5.5/s only because frames arrive in bursts separated by silences.
 
-Consequence: ~5 packets/s with ~1 s holes is **not** a usable sampling rate.
-The 35 FPS HUD and any motion work need a station that does not power-save.
+That is the observation. The **explanation is unverified**. Power save with a
+DTIM-driven wake schedule would produce this shape, but so would several other
+mechanisms, and none was tested: no 802.11 frame capture, no read of the
+phone's power-save state, no control condition with power save known to be
+off. Treat "power save" as the leading hypothesis, not the cause.
+
+Consequence, independent of cause: ~5 packets/s with holes of a second or more
+is **not** a usable sampling rate, and the 35 FPS HUD cannot be fed from it.
 
 ### 4.2 Callback activity 4.95/s vs a 5/s threshold
 
@@ -103,7 +121,8 @@ artefact reported as a format regression. A correct assertion is:
 * aggregated over the capture, all 52 used slots carry energy at least once
   (also holds).
 
-This is a defect in `tools/esp32_lab_preflight.py`, not in the firmware.
+This was a defect in `tools/esp32_lab_preflight.py`, not in the firmware, and
+it is fixed in checkpoint 016 under scoring v2.
 
 ## 5. What was not proven
 

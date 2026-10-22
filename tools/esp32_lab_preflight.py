@@ -49,10 +49,20 @@ CSI_PORT = "/dev/cu.usbmodem1101"
 CONSOLE_PORT = "/dev/cu.usbmodem5B901602281"
 CONSOLE_BAUD = 921600
 
+#: Scoring rules changed after the first hardware run; scores are comparable
+#: only within a version. v1 required the set of non-zero subcarriers to equal
+#: the 52 used slots exactly, which fails on any active subcarrier whose int8
+#: I and Q both truncate to zero. v2 asserts the structural property instead:
+#: every required null slot is zero, and all 52 active slots carry energy at
+#: least once across the capture.
+SCORING_VERSION = 2
+
 #: The null-carrier set of an 802.11n 20 MHz LLTF, measured on this board
 #: and confirmed against the ESP-IDF subcarrier table: 64 slots, 52 used.
 NULL_CARRIERS = frozenset({0} | set(range(27, 38)))
 USED_CARRIERS = 64 - len(NULL_CARRIERS)
+ACTIVE_CARRIERS = frozenset(range(64)) - NULL_CARRIERS
+LLTF_SLOTS = 64
 
 #: The thresholds. Every one of them is a decision, not a default, and each
 #: carries the reason it is where it is.
@@ -64,7 +74,9 @@ THRESHOLDS = {
     "rssi_min_dbm": -85.0,         # below this the geometry is wrong
     "rssi_max_dbm": -15.0,         # above this the radio is saturating
     "max_noise_floor_dbm": -80.0,  # a noisy channel invalidates the features
-    "min_used_subcarrier_rate": 0.99,
+    "min_used_subcarrier_rate": 0.99,   # active slots seen across the capture
+    "min_null_zero_rate": 1.0,     # a null that carries energy is structural
+    "min_frames_for_map": 20,      # below this the map cannot be verified
     "max_queue_drops": 0,          # the queue must be keeping up
 }
 
@@ -82,6 +94,11 @@ class Observation:
     noise_floor: List[float] = field(default_factory=list)
     channels: List[int] = field(default_factory=list)
     rate_histogram: Dict[str, int] = field(default_factory=dict)
+    # v2: structural null check plus aggregate active-slot coverage
+    null_ok: int = 0
+    null_checked: int = 0
+    active_seen: List[int] = field(default_factory=list)
+    # legacy v1 counters, kept only so that v1 observations still replay
     used_carrier_ok: int = 0
     used_carrier_checked: int = 0
     max_gap_s: float = 0.0
@@ -100,13 +117,24 @@ class Result:
     status: str   # PASS / FAIL / UNKNOWN / DEFERRED
 
 
-def _used_carrier_map(iq: List[int]) -> frozenset:
-    """Which subcarrier slots carry energy. Nulls are exactly null."""
-    amps = []
-    for i in range(0, len(iq) - 1, 2):
-        re_, im_ = iq[i], iq[i + 1]
-        amps.append(re_ * re_ + im_ * im_)
-    return frozenset(i for i, a in enumerate(amps) if a != 0)
+def _analyse_subcarriers(iq: List[int]):
+    """Return ``(nulls_ok, active_slots, slots)`` for one CSI record.
+
+    A **required null** carries no energy. If one does, the record is not a
+    20 MHz LLTF capture and everything derived from it is unsafe.
+
+    An **active** slot may read zero without anything being wrong: I and Q are
+    int8, so a faint subcarrier truncates to exactly ``(0, 0)``. v1 treated
+    that as a broken map, which is why a healthy link scored 79.7%. v2 never
+    fails an individual record for a zero active slot; it verifies coverage
+    across the capture instead.
+    """
+    slots = len(iq) // 2
+    zero = frozenset(i for i in range(slots)
+                     if iq[2 * i] == 0 and iq[2 * i + 1] == 0)
+    nulls_ok = slots == LLTF_SLOTS and NULL_CARRIERS <= zero
+    active = (frozenset(range(slots)) - NULL_CARRIERS) - zero
+    return nulls_ok, active, slots
 
 
 def evaluate(obs: Observation) -> List[Result]:
@@ -180,15 +208,36 @@ def evaluate(obs: Observation) -> List[Result]:
                               "one value (no silent roam)",
                               "PASS" if len(chans) == 1 else "FAIL"))
 
-    if obs.used_carrier_checked:
-        frac = obs.used_carrier_ok / obs.used_carrier_checked
+    if obs.null_checked:
+        frac = obs.null_ok / obs.null_checked
         results.append(Result(
-            "subcarrier map", f"{frac * 100:.1f}% of {USED_CARRIERS} used",
-            f">= {th['min_used_subcarrier_rate'] * 100:.0f}%",
-            "PASS" if frac >= th["min_used_subcarrier_rate"] else "FAIL"))
+            "subcarrier nulls", f"{obs.null_ok}/{obs.null_checked} frames clean",
+            "every required null is zero",
+            "PASS" if frac >= th["min_null_zero_rate"] else "FAIL"))
+        seen = len(ACTIVE_CARRIERS & set(obs.active_seen))
+        if obs.null_checked < th["min_frames_for_map"]:
+            results.append(Result(
+                "active subcarrier coverage", f"{seen}/{USED_CARRIERS} slots",
+                f">= {th['min_frames_for_map']:.0f} frames to verify", "UNKNOWN"))
+        else:
+            cover = seen / USED_CARRIERS
+            results.append(Result(
+                "active subcarrier coverage",
+                f"{seen}/{USED_CARRIERS} slots seen",
+                f">= {th['min_used_subcarrier_rate'] * 100:.0f}%",
+                "PASS" if cover >= th["min_used_subcarrier_rate"] else "FAIL"))
+    elif obs.used_carrier_checked:
+        # A v1 capture recorded only the exact-set verdict, which cannot answer
+        # the v2 question. Re-scoring it would be a guess, so say so.
+        results.append(Result("subcarrier nulls", "v1 capture",
+                              "re-capture for v2", "UNKNOWN"))
+        results.append(Result("active subcarrier coverage", "v1 capture",
+                              "re-capture for v2", "UNKNOWN"))
     else:
-        results.append(Result("subcarrier map", "no packets", "52 used",
-                              "UNKNOWN"))
+        results.append(Result("subcarrier nulls", "no packets",
+                              "every required null is zero", "UNKNOWN"))
+        results.append(Result("active subcarrier coverage", "no packets",
+                              f"{USED_CARRIERS} slots seen", "UNKNOWN"))
 
     if obs.rate_histogram:
         top = max(obs.rate_histogram.items(), key=lambda kv: kv[1])
@@ -240,9 +289,24 @@ def verdict(results: List[Result]) -> str:
 
 # --- capture ---------------------------------------------------------------
 
+def _drain(ser, seconds: float = 0.25) -> None:
+    """Discard bytes that arrived before the measurement window.
+
+    Opening the port mid-stream means the first thing we see is the tail of a
+    record, or two records spliced together where the USB path dropped bytes
+    while nobody was reading. Neither belongs to this capture, and counting
+    them would blame the link for our own late arrival.
+    """
+    end = time.monotonic() + seconds
+    while time.monotonic() < end:
+        ser.read(65536)
+        time.sleep(0.01)
+
+
 def capture(seconds: float, csi_port: str, console_port: str,
             console_baud: int, ping: Optional[str],
-            expect_rate: Optional[float]) -> Observation:
+            expect_rate: Optional[float],
+            raw_out: Optional[str] = None) -> Observation:
     import serial
 
     obs = Observation(seconds=seconds, expected_rate_hz=expect_rate)
@@ -252,6 +316,7 @@ def capture(seconds: float, csi_port: str, console_port: str,
     times: List[float] = []
     seqs: List[int] = []
     console_lines: List[str] = []
+    seen_active = set()
 
     def read_csi():
         try:
@@ -260,6 +325,7 @@ def capture(seconds: float, csi_port: str, console_port: str,
             obs.console_text += f"\n[cannot open {csi_port}: {exc}]"
             return
         buf = b""
+        _drain(ser)
         with ser:
             while not stop.is_set():
                 chunk = ser.read(65536)
@@ -274,13 +340,18 @@ def capture(seconds: float, csi_port: str, console_port: str,
                     if not line:
                         continue
                     if line.startswith("CSI_DATA"):
-                        rec = parser.feed(line)
+                        try:
+                            rec = parser.feed(line)
+                        except ValueError:
+                            # a spliced or truncated line is a transport fault,
+                            # not a reason to abandon the capture
+                            rec = None
                         if rec is None:
                             with lock:
                                 obs.malformed += 1
                             continue
                         now = time.monotonic()
-                        used = _used_carrier_map(rec.iq)
+                        nulls_ok, active, _slots = _analyse_subcarriers(rec.iq)
                         with lock:
                             obs.csi_count += 1
                             obs.rssi.append(rec.rssi)
@@ -288,9 +359,10 @@ def capture(seconds: float, csi_port: str, console_port: str,
                             obs.channels.append(rec.channel)
                             obs.rate_histogram[str(rec.rate)] = \
                                 obs.rate_histogram.get(str(rec.rate), 0) + 1
-                            obs.used_carrier_checked += 1
-                            if used == (set(range(64)) - NULL_CARRIERS):
-                                obs.used_carrier_ok += 1
+                            obs.null_checked += 1
+                            if nulls_ok:
+                                obs.null_ok += 1
+                            seen_active.update(active)
                             seqs.append(rec.seq)
                             if times:
                                 gap = now - times[-1]
@@ -304,27 +376,35 @@ def capture(seconds: float, csi_port: str, console_port: str,
         except Exception as exc:
             obs.console_text += f"\n[cannot open {console_port}: {exc}]"
             return
+        raw_f = open(raw_out, "wb") if raw_out else None
         buf = b""
+        _drain(ser)
         with ser:
-            while not stop.is_set():
-                chunk = ser.read(65536)
-                if not chunk:
-                    continue
-                with lock:
-                    obs.console_bytes += len(chunk)
-                buf += chunk
-                while b"\n" in buf:
-                    raw, _, buf = buf.partition(b"\n")
-                    line = raw.decode("utf-8", "replace").strip()
-                    if line:
-                        console_lines.append(line)
-                        st = parse_status_line(line)
-                        if st is not None:
-                            with lock:
-                                obs.status_lines += 1
-                                if obs.first_status is None:
-                                    obs.first_status = st
-                                obs.last_status = st
+            try:
+                while not stop.is_set():
+                    chunk = ser.read(65536)
+                    if not chunk:
+                        continue
+                    if raw_f:
+                        raw_f.write(chunk)
+                    with lock:
+                        obs.console_bytes += len(chunk)
+                    buf += chunk
+                    while b"\n" in buf:
+                        raw, _, buf = buf.partition(b"\n")
+                        line = raw.decode("utf-8", "replace").strip()
+                        if line:
+                            console_lines.append(line)
+                            st = parse_status_line(line)
+                            if st is not None:
+                                with lock:
+                                    obs.status_lines += 1
+                                    if obs.first_status is None:
+                                        obs.first_status = st
+                                    obs.last_status = st
+            finally:
+                if raw_f:
+                    raw_f.close()
 
     threads = [threading.Thread(target=read_csi, daemon=True),
                threading.Thread(target=read_console, daemon=True)]
@@ -346,6 +426,7 @@ def capture(seconds: float, csi_port: str, console_port: str,
     # sequence gaps: the firmware's own counter, per accepted record
     if len(seqs) > 1:
         obs.seq_gaps = sum(1 for a, b in zip(seqs, seqs[1:]) if b != a + 1)
+    obs.active_seen = sorted(seen_active)
     obs.console_text = "\n".join(console_lines[-40:])
     return obs
 
@@ -360,7 +441,7 @@ def report(results: List[Result], obs: Observation) -> int:
         print(f"  {r.name:<28} {r.value:<32} {r.criterion:<38} {r.status}")
     v = verdict(results)
     print()
-    print(f"  PREFLIGHT: {v}")
+    print(f"  PREFLIGHT (scoring v{SCORING_VERSION}): {v}")
     return 0 if v == "PASS" else 1
 
 
@@ -376,20 +457,28 @@ def main(argv=None) -> int:
     ap.add_argument("--expect-rate", type=float, default=None,
                     help="expected packet rate, e.g. the ping rate in Hz")
     ap.add_argument("--out", default=None, help="write the observation as JSON")
+    ap.add_argument("--raw-out", default=None,
+                    help="also preserve the console/CSI bytes verbatim, so the "
+                         "run can be re-scored without re-running it")
     ap.add_argument("--replay", default=None,
                     help="re-score a saved observation instead of capturing")
     args = ap.parse_args(argv)
 
     if args.replay:
         with open(args.replay, encoding="utf-8") as fh:
-            obs = Observation(**json.load(fh))
+            saved = json.load(fh)
+        saved.pop("scoring_version", None)  # metadata, not an Observation field
+        obs = Observation(**saved)
     else:
         obs = capture(args.seconds, args.csi_port, args.console_port,
-                      args.console_baud, args.ping, args.expect_rate)
+                      args.console_baud, args.ping, args.expect_rate,
+                      args.raw_out)
         if args.out:
             os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
+            payload = dict(obs.__dict__)
+            payload["scoring_version"] = SCORING_VERSION
             with open(args.out, "w", encoding="utf-8") as fh:
-                json.dump(obs.__dict__, fh, indent=2)
+                json.dump(payload, fh, indent=2)
 
     results = evaluate(obs)
     rc = report(results, obs)
