@@ -1,0 +1,2000 @@
+{
+  "port": "/dev/cu.usbmodem1101",
+  "window_s": 386.12,
+  "samples": [
+    {
+      "t": 0.0,
+      "bytes": 223,
+      "packets": 0,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 0.06,
+      "bytes": 1243,
+      "packets": 2,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 0.11,
+      "bytes": 2263,
+      "packets": 4,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 0.16,
+      "bytes": 3283,
+      "packets": 7,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 0.22,
+      "bytes": 4303,
+      "packets": 9,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 0.27,
+      "bytes": 5323,
+      "packets": 12,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 0.33,
+      "bytes": 6343,
+      "packets": 14,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 0.38,
+      "bytes": 7363,
+      "packets": 17,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 0.44,
+      "bytes": 8383,
+      "packets": 19,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 0.49,
+      "bytes": 9403,
+      "packets": 21,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 0.55,
+      "bytes": 10423,
+      "packets": 24,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 0.6,
+      "bytes": 11443,
+      "packets": 26,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 0.65,
+      "bytes": 12463,
+      "packets": 28,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 0.7,
+      "bytes": 13483,
+      "packets": 31,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 0.76,
+      "bytes": 14503,
+      "packets": 33,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 0.81,
+      "bytes": 15523,
+      "packets": 36,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 0.87,
+      "bytes": 16543,
+      "packets": 38,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 0.92,
+      "bytes": 17563,
+      "packets": 40,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 0.98,
+      "bytes": 18583,
+      "packets": 43,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 30.05,
+      "bytes": 567343,
+      "packets": 1327,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 30.1,
+      "bytes": 568363,
+      "packets": 1329,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 30.15,
+      "bytes": 569383,
+      "packets": 1332,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 30.21,
+      "bytes": 570403,
+      "packets": 1334,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 30.26,
+      "bytes": 571423,
+      "packets": 1336,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 30.31,
+      "bytes": 572443,
+      "packets": 1339,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 30.37,
+      "bytes": 573463,
+      "packets": 1341,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 30.42,
+      "bytes": 574483,
+      "packets": 1343,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 30.47,
+      "bytes": 575503,
+      "packets": 1346,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 30.53,
+      "bytes": 576523,
+      "packets": 1348,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 30.59,
+      "bytes": 577543,
+      "packets": 1351,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 30.67,
+      "bytes": 578563,
+      "packets": 1353,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 30.72,
+      "bytes": 579583,
+      "packets": 1355,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 30.77,
+      "bytes": 580603,
+      "packets": 1358,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 30.83,
+      "bytes": 581623,
+      "packets": 1360,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 30.88,
+      "bytes": 582643,
+      "packets": 1362,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 30.93,
+      "bytes": 583663,
+      "packets": 1365,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 30.99,
+      "bytes": 584683,
+      "packets": 1367,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 60.02,
+      "bytes": 1131403,
+      "packets": 2653,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 60.08,
+      "bytes": 1132423,
+      "packets": 2655,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 60.13,
+      "bytes": 1133443,
+      "packets": 2658,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 60.19,
+      "bytes": 1134463,
+      "packets": 2660,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 60.24,
+      "bytes": 1135483,
+      "packets": 2663,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 60.29,
+      "bytes": 1136503,
+      "packets": 2665,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 60.34,
+      "bytes": 1137523,
+      "packets": 2667,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 60.4,
+      "bytes": 1138543,
+      "packets": 2670,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 60.45,
+      "bytes": 1139563,
+      "packets": 2672,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 60.5,
+      "bytes": 1140583,
+      "packets": 2675,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 60.56,
+      "bytes": 1141603,
+      "packets": 2677,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 60.61,
+      "bytes": 1142623,
+      "packets": 2679,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 60.67,
+      "bytes": 1143643,
+      "packets": 2681,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 60.72,
+      "bytes": 1144663,
+      "packets": 2684,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 60.77,
+      "bytes": 1145683,
+      "packets": 2686,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 60.82,
+      "bytes": 1146703,
+      "packets": 2689,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 60.88,
+      "bytes": 1147723,
+      "packets": 2691,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 60.94,
+      "bytes": 1148743,
+      "packets": 2693,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 60.99,
+      "bytes": 1149763,
+      "packets": 2696,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 90.05,
+      "bytes": 1698523,
+      "packets": 3981,
+      "gaps": 123,
+      "missing": 1798,
+      "malformed": 41
+    },
+    {
+      "t": 90.1,
+      "bytes": 1699543,
+      "packets": 3984,
+      "gaps": 124,
+      "missing": 1813,
+      "malformed": 41
+    },
+    {
+      "t": 90.15,
+      "bytes": 1700563,
+      "packets": 3987,
+      "gaps": 124,
+      "missing": 1813,
+      "malformed": 41
+    },
+    {
+      "t": 90.21,
+      "bytes": 1701583,
+      "packets": 3989,
+      "gaps": 124,
+      "missing": 1813,
+      "malformed": 41
+    },
+    {
+      "t": 90.26,
+      "bytes": 1702603,
+      "packets": 3991,
+      "gaps": 125,
+      "missing": 1832,
+      "malformed": 41
+    },
+    {
+      "t": 90.31,
+      "bytes": 1703623,
+      "packets": 3994,
+      "gaps": 126,
+      "missing": 1849,
+      "malformed": 41
+    },
+    {
+      "t": 90.37,
+      "bytes": 1704643,
+      "packets": 3997,
+      "gaps": 126,
+      "missing": 1849,
+      "malformed": 41
+    },
+    {
+      "t": 90.42,
+      "bytes": 1705663,
+      "packets": 3999,
+      "gaps": 127,
+      "missing": 1864,
+      "malformed": 42
+    },
+    {
+      "t": 90.47,
+      "bytes": 1706683,
+      "packets": 4001,
+      "gaps": 127,
+      "missing": 1864,
+      "malformed": 42
+    },
+    {
+      "t": 90.53,
+      "bytes": 1707703,
+      "packets": 4004,
+      "gaps": 128,
+      "missing": 1874,
+      "malformed": 42
+    },
+    {
+      "t": 90.58,
+      "bytes": 1708723,
+      "packets": 4007,
+      "gaps": 128,
+      "missing": 1874,
+      "malformed": 42
+    },
+    {
+      "t": 90.63,
+      "bytes": 1709743,
+      "packets": 4010,
+      "gaps": 129,
+      "missing": 1891,
+      "malformed": 42
+    },
+    {
+      "t": 90.68,
+      "bytes": 1710763,
+      "packets": 4012,
+      "gaps": 129,
+      "missing": 1891,
+      "malformed": 42
+    },
+    {
+      "t": 90.73,
+      "bytes": 1711783,
+      "packets": 4014,
+      "gaps": 130,
+      "missing": 1906,
+      "malformed": 43
+    },
+    {
+      "t": 90.79,
+      "bytes": 1712803,
+      "packets": 4016,
+      "gaps": 130,
+      "missing": 1906,
+      "malformed": 43
+    },
+    {
+      "t": 90.84,
+      "bytes": 1713823,
+      "packets": 4019,
+      "gaps": 131,
+      "missing": 1921,
+      "malformed": 43
+    },
+    {
+      "t": 90.89,
+      "bytes": 1714843,
+      "packets": 4022,
+      "gaps": 131,
+      "missing": 1921,
+      "malformed": 43
+    },
+    {
+      "t": 90.95,
+      "bytes": 1715863,
+      "packets": 4023,
+      "gaps": 131,
+      "missing": 1921,
+      "malformed": 44
+    },
+    {
+      "t": 120.04,
+      "bytes": 2266663,
+      "packets": 5342,
+      "gaps": 400,
+      "missing": 6068,
+      "malformed": 164
+    },
+    {
+      "t": 120.09,
+      "bytes": 2267683,
+      "packets": 5344,
+      "gaps": 401,
+      "missing": 6081,
+      "malformed": 165
+    },
+    {
+      "t": 120.15,
+      "bytes": 2268703,
+      "packets": 5346,
+      "gaps": 401,
+      "missing": 6081,
+      "malformed": 165
+    },
+    {
+      "t": 120.2,
+      "bytes": 2269723,
+      "packets": 5349,
+      "gaps": 402,
+      "missing": 6093,
+      "malformed": 165
+    },
+    {
+      "t": 120.25,
+      "bytes": 2270743,
+      "packets": 5352,
+      "gaps": 402,
+      "missing": 6093,
+      "malformed": 165
+    },
+    {
+      "t": 120.31,
+      "bytes": 2271763,
+      "packets": 5354,
+      "gaps": 402,
+      "missing": 6093,
+      "malformed": 165
+    },
+    {
+      "t": 120.36,
+      "bytes": 2272783,
+      "packets": 5355,
+      "gaps": 403,
+      "missing": 6107,
+      "malformed": 166
+    },
+    {
+      "t": 120.41,
+      "bytes": 2273803,
+      "packets": 5357,
+      "gaps": 404,
+      "missing": 6123,
+      "malformed": 167
+    },
+    {
+      "t": 120.47,
+      "bytes": 2274823,
+      "packets": 5360,
+      "gaps": 404,
+      "missing": 6123,
+      "malformed": 167
+    },
+    {
+      "t": 120.52,
+      "bytes": 2275843,
+      "packets": 5361,
+      "gaps": 405,
+      "missing": 6133,
+      "malformed": 168
+    },
+    {
+      "t": 120.57,
+      "bytes": 2276863,
+      "packets": 5363,
+      "gaps": 405,
+      "missing": 6133,
+      "malformed": 168
+    },
+    {
+      "t": 120.63,
+      "bytes": 2277883,
+      "packets": 5365,
+      "gaps": 406,
+      "missing": 6142,
+      "malformed": 169
+    },
+    {
+      "t": 120.68,
+      "bytes": 2278903,
+      "packets": 5367,
+      "gaps": 406,
+      "missing": 6142,
+      "malformed": 169
+    },
+    {
+      "t": 120.74,
+      "bytes": 2279923,
+      "packets": 5369,
+      "gaps": 407,
+      "missing": 6153,
+      "malformed": 170
+    },
+    {
+      "t": 120.79,
+      "bytes": 2280943,
+      "packets": 5371,
+      "gaps": 407,
+      "missing": 6153,
+      "malformed": 170
+    },
+    {
+      "t": 120.85,
+      "bytes": 2281963,
+      "packets": 5373,
+      "gaps": 408,
+      "missing": 6162,
+      "malformed": 171
+    },
+    {
+      "t": 120.9,
+      "bytes": 2282983,
+      "packets": 5375,
+      "gaps": 408,
+      "missing": 6162,
+      "malformed": 171
+    },
+    {
+      "t": 120.95,
+      "bytes": 2284003,
+      "packets": 5376,
+      "gaps": 408,
+      "missing": 6162,
+      "malformed": 172
+    },
+    {
+      "t": 150.04,
+      "bytes": 2837863,
+      "packets": 6655,
+      "gaps": 678,
+      "missing": 10374,
+      "malformed": 318
+    },
+    {
+      "t": 150.09,
+      "bytes": 2838883,
+      "packets": 6658,
+      "gaps": 679,
+      "missing": 10388,
+      "malformed": 318
+    },
+    {
+      "t": 150.15,
+      "bytes": 2839903,
+      "packets": 6661,
+      "gaps": 679,
+      "missing": 10388,
+      "malformed": 318
+    },
+    {
+      "t": 150.2,
+      "bytes": 2840923,
+      "packets": 6664,
+      "gaps": 680,
+      "missing": 10402,
+      "malformed": 318
+    },
+    {
+      "t": 150.25,
+      "bytes": 2841943,
+      "packets": 6666,
+      "gaps": 680,
+      "missing": 10402,
+      "malformed": 318
+    },
+    {
+      "t": 150.31,
+      "bytes": 2842963,
+      "packets": 6668,
+      "gaps": 681,
+      "missing": 10418,
+      "malformed": 319
+    },
+    {
+      "t": 150.36,
+      "bytes": 2843983,
+      "packets": 6670,
+      "gaps": 681,
+      "missing": 10418,
+      "malformed": 319
+    },
+    {
+      "t": 150.42,
+      "bytes": 2845003,
+      "packets": 6672,
+      "gaps": 682,
+      "missing": 10431,
+      "malformed": 320
+    },
+    {
+      "t": 150.47,
+      "bytes": 2846023,
+      "packets": 6674,
+      "gaps": 682,
+      "missing": 10431,
+      "malformed": 320
+    },
+    {
+      "t": 150.52,
+      "bytes": 2847043,
+      "packets": 6676,
+      "gaps": 683,
+      "missing": 10443,
+      "malformed": 321
+    },
+    {
+      "t": 150.57,
+      "bytes": 2848063,
+      "packets": 6678,
+      "gaps": 683,
+      "missing": 10443,
+      "malformed": 321
+    },
+    {
+      "t": 150.63,
+      "bytes": 2849083,
+      "packets": 6682,
+      "gaps": 684,
+      "missing": 10457,
+      "malformed": 321
+    },
+    {
+      "t": 150.68,
+      "bytes": 2850103,
+      "packets": 6684,
+      "gaps": 684,
+      "missing": 10457,
+      "malformed": 321
+    },
+    {
+      "t": 150.74,
+      "bytes": 2851123,
+      "packets": 6686,
+      "gaps": 685,
+      "missing": 10471,
+      "malformed": 322
+    },
+    {
+      "t": 150.79,
+      "bytes": 2852143,
+      "packets": 6688,
+      "gaps": 685,
+      "missing": 10471,
+      "malformed": 322
+    },
+    {
+      "t": 150.84,
+      "bytes": 2853163,
+      "packets": 6690,
+      "gaps": 686,
+      "missing": 10486,
+      "malformed": 323
+    },
+    {
+      "t": 150.9,
+      "bytes": 2854183,
+      "packets": 6693,
+      "gaps": 686,
+      "missing": 10486,
+      "malformed": 323
+    },
+    {
+      "t": 150.95,
+      "bytes": 2855203,
+      "packets": 6696,
+      "gaps": 687,
+      "missing": 10499,
+      "malformed": 323
+    },
+    {
+      "t": 180.0,
+      "bytes": 3407023,
+      "packets": 7966,
+      "gaps": 955,
+      "missing": 14664,
+      "malformed": 473
+    },
+    {
+      "t": 180.06,
+      "bytes": 3408043,
+      "packets": 7969,
+      "gaps": 956,
+      "missing": 14680,
+      "malformed": 473
+    },
+    {
+      "t": 180.11,
+      "bytes": 3409063,
+      "packets": 7970,
+      "gaps": 957,
+      "missing": 14697,
+      "malformed": 474
+    },
+    {
+      "t": 180.17,
+      "bytes": 3410083,
+      "packets": 7972,
+      "gaps": 957,
+      "missing": 14697,
+      "malformed": 474
+    },
+    {
+      "t": 180.22,
+      "bytes": 3411103,
+      "packets": 7974,
+      "gaps": 958,
+      "missing": 14711,
+      "malformed": 475
+    },
+    {
+      "t": 180.27,
+      "bytes": 3412123,
+      "packets": 7977,
+      "gaps": 958,
+      "missing": 14711,
+      "malformed": 475
+    },
+    {
+      "t": 180.32,
+      "bytes": 3413143,
+      "packets": 7979,
+      "gaps": 959,
+      "missing": 14725,
+      "malformed": 476
+    },
+    {
+      "t": 180.38,
+      "bytes": 3414163,
+      "packets": 7981,
+      "gaps": 959,
+      "missing": 14725,
+      "malformed": 476
+    },
+    {
+      "t": 180.43,
+      "bytes": 3415183,
+      "packets": 7984,
+      "gaps": 960,
+      "missing": 14739,
+      "malformed": 476
+    },
+    {
+      "t": 180.48,
+      "bytes": 3416203,
+      "packets": 7987,
+      "gaps": 960,
+      "missing": 14739,
+      "malformed": 476
+    },
+    {
+      "t": 180.53,
+      "bytes": 3417223,
+      "packets": 7989,
+      "gaps": 961,
+      "missing": 14754,
+      "malformed": 477
+    },
+    {
+      "t": 180.59,
+      "bytes": 3418243,
+      "packets": 7991,
+      "gaps": 961,
+      "missing": 14754,
+      "malformed": 477
+    },
+    {
+      "t": 180.64,
+      "bytes": 3419263,
+      "packets": 7993,
+      "gaps": 962,
+      "missing": 14766,
+      "malformed": 478
+    },
+    {
+      "t": 180.69,
+      "bytes": 3420283,
+      "packets": 7995,
+      "gaps": 962,
+      "missing": 14766,
+      "malformed": 478
+    },
+    {
+      "t": 180.74,
+      "bytes": 3421303,
+      "packets": 7996,
+      "gaps": 962,
+      "missing": 14766,
+      "malformed": 479
+    },
+    {
+      "t": 180.79,
+      "bytes": 3422323,
+      "packets": 7999,
+      "gaps": 963,
+      "missing": 14781,
+      "malformed": 479
+    },
+    {
+      "t": 180.85,
+      "bytes": 3423343,
+      "packets": 8002,
+      "gaps": 964,
+      "missing": 14789,
+      "malformed": 479
+    },
+    {
+      "t": 180.9,
+      "bytes": 3424363,
+      "packets": 8004,
+      "gaps": 964,
+      "missing": 14789,
+      "malformed": 479
+    },
+    {
+      "t": 180.95,
+      "bytes": 3425383,
+      "packets": 8006,
+      "gaps": 965,
+      "missing": 14805,
+      "malformed": 480
+    },
+    {
+      "t": 210.01,
+      "bytes": 3980263,
+      "packets": 9271,
+      "gaps": 1234,
+      "missing": 19052,
+      "malformed": 629
+    },
+    {
+      "t": 210.06,
+      "bytes": 3981283,
+      "packets": 9273,
+      "gaps": 1235,
+      "missing": 19066,
+      "malformed": 630
+    },
+    {
+      "t": 210.11,
+      "bytes": 3982303,
+      "packets": 9276,
+      "gaps": 1235,
+      "missing": 19066,
+      "malformed": 630
+    },
+    {
+      "t": 210.17,
+      "bytes": 3983323,
+      "packets": 9279,
+      "gaps": 1236,
+      "missing": 19081,
+      "malformed": 630
+    },
+    {
+      "t": 210.23,
+      "bytes": 3984343,
+      "packets": 9281,
+      "gaps": 1236,
+      "missing": 19081,
+      "malformed": 630
+    },
+    {
+      "t": 210.28,
+      "bytes": 3985363,
+      "packets": 9284,
+      "gaps": 1237,
+      "missing": 19093,
+      "malformed": 630
+    },
+    {
+      "t": 210.34,
+      "bytes": 3986383,
+      "packets": 9287,
+      "gaps": 1237,
+      "missing": 19093,
+      "malformed": 630
+    },
+    {
+      "t": 210.39,
+      "bytes": 3987403,
+      "packets": 9288,
+      "gaps": 1237,
+      "missing": 19093,
+      "malformed": 631
+    },
+    {
+      "t": 210.44,
+      "bytes": 3988423,
+      "packets": 9290,
+      "gaps": 1238,
+      "missing": 19109,
+      "malformed": 631
+    },
+    {
+      "t": 210.5,
+      "bytes": 3989443,
+      "packets": 9292,
+      "gaps": 1239,
+      "missing": 19122,
+      "malformed": 632
+    },
+    {
+      "t": 210.55,
+      "bytes": 3990463,
+      "packets": 9295,
+      "gaps": 1239,
+      "missing": 19122,
+      "malformed": 632
+    },
+    {
+      "t": 210.61,
+      "bytes": 3991483,
+      "packets": 9298,
+      "gaps": 1240,
+      "missing": 19134,
+      "malformed": 632
+    },
+    {
+      "t": 210.66,
+      "bytes": 3992503,
+      "packets": 9300,
+      "gaps": 1240,
+      "missing": 19134,
+      "malformed": 632
+    },
+    {
+      "t": 210.71,
+      "bytes": 3993523,
+      "packets": 9302,
+      "gaps": 1241,
+      "missing": 19143,
+      "malformed": 633
+    },
+    {
+      "t": 210.77,
+      "bytes": 3994543,
+      "packets": 9305,
+      "gaps": 1241,
+      "missing": 19143,
+      "malformed": 633
+    },
+    {
+      "t": 210.82,
+      "bytes": 3995563,
+      "packets": 9306,
+      "gaps": 1241,
+      "missing": 19143,
+      "malformed": 634
+    },
+    {
+      "t": 210.87,
+      "bytes": 3996583,
+      "packets": 9309,
+      "gaps": 1242,
+      "missing": 19157,
+      "malformed": 634
+    },
+    {
+      "t": 210.92,
+      "bytes": 3997603,
+      "packets": 9310,
+      "gaps": 1243,
+      "missing": 19173,
+      "malformed": 635
+    },
+    {
+      "t": 210.97,
+      "bytes": 3998623,
+      "packets": 9312,
+      "gaps": 1243,
+      "missing": 19173,
+      "malformed": 635
+    },
+    {
+      "t": 240.05,
+      "bytes": 4553503,
+      "packets": 10600,
+      "gaps": 1514,
+      "missing": 23412,
+      "malformed": 783
+    },
+    {
+      "t": 240.1,
+      "bytes": 4554523,
+      "packets": 10602,
+      "gaps": 1515,
+      "missing": 23427,
+      "malformed": 784
+    },
+    {
+      "t": 240.16,
+      "bytes": 4555543,
+      "packets": 10604,
+      "gaps": 1515,
+      "missing": 23427,
+      "malformed": 784
+    },
+    {
+      "t": 240.21,
+      "bytes": 4556563,
+      "packets": 10606,
+      "gaps": 1516,
+      "missing": 23443,
+      "malformed": 785
+    },
+    {
+      "t": 240.27,
+      "bytes": 4557583,
+      "packets": 10608,
+      "gaps": 1516,
+      "missing": 23443,
+      "malformed": 785
+    },
+    {
+      "t": 240.32,
+      "bytes": 4558603,
+      "packets": 10610,
+      "gaps": 1517,
+      "missing": 23459,
+      "malformed": 786
+    },
+    {
+      "t": 240.38,
+      "bytes": 4559623,
+      "packets": 10612,
+      "gaps": 1517,
+      "missing": 23459,
+      "malformed": 786
+    },
+    {
+      "t": 240.43,
+      "bytes": 4560643,
+      "packets": 10614,
+      "gaps": 1518,
+      "missing": 23474,
+      "malformed": 787
+    },
+    {
+      "t": 240.49,
+      "bytes": 4561663,
+      "packets": 10617,
+      "gaps": 1518,
+      "missing": 23474,
+      "malformed": 787
+    },
+    {
+      "t": 240.54,
+      "bytes": 4562683,
+      "packets": 10618,
+      "gaps": 1518,
+      "missing": 23474,
+      "malformed": 788
+    },
+    {
+      "t": 240.6,
+      "bytes": 4563703,
+      "packets": 10621,
+      "gaps": 1519,
+      "missing": 23488,
+      "malformed": 788
+    },
+    {
+      "t": 240.65,
+      "bytes": 4564723,
+      "packets": 10622,
+      "gaps": 1519,
+      "missing": 23488,
+      "malformed": 789
+    },
+    {
+      "t": 240.7,
+      "bytes": 4565743,
+      "packets": 10625,
+      "gaps": 1520,
+      "missing": 23505,
+      "malformed": 789
+    },
+    {
+      "t": 240.76,
+      "bytes": 4566763,
+      "packets": 10626,
+      "gaps": 1520,
+      "missing": 23505,
+      "malformed": 790
+    },
+    {
+      "t": 240.81,
+      "bytes": 4567783,
+      "packets": 10629,
+      "gaps": 1521,
+      "missing": 23517,
+      "malformed": 790
+    },
+    {
+      "t": 240.87,
+      "bytes": 4568803,
+      "packets": 10630,
+      "gaps": 1521,
+      "missing": 23517,
+      "malformed": 791
+    },
+    {
+      "t": 240.92,
+      "bytes": 4569823,
+      "packets": 10633,
+      "gaps": 1522,
+      "missing": 23529,
+      "malformed": 791
+    },
+    {
+      "t": 240.98,
+      "bytes": 4570843,
+      "packets": 10634,
+      "gaps": 1522,
+      "missing": 23529,
+      "malformed": 792
+    },
+    {
+      "t": 270.04,
+      "bytes": 5124703,
+      "packets": 11957,
+      "gaps": 1791,
+      "missing": 27751,
+      "malformed": 935
+    },
+    {
+      "t": 270.09,
+      "bytes": 5125723,
+      "packets": 11958,
+      "gaps": 1791,
+      "missing": 27751,
+      "malformed": 936
+    },
+    {
+      "t": 270.15,
+      "bytes": 5126743,
+      "packets": 11961,
+      "gaps": 1792,
+      "missing": 27762,
+      "malformed": 936
+    },
+    {
+      "t": 270.2,
+      "bytes": 5127763,
+      "packets": 11962,
+      "gaps": 1792,
+      "missing": 27762,
+      "malformed": 937
+    },
+    {
+      "t": 270.25,
+      "bytes": 5128783,
+      "packets": 11965,
+      "gaps": 1793,
+      "missing": 27776,
+      "malformed": 937
+    },
+    {
+      "t": 270.3,
+      "bytes": 5129803,
+      "packets": 11966,
+      "gaps": 1793,
+      "missing": 27776,
+      "malformed": 938
+    },
+    {
+      "t": 270.36,
+      "bytes": 5130823,
+      "packets": 11969,
+      "gaps": 1794,
+      "missing": 27790,
+      "malformed": 938
+    },
+    {
+      "t": 270.41,
+      "bytes": 5131843,
+      "packets": 11970,
+      "gaps": 1794,
+      "missing": 27790,
+      "malformed": 939
+    },
+    {
+      "t": 270.46,
+      "bytes": 5132863,
+      "packets": 11973,
+      "gaps": 1795,
+      "missing": 27805,
+      "malformed": 939
+    },
+    {
+      "t": 270.51,
+      "bytes": 5133883,
+      "packets": 11976,
+      "gaps": 1796,
+      "missing": 27818,
+      "malformed": 939
+    },
+    {
+      "t": 270.57,
+      "bytes": 5134903,
+      "packets": 11978,
+      "gaps": 1796,
+      "missing": 27818,
+      "malformed": 939
+    },
+    {
+      "t": 270.62,
+      "bytes": 5135923,
+      "packets": 11982,
+      "gaps": 1797,
+      "missing": 27831,
+      "malformed": 939
+    },
+    {
+      "t": 270.67,
+      "bytes": 5136943,
+      "packets": 11984,
+      "gaps": 1797,
+      "missing": 27831,
+      "malformed": 939
+    },
+    {
+      "t": 270.73,
+      "bytes": 5137963,
+      "packets": 11986,
+      "gaps": 1798,
+      "missing": 27846,
+      "malformed": 940
+    },
+    {
+      "t": 270.78,
+      "bytes": 5138983,
+      "packets": 11989,
+      "gaps": 1798,
+      "missing": 27846,
+      "malformed": 940
+    },
+    {
+      "t": 270.84,
+      "bytes": 5140003,
+      "packets": 11992,
+      "gaps": 1799,
+      "missing": 27858,
+      "malformed": 940
+    },
+    {
+      "t": 270.89,
+      "bytes": 5141023,
+      "packets": 11995,
+      "gaps": 1799,
+      "missing": 27858,
+      "malformed": 940
+    },
+    {
+      "t": 270.95,
+      "bytes": 5142043,
+      "packets": 11996,
+      "gaps": 1800,
+      "missing": 27876,
+      "malformed": 941
+    },
+    {
+      "t": 300.03,
+      "bytes": 5693863,
+      "packets": 13296,
+      "gaps": 2069,
+      "missing": 32092,
+      "malformed": 1091
+    },
+    {
+      "t": 300.08,
+      "bytes": 5694883,
+      "packets": 13298,
+      "gaps": 2070,
+      "missing": 32108,
+      "malformed": 1092
+    },
+    {
+      "t": 300.13,
+      "bytes": 5695903,
+      "packets": 13300,
+      "gaps": 2070,
+      "missing": 32108,
+      "malformed": 1092
+    },
+    {
+      "t": 300.19,
+      "bytes": 5696923,
+      "packets": 13302,
+      "gaps": 2071,
+      "missing": 32126,
+      "malformed": 1093
+    },
+    {
+      "t": 300.24,
+      "bytes": 5697943,
+      "packets": 13304,
+      "gaps": 2071,
+      "missing": 32126,
+      "malformed": 1093
+    },
+    {
+      "t": 300.29,
+      "bytes": 5698963,
+      "packets": 13306,
+      "gaps": 2072,
+      "missing": 32145,
+      "malformed": 1094
+    },
+    {
+      "t": 300.35,
+      "bytes": 5699983,
+      "packets": 13308,
+      "gaps": 2072,
+      "missing": 32145,
+      "malformed": 1094
+    },
+    {
+      "t": 300.4,
+      "bytes": 5701003,
+      "packets": 13311,
+      "gaps": 2073,
+      "missing": 32159,
+      "malformed": 1095
+    },
+    {
+      "t": 300.46,
+      "bytes": 5702023,
+      "packets": 13313,
+      "gaps": 2073,
+      "missing": 32159,
+      "malformed": 1095
+    },
+    {
+      "t": 300.51,
+      "bytes": 5703043,
+      "packets": 13316,
+      "gaps": 2074,
+      "missing": 32165,
+      "malformed": 1095
+    },
+    {
+      "t": 300.57,
+      "bytes": 5704063,
+      "packets": 13319,
+      "gaps": 2074,
+      "missing": 32165,
+      "malformed": 1095
+    },
+    {
+      "t": 300.62,
+      "bytes": 5705083,
+      "packets": 13322,
+      "gaps": 2075,
+      "missing": 32178,
+      "malformed": 1095
+    },
+    {
+      "t": 300.67,
+      "bytes": 5706103,
+      "packets": 13325,
+      "gaps": 2075,
+      "missing": 32178,
+      "malformed": 1095
+    },
+    {
+      "t": 300.73,
+      "bytes": 5707123,
+      "packets": 13326,
+      "gaps": 2075,
+      "missing": 32178,
+      "malformed": 1096
+    },
+    {
+      "t": 300.78,
+      "bytes": 5708143,
+      "packets": 13329,
+      "gaps": 2076,
+      "missing": 32192,
+      "malformed": 1096
+    },
+    {
+      "t": 300.83,
+      "bytes": 5709163,
+      "packets": 13330,
+      "gaps": 2077,
+      "missing": 32207,
+      "malformed": 1097
+    },
+    {
+      "t": 300.89,
+      "bytes": 5710183,
+      "packets": 13332,
+      "gaps": 2077,
+      "missing": 32207,
+      "malformed": 1097
+    },
+    {
+      "t": 300.94,
+      "bytes": 5711203,
+      "packets": 13335,
+      "gaps": 2078,
+      "missing": 32220,
+      "malformed": 1098
+    },
+    {
+      "t": 300.99,
+      "bytes": 5712223,
+      "packets": 13337,
+      "gaps": 2078,
+      "missing": 32220,
+      "malformed": 1098
+    },
+    {
+      "t": 330.01,
+      "bytes": 6265063,
+      "packets": 14659,
+      "gaps": 2337,
+      "missing": 36249,
+      "malformed": 1233
+    },
+    {
+      "t": 330.07,
+      "bytes": 6266083,
+      "packets": 14661,
+      "gaps": 2338,
+      "missing": 36265,
+      "malformed": 1234
+    },
+    {
+      "t": 330.13,
+      "bytes": 6267103,
+      "packets": 14664,
+      "gaps": 2338,
+      "missing": 36265,
+      "malformed": 1234
+    },
+    {
+      "t": 330.18,
+      "bytes": 6268123,
+      "packets": 14665,
+      "gaps": 2338,
+      "missing": 36265,
+      "malformed": 1235
+    },
+    {
+      "t": 330.24,
+      "bytes": 6269143,
+      "packets": 14668,
+      "gaps": 2339,
+      "missing": 36280,
+      "malformed": 1235
+    },
+    {
+      "t": 330.29,
+      "bytes": 6270163,
+      "packets": 14671,
+      "gaps": 2340,
+      "missing": 36292,
+      "malformed": 1235
+    },
+    {
+      "t": 330.34,
+      "bytes": 6271183,
+      "packets": 14674,
+      "gaps": 2340,
+      "missing": 36292,
+      "malformed": 1235
+    },
+    {
+      "t": 330.39,
+      "bytes": 6272203,
+      "packets": 14677,
+      "gaps": 2341,
+      "missing": 36306,
+      "malformed": 1235
+    },
+    {
+      "t": 330.45,
+      "bytes": 6273223,
+      "packets": 14679,
+      "gaps": 2341,
+      "missing": 36306,
+      "malformed": 1235
+    },
+    {
+      "t": 330.5,
+      "bytes": 6274243,
+      "packets": 14680,
+      "gaps": 2341,
+      "missing": 36306,
+      "malformed": 1236
+    },
+    {
+      "t": 330.56,
+      "bytes": 6275263,
+      "packets": 14683,
+      "gaps": 2342,
+      "missing": 36316,
+      "malformed": 1236
+    },
+    {
+      "t": 330.61,
+      "bytes": 6276283,
+      "packets": 14686,
+      "gaps": 2343,
+      "missing": 36329,
+      "malformed": 1236
+    },
+    {
+      "t": 330.66,
+      "bytes": 6277303,
+      "packets": 14689,
+      "gaps": 2343,
+      "missing": 36329,
+      "malformed": 1236
+    },
+    {
+      "t": 330.72,
+      "bytes": 6278323,
+      "packets": 14690,
+      "gaps": 2343,
+      "missing": 36329,
+      "malformed": 1237
+    },
+    {
+      "t": 330.77,
+      "bytes": 6279343,
+      "packets": 14693,
+      "gaps": 2344,
+      "missing": 36344,
+      "malformed": 1237
+    },
+    {
+      "t": 330.83,
+      "bytes": 6280363,
+      "packets": 14694,
+      "gaps": 2344,
+      "missing": 36344,
+      "malformed": 1238
+    },
+    {
+      "t": 330.88,
+      "bytes": 6281383,
+      "packets": 14697,
+      "gaps": 2345,
+      "missing": 36356,
+      "malformed": 1238
+    },
+    {
+      "t": 330.93,
+      "bytes": 6282403,
+      "packets": 14698,
+      "gaps": 2345,
+      "missing": 36356,
+      "malformed": 1239
+    },
+    {
+      "t": 330.99,
+      "bytes": 6283423,
+      "packets": 14701,
+      "gaps": 2346,
+      "missing": 36371,
+      "malformed": 1239
+    },
+    {
+      "t": 360.01,
+      "bytes": 6832183,
+      "packets": 16003,
+      "gaps": 2589,
+      "missing": 39966,
+      "malformed": 1374
+    },
+    {
+      "t": 360.06,
+      "bytes": 6833203,
+      "packets": 16005,
+      "gaps": 2589,
+      "missing": 39966,
+      "malformed": 1374
+    },
+    {
+      "t": 360.11,
+      "bytes": 6834223,
+      "packets": 16007,
+      "gaps": 2590,
+      "missing": 39978,
+      "malformed": 1375
+    },
+    {
+      "t": 360.17,
+      "bytes": 6835243,
+      "packets": 16009,
+      "gaps": 2591,
+      "missing": 39986,
+      "malformed": 1376
+    },
+    {
+      "t": 360.22,
+      "bytes": 6836263,
+      "packets": 16012,
+      "gaps": 2591,
+      "missing": 39986,
+      "malformed": 1376
+    },
+    {
+      "t": 360.28,
+      "bytes": 6837283,
+      "packets": 16014,
+      "gaps": 2592,
+      "missing": 39999,
+      "malformed": 1377
+    },
+    {
+      "t": 360.33,
+      "bytes": 6838303,
+      "packets": 16016,
+      "gaps": 2592,
+      "missing": 39999,
+      "malformed": 1377
+    },
+    {
+      "t": 360.38,
+      "bytes": 6839323,
+      "packets": 16018,
+      "gaps": 2593,
+      "missing": 40013,
+      "malformed": 1378
+    },
+    {
+      "t": 360.43,
+      "bytes": 6840343,
+      "packets": 16020,
+      "gaps": 2593,
+      "missing": 40013,
+      "malformed": 1378
+    },
+    {
+      "t": 360.49,
+      "bytes": 6841363,
+      "packets": 16023,
+      "gaps": 2594,
+      "missing": 40025,
+      "malformed": 1378
+    },
+    {
+      "t": 360.54,
+      "bytes": 6842383,
+      "packets": 16026,
+      "gaps": 2594,
+      "missing": 40025,
+      "malformed": 1378
+    },
+    {
+      "t": 360.6,
+      "bytes": 6843403,
+      "packets": 16027,
+      "gaps": 2594,
+      "missing": 40025,
+      "malformed": 1379
+    },
+    {
+      "t": 360.65,
+      "bytes": 6844423,
+      "packets": 16030,
+      "gaps": 2595,
+      "missing": 40032,
+      "malformed": 1379
+    },
+    {
+      "t": 360.7,
+      "bytes": 6845443,
+      "packets": 16031,
+      "gaps": 2595,
+      "missing": 40032,
+      "malformed": 1380
+    },
+    {
+      "t": 360.76,
+      "bytes": 6846463,
+      "packets": 16034,
+      "gaps": 2596,
+      "missing": 40040,
+      "malformed": 1380
+    },
+    {
+      "t": 360.81,
+      "bytes": 6847483,
+      "packets": 16036,
+      "gaps": 2597,
+      "missing": 40050,
+      "malformed": 1381
+    },
+    {
+      "t": 360.86,
+      "bytes": 6848503,
+      "packets": 16038,
+      "gaps": 2597,
+      "missing": 40050,
+      "malformed": 1381
+    },
+    {
+      "t": 360.91,
+      "bytes": 6849523,
+      "packets": 16040,
+      "gaps": 2598,
+      "missing": 40062,
+      "malformed": 1382
+    },
+    {
+      "t": 360.97,
+      "bytes": 6850543,
+      "packets": 16042,
+      "gaps": 2598,
+      "missing": 40062,
+      "malformed": 1382
+    }
+  ],
+  "events": [
+    {
+      "t": 377.31,
+      "event": "stall",
+      "evidence": {
+        "t": 377.31,
+        "silent_for_s": 5.04,
+        "esp32_enumeration": {
+          "enumerated": true,
+          "product": "USB JTAG_serial debug unit",
+          "vendor": "Espressif",
+          "vid": 12346,
+          "pid": 4097,
+          "serial": "14:C1:9F:26:52:EC"
+        },
+        "uart_console": {
+          "bytes": 0,
+          "readable": true,
+          "note": "",
+          "sample": ""
+        },
+        "kernel_usb_log": [],
+        "diagnosis": "device still enumerates but the UART0 console is silent: the MCU may be halted; a device-side USB fault and an application hang cannot be separated without a reset"
+      }
+    }
+  ],
+  "stalls": [
+    {
+      "t": 377.31,
+      "silent_for_s": 5.04,
+      "esp32_enumeration": {
+        "enumerated": true,
+        "product": "USB JTAG_serial debug unit",
+        "vendor": "Espressif",
+        "vid": 12346,
+        "pid": 4097,
+        "serial": "14:C1:9F:26:52:EC"
+      },
+      "uart_console": {
+        "bytes": 0,
+        "readable": true,
+        "note": "",
+        "sample": ""
+      },
+      "kernel_usb_log": [],
+      "diagnosis": "device still enumerates but the UART0 console is silent: the MCU may be halted; a device-side USB fault and an application hang cannot be separated without a reset"
+    }
+  ],
+  "final_counters": {
+    "lines": 18000,
+    "csi_parsed": 16537,
+    "csi_malformed": 1443,
+    "csi_dropped": 12441,
+    "csi_sequence_gaps": 2699,
+    "csi_missing_packets": 41348,
+    "supervisor_parsed": 0,
+    "supervisor_malformed": 0,
+    "supervisor_dropped": 0,
+    "unknown_lines": 20,
+    "headers_seen": 0,
+    "bytes": 7063840,
+    "csi_queued": 4096,
+    "supervisor_queued": 0,
+    "csi_last_seq": 59208,
+    "csi_first_seq": 1324
+  }
+}

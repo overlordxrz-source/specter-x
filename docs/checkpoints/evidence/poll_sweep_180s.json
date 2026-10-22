@@ -1,0 +1,62 @@
+{
+  "port": "/dev/cu.usbmodem1101",
+  "seconds_per_arm": 180.0,
+  "arms": [
+    {
+      "poll_interval_s": 0.0,
+      "window_s": 180.0,
+      "packets_received": 30499,
+      "device_id_span": 30499,
+      "received_fraction": 1.0,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0,
+      "bytes": 14060502,
+      "bytes_per_s": 78113.9,
+      "packets_per_s": 169.4,
+      "stalled": false
+    },
+    {
+      "poll_interval_s": 0.005,
+      "window_s": 180.0,
+      "packets_received": 32467,
+      "device_id_span": 32467,
+      "received_fraction": 1.0,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0,
+      "bytes": 14215707,
+      "bytes_per_s": 78974.9,
+      "packets_per_s": 180.4,
+      "stalled": false
+    },
+    {
+      "poll_interval_s": 0.02,
+      "window_s": 180.01,
+      "packets_received": 30560,
+      "device_id_span": 30560,
+      "received_fraction": 1.0,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0,
+      "bytes": 13700664,
+      "bytes_per_s": 76111.6,
+      "packets_per_s": 169.8,
+      "stalled": false
+    },
+    {
+      "poll_interval_s": 0.05,
+      "window_s": 180.05,
+      "packets_received": 32671,
+      "device_id_span": 32671,
+      "received_fraction": 1.0,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0,
+      "bytes": 14428683,
+      "bytes_per_s": 80135.2,
+      "packets_per_s": 181.5,
+      "stalled": false
+    }
+  ]
+}

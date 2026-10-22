@@ -1,0 +1,90 @@
+{
+  "port": "/dev/cu.usbmodem1101",
+  "seconds_per_arm": 60.0,
+  "arms": [
+    {
+      "poll_interval_s": 0.0,
+      "window_s": 60.0,
+      "packets_received": 11422,
+      "device_id_span": 11422,
+      "received_fraction": 1.0,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0,
+      "bytes": 4644465,
+      "bytes_per_s": 77407.8,
+      "packets_per_s": 190.4,
+      "stalled": false
+    },
+    {
+      "poll_interval_s": 0.002,
+      "window_s": 60.0,
+      "packets_received": 10905,
+      "device_id_span": 10905,
+      "received_fraction": 1.0,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0,
+      "bytes": 4909029,
+      "bytes_per_s": 81813.1,
+      "packets_per_s": 181.7,
+      "stalled": false
+    },
+    {
+      "poll_interval_s": 0.005,
+      "window_s": 60.0,
+      "packets_received": 10631,
+      "device_id_span": 10631,
+      "received_fraction": 1.0,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0,
+      "bytes": 4747944,
+      "bytes_per_s": 79130.4,
+      "packets_per_s": 177.2,
+      "stalled": false
+    },
+    {
+      "poll_interval_s": 0.01,
+      "window_s": 60.0,
+      "packets_received": 10611,
+      "device_id_span": 10611,
+      "received_fraction": 1.0,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0,
+      "bytes": 4754870,
+      "bytes_per_s": 79246.9,
+      "packets_per_s": 176.8,
+      "stalled": false
+    },
+    {
+      "poll_interval_s": 0.02,
+      "window_s": 60.0,
+      "packets_received": 10988,
+      "device_id_span": 10988,
+      "received_fraction": 1.0,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0,
+      "bytes": 4868717,
+      "bytes_per_s": 81139.8,
+      "packets_per_s": 183.1,
+      "stalled": false
+    },
+    {
+      "poll_interval_s": 0.05,
+      "window_s": 60.03,
+      "packets_received": 6622,
+      "device_id_span": 6622,
+      "received_fraction": 1.0,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0,
+      "bytes": 2808930,
+      "bytes_per_s": 46791.3,
+      "packets_per_s": 110.3,
+      "stalled": false
+    }
+  ]
+}

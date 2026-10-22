@@ -1,0 +1,768 @@
+{
+  "port": "/dev/cu.usbmodem1101",
+  "window_s": 1200.0,
+  "samples": [
+    {
+      "t": 0.0,
+      "bytes": 0,
+      "packets": 0,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 15.0,
+      "bytes": 1116100,
+      "packets": 2499,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 30.0,
+      "bytes": 2256967,
+      "packets": 5062,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 45.0,
+      "bytes": 3376677,
+      "packets": 7594,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 60.0,
+      "bytes": 4545265,
+      "packets": 10272,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 75.0,
+      "bytes": 5683014,
+      "packets": 12918,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 90.0,
+      "bytes": 6901773,
+      "packets": 15682,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 105.0,
+      "bytes": 8093316,
+      "packets": 18392,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 120.0,
+      "bytes": 9303129,
+      "packets": 21164,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 135.0,
+      "bytes": 10503268,
+      "packets": 23821,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 150.0,
+      "bytes": 11694637,
+      "packets": 26472,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 165.0,
+      "bytes": 12863112,
+      "packets": 29041,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 180.0,
+      "bytes": 14013114,
+      "packets": 31578,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 195.0,
+      "bytes": 15188167,
+      "packets": 34160,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 210.0,
+      "bytes": 16343165,
+      "packets": 36692,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 225.0,
+      "bytes": 17522393,
+      "packets": 39387,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 240.0,
+      "bytes": 18671972,
+      "packets": 41954,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 255.0,
+      "bytes": 19844404,
+      "packets": 44528,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 270.0,
+      "bytes": 21003815,
+      "packets": 47101,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 285.0,
+      "bytes": 22216096,
+      "packets": 49837,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 300.0,
+      "bytes": 23435494,
+      "packets": 52584,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 315.0,
+      "bytes": 24493028,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 330.0,
+      "bytes": 24494119,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 345.0,
+      "bytes": 24494119,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 360.0,
+      "bytes": 24494119,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 375.0,
+      "bytes": 24494119,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 390.0,
+      "bytes": 24494119,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 405.0,
+      "bytes": 24494119,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 420.0,
+      "bytes": 24494119,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 435.0,
+      "bytes": 24494119,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 450.0,
+      "bytes": 24494119,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 465.0,
+      "bytes": 24494119,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 480.0,
+      "bytes": 24494119,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 495.0,
+      "bytes": 24494119,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 510.0,
+      "bytes": 24494119,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 525.0,
+      "bytes": 24494119,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 540.0,
+      "bytes": 24494119,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 555.0,
+      "bytes": 24494119,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 570.0,
+      "bytes": 24494119,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 585.0,
+      "bytes": 24494119,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 600.0,
+      "bytes": 24494119,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 615.0,
+      "bytes": 24494119,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 630.0,
+      "bytes": 24494119,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 645.0,
+      "bytes": 24494434,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 660.0,
+      "bytes": 24495477,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 675.0,
+      "bytes": 24495477,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 690.0,
+      "bytes": 24495477,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 705.0,
+      "bytes": 24495477,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 720.0,
+      "bytes": 24495477,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 735.0,
+      "bytes": 24495477,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 750.0,
+      "bytes": 24495477,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 765.0,
+      "bytes": 24495477,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 780.0,
+      "bytes": 24495477,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 795.0,
+      "bytes": 24495477,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 810.0,
+      "bytes": 24495477,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 825.0,
+      "bytes": 24495477,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 840.0,
+      "bytes": 24495477,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 855.0,
+      "bytes": 24495477,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 870.0,
+      "bytes": 24495477,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 885.0,
+      "bytes": 24495477,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 900.0,
+      "bytes": 24495477,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 915.0,
+      "bytes": 24495477,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 930.0,
+      "bytes": 24495477,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 945.0,
+      "bytes": 24495477,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 960.0,
+      "bytes": 24495477,
+      "packets": 54961,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 975.0,
+      "bytes": 24510360,
+      "packets": 54996,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 990.0,
+      "bytes": 25519532,
+      "packets": 57446,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 1005.0,
+      "bytes": 26671455,
+      "packets": 60111,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 1020.0,
+      "bytes": 27755263,
+      "packets": 62737,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 1035.0,
+      "bytes": 28882846,
+      "packets": 65459,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 1050.0,
+      "bytes": 30036066,
+      "packets": 68118,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 1065.0,
+      "bytes": 31127026,
+      "packets": 70619,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 1080.0,
+      "bytes": 32225304,
+      "packets": 73118,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 1095.0,
+      "bytes": 33258874,
+      "packets": 75483,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 1110.0,
+      "bytes": 34414927,
+      "packets": 78135,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 1125.0,
+      "bytes": 35621413,
+      "packets": 80907,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 1140.0,
+      "bytes": 36742980,
+      "packets": 83468,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 1155.0,
+      "bytes": 37919220,
+      "packets": 86204,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 1170.0,
+      "bytes": 39065429,
+      "packets": 88856,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 1185.0,
+      "bytes": 40261832,
+      "packets": 91658,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    }
+  ],
+  "events": [
+    {
+      "t": 322.64,
+      "event": "stall",
+      "evidence": {
+        "t": 322.64,
+        "silent_for_s": 5.0,
+        "esp32_enumeration": {
+          "enumerated": true,
+          "product": "USB JTAG_serial debug unit",
+          "vendor": "Espressif",
+          "vid": 12346,
+          "pid": 4097,
+          "serial": "14:C1:9F:26:52:EC"
+        },
+        "uart_console": {
+          "bytes": 0,
+          "readable": true,
+          "note": "",
+          "sample": ""
+        },
+        "kernel_usb_log": [],
+        "diagnosis": "device still enumerates but the UART0 console is silent: the MCU may be halted; a device-side USB fault and an application hang cannot be separated without a reset"
+      }
+    },
+    {
+      "t": 643.21,
+      "event": "recovered",
+      "silent_for_s": 643.21,
+      "after_reopen": true
+    },
+    {
+      "t": 652.64,
+      "event": "stall",
+      "evidence": {
+        "t": 652.64,
+        "silent_for_s": 5.0,
+        "esp32_enumeration": {
+          "enumerated": true,
+          "product": "USB JTAG_serial debug unit",
+          "vendor": "Espressif",
+          "vid": 12346,
+          "pid": 4097,
+          "serial": "14:C1:9F:26:52:EC"
+        },
+        "uart_console": {
+          "bytes": 0,
+          "readable": true,
+          "note": "",
+          "sample": ""
+        },
+        "kernel_usb_log": [],
+        "diagnosis": "device still enumerates but the UART0 console is silent: the MCU may be halted; a device-side USB fault and an application hang cannot be separated without a reset"
+      }
+    },
+    {
+      "t": 972.27,
+      "event": "recovered",
+      "silent_for_s": 972.27,
+      "after_reopen": true
+    }
+  ],
+  "stalls": [
+    {
+      "t": 322.64,
+      "silent_for_s": 5.0,
+      "esp32_enumeration": {
+        "enumerated": true,
+        "product": "USB JTAG_serial debug unit",
+        "vendor": "Espressif",
+        "vid": 12346,
+        "pid": 4097,
+        "serial": "14:C1:9F:26:52:EC"
+      },
+      "uart_console": {
+        "bytes": 0,
+        "readable": true,
+        "note": "",
+        "sample": ""
+      },
+      "kernel_usb_log": [],
+      "diagnosis": "device still enumerates but the UART0 console is silent: the MCU may be halted; a device-side USB fault and an application hang cannot be separated without a reset"
+    },
+    {
+      "t": 652.64,
+      "silent_for_s": 5.0,
+      "esp32_enumeration": {
+        "enumerated": true,
+        "product": "USB JTAG_serial debug unit",
+        "vendor": "Espressif",
+        "vid": 12346,
+        "pid": 4097,
+        "serial": "14:C1:9F:26:52:EC"
+      },
+      "uart_console": {
+        "bytes": 0,
+        "readable": true,
+        "note": "",
+        "sample": ""
+      },
+      "kernel_usb_log": [],
+      "diagnosis": "device still enumerates but the UART0 console is silent: the MCU may be halted; a device-side USB fault and an application hang cannot be separated without a reset"
+    }
+  ],
+  "final_counters": {
+    "lines": 94472,
+    "csi_parsed": 94413,
+    "csi_malformed": 0,
+    "csi_dropped": 90317,
+    "csi_sequence_gaps": 0,
+    "csi_missing_packets": 0,
+    "supervisor_parsed": 0,
+    "supervisor_malformed": 0,
+    "supervisor_dropped": 0,
+    "unknown_lines": 59,
+    "headers_seen": 0,
+    "bytes": 41436736,
+    "csi_queued": 4096,
+    "supervisor_queued": 0,
+    "csi_last_seq": 96522,
+    "csi_first_seq": 2110
+  }
+}

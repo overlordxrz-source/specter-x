@@ -1,0 +1,74 @@
+{
+  "port": "/dev/cu.usbmodem1101",
+  "window_s": 180.05,
+  "samples": [
+    {
+      "t": 0.0,
+      "bytes": 0,
+      "packets": 0,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 30.05,
+      "bytes": 545700,
+      "packets": 1232,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 60.08,
+      "bytes": 1090380,
+      "packets": 2438,
+      "gaps": 0,
+      "missing": 0,
+      "malformed": 0
+    },
+    {
+      "t": 90.12,
+      "bytes": 1635060,
+      "packets": 3649,
+      "gaps": 16,
+      "missing": 178,
+      "malformed": 8
+    },
+    {
+      "t": 120.15,
+      "bytes": 2178720,
+      "packets": 4742,
+      "gaps": 270,
+      "missing": 2545,
+      "malformed": 150
+    },
+    {
+      "t": 150.16,
+      "bytes": 2722380,
+      "packets": 5831,
+      "gaps": 523,
+      "missing": 5017,
+      "malformed": 303
+    }
+  ],
+  "events": [],
+  "stalls": [],
+  "final_counters": {
+    "lines": 7362,
+    "csi_parsed": 6880,
+    "csi_malformed": 481,
+    "csi_dropped": 2784,
+    "csi_sequence_gaps": 777,
+    "csi_missing_packets": 7516,
+    "supervisor_parsed": 0,
+    "supervisor_malformed": 0,
+    "supervisor_dropped": 0,
+    "unknown_lines": 1,
+    "headers_seen": 0,
+    "bytes": 3261960,
+    "csi_queued": 4096,
+    "supervisor_queued": 0,
+    "csi_last_seq": 15205,
+    "csi_first_seq": 810
+  }
+}

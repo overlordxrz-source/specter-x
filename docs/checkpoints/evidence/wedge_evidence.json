@@ -1,0 +1,19 @@
+{
+  "silent_for_s": 0.0,
+  "esp32_enumeration": {
+    "enumerated": true,
+    "product": "USB JTAG_serial debug unit",
+    "vendor": "Espressif",
+    "vid": 12346,
+    "pid": 4097,
+    "serial": "14:C1:9F:26:52:EC"
+  },
+  "uart_console": {
+    "bytes": 0,
+    "readable": true,
+    "note": "",
+    "sample": ""
+  },
+  "kernel_usb_log": [],
+  "diagnosis": "device still enumerates but the UART0 console is silent: the MCU may be halted; a device-side USB fault and an application hang cannot be separated without a reset"
+}

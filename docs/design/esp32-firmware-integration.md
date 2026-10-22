@@ -24,6 +24,42 @@ project does not accept.
 
 So the design has to make the output **serialised by construction**.
 
+### 1.1 The second problem, found later: the device's TX path overflows
+
+Checkpoint 008 established, by controlled experiment, that the current
+firmware's USB TX path **cannot be overrun**:
+
+* when the host reads the CDC endpoint continuously, the link is clean
+  (0 gaps, 0 missing, 0 malformed over twenty minutes);
+* when the host reads it slowly, the device **drops whole CSI packets** —
+  their ids are skipped — and prints **truncated lines**;
+* if the slow reading is sustained, the device's TX path **wedges
+  permanently**: neither continuous reading nor reopening the port revives
+  it, and only a device reset does.
+
+The firmware therefore needs three properties the current image does not
+have, and they are as important as the serialisation:
+
+1. **The capture path must never block on the CDC path.** A CSI callback
+   that waits for the USB FIFO is a callback that stops keeping up with the
+   radio — and the observed failure mode is exactly the device falling
+   behind and dropping.
+2. **The device must own its overflow policy and report it.** If the
+   firmware drops a record, the host must be able to tell that apart from
+   the link losing it. Today it cannot: the host sees an id gap and has to
+   guess.
+3. **The device must report its own health while the link is quiet.** The
+   device pauses its whole output path for ~5.5 minutes at a time
+   (checkpoint 008, Fault B). During such a pause the device's log is
+   silent along with its data, so the pause is currently unattributable.
+   A heartbeat and a "time since last CSI callback" counter turn an
+   unattributable silence into a device-reported one.
+
+This is why the writer task below is not optional polish: **it is the
+back-pressure mechanism.** A bounded queue in front of a single writer, with
+a counted drop policy, converts "the host is slow" from a fatal, silent,
+device-killing condition into a bounded, counted, recoverable loss.
+
 ---
 
 ## 2. Options considered
@@ -103,6 +139,42 @@ and counted; a CSI record is only dropped if the queue is full of CSI records
 too, and the drop is counted. The host sees the gap in the id sequence and
 the drop count in the health record — never a silent loss.
 
+**Checkpoint 008 adds a second, harder requirement: the queue depth is what
+keeps the USB FIFO from overflowing, so it must be sized against the
+*measured* link, not guessed.** The device currently prints ~178 packets/s of
+~433 B, i.e. **~77 KB/s of output**. The queue must absorb the difference
+between the radio's callback rate and what the host drains, and the writer
+must apply back-pressure to the producer *before* the FIFO overflows.
+
+The mechanism must be **counting and bounded**, never silent:
+
+* the CSI callback **never blocks** — it copies into the queue and returns;
+* when the queue is full, the oldest CSI record is dropped and a counter is
+  incremented;
+* the `id` is assigned **when the record is produced**, so a dropped record
+  leaves a gap in the id sequence — the host can see the loss, and the
+  firmware's own drop counter says whether the device or the link lost it.
+
+### 3.1.1 The overflow counters the host needs
+
+The host currently cannot distinguish "the device dropped it" from "the USB
+link lost it" — it sees an id gap and nothing else. The firmware must close
+that gap, because checkpoint 008 shows the device *does* drop:
+
+```
+STAT,<uptime_s>,<heap_free>,<heap_min>,<health>,<csi_dropped>,<sup_dropped>
+```
+
+* `csi_dropped` — CSI records dropped by the firmware's own queue, since
+  boot. Non-zero means the device was overrunning and the *host* is
+  blameless for the corresponding id gap.
+* `sup_dropped` — supervisor records dropped, which should be zero because
+  CSI is dropped first.
+
+With these two counters, the host's `gaps` and `missing` become
+attributable: a gap with `csi_dropped` rising is the device; a gap with
+`csi_dropped` flat is the link.
+
 ### 3.2 The writer task
 
 One task, one `ets_printf` per record, `vTaskDelay(1)` between records so it
@@ -119,7 +191,7 @@ once, at start:
   HELLO,1,<board>,<chip>,<mac>,<fw_version>,<fw_build>
 every second:
   HB,<seq>,<uptime_s>
-  STAT,<uptime_s>,<heap_free>,<heap_min>,<health>
+  STAT,<uptime_s>,<heap_free>,<heap_min>,<health>,<csi_dropped>,<sup_dropped>
 ```
 
 * `board` / `chip` / `fw_version` / `fw_build` come from
@@ -131,6 +203,9 @@ every second:
 * `health` from the heap and `esp_reset_reason()`:
   `OK` normally, `DEGRADED` if the minimum free heap falls below a
   threshold, `FAULT` if the last reset was a panic.
+* `csi_dropped` / `sup_dropped` are the firmware's own queue-drop counters
+  (see §3.1.1) — the host needs them to attribute an id gap to the device
+  or to the link.
 
 ### 3.4 What must not change
 
@@ -138,8 +213,29 @@ every second:
   the field order.
 * The CSI **packet format** — byte-identical, including the 24 fields and the
   quoted IQ tail.
-* The `id` counter's meaning — it must stay consecutive, because the host
-  uses it to detect loss.
+* The `id` counter's meaning — it must be assigned per *record produced*, so
+  that a firmware-side drop leaves a visible gap. (Checkpoint 007 said the
+  id must "stay consecutive"; checkpoint 008 shows the current device's id
+  *does* skip when it drops, and that skipping is the only way the host can
+  see the loss. The requirement is that the id is honest and monotonic, not
+  that it is gap-free.)
+
+### 3.5 The writer task must also survive a slow host
+
+The writer writes into a USB FIFO that has no flow control. If the host
+stops reading, the FIFO fills, and the current firmware wedges. The new
+writer must therefore:
+
+* watch its own queue depth and the age of the oldest queued record;
+* when the queue is full, **drop and count** rather than block, so the
+  writer never stalls the radio;
+* report the drop count, so the host and the operator can see it;
+* leave the *capture* path entirely unaffected — dropping an output record
+  is strictly better than losing a CSI callback or wedging the device.
+
+This is the design's answer to the failure mode in checkpoint 008: a slow
+host should cost us **counted, bounded packet loss**, not a wedged device
+that needs a human with a reset cable.
 
 ---
 
@@ -162,6 +258,20 @@ The acceptance thresholds are derived from the numbers measured on this board
 | Free heap | — | no downward trend over 10 min (no leak); report the slope |
 | Host frame rate | 41.8 FPS in CSI mode | ≥ 30 FPS |
 | The instrument still works after a reset | yes | yes — the stream must resume within 20 s, as today |
+| **Host reads slowly (50 ms poll)** | **47.8 % of packets arrive, 777 gaps, 481 malformed** | **the device must stay alive and report its drops: no wedge, `csi_dropped` matches the observed id gap** |
+| **Host stops reading for 5 min** | **the device wedges permanently; only a reset recovers it** | **the device must stay alive, drop and count, and resume cleanly when the host reads again** |
+| **Host reads continuously for 20 min** | 0 gaps, 0 missing, 0 malformed | **unchanged: 0 gaps, 0 missing, 0 malformed** |
+| **The device's own 5.5-minute pause** | **the whole CDC path goes silent for ~320–331 s and resumes by itself; the host sees a 331 s arrival gap** | **the device must report the pause: the heartbeat must keep flowing and a `STAT` must carry a "no CSI callback for N s" counter, so the pause is attributable to the device** |
+
+The last three rows are the checkpoint-008 tests. They are the *hostile*
+cases, and they are the ones the current firmware fails.
+
+The final row is the one the supervisor is really for. Right now a
+5.5-minute pause is invisible from the device side: the CDC path is silent,
+so the device's log is silent with it, and the host can only say "the bytes
+stopped". A heartbeat that survives the pause, plus a counter of how long it
+has been since the last CSI callback, turns an unattributable silence into a
+**device-reported** one.
 
 **Explicitly measured, not assumed:**
 
@@ -169,7 +279,10 @@ The acceptance thresholds are derived from the numbers measured on this board
 * the cost of the supervisor task on the free heap;
 * that the supervisor's `STAT`/`HB` lines never appear interleaved inside a
   CSI line (the host's malformed count is the proof);
-* that the CSI `id` counter is still consecutive.
+* that the CSI `id` counter is still monotonic, and that a firmware-side
+  drop is visible as an id gap **and** as a rise in `csi_dropped`, so the
+  two are not confused;
+* that the device survives the hostile-host rows above.
 
 ### The measurement procedure
 
@@ -180,6 +293,13 @@ The acceptance thresholds are derived from the numbers measured on this board
 4. Ten minutes of continuous streaming with the supervisor enabled, checking
    the heartbeat count, the missed-heartbeat count, the malformed count and
    the heap trend.
+5. `tools/esp32_csi_poll_sweep.py --seconds 180 --intervals 0,0.005,0.02,0.05`
+   — the hostile-host sweep. Today the 50 ms arm loses 52 % of the packets
+   and eventually wedges the device; after the change every arm must show
+   0 malformed lines, a live device, and a `csi_dropped` counter that
+   accounts for the id gaps.
+6. `tools/esp32_usb_health.py --seconds 1200 --poll-interval 0.0` — a
+   20-minute continuous soak. Must end with 0 gaps, 0 missing, 0 malformed.
 
 ---
 

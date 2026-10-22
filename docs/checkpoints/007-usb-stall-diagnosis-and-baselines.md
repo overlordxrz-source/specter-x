@@ -1,5 +1,20 @@
 # SPECTER-X checkpoint 007 — USB stall diagnosis, baselines, AP identity
 
+> **⚠️ §1 of this checkpoint is revised by
+> [checkpoint 008](008-usb-cdc-root-cause-host-drain.md).**
+>
+> The link has **two** faults, and this checkpoint saw them as one:
+>
+> * **The stall** (the device goes silent for minutes) — **device-side**,
+>   as concluded below. Confirmed by checkpoint 008: it happens even under
+>   perfect draining, and it resolves itself after ~5.5 minutes.
+> * **Packet loss** (dropped packets, truncated lines, and eventually a
+>   permanent wedge) — **host-side**: the host did not drain the CDC
+>   endpoint fast enough. The evidence below was accurate; the single-cause
+>   inference from it was not.
+>
+> Baselines (§2), AP identity (§3) and the motion experiment (§4) stand.
+
 **Date:** 2026-10-21
 **Branch:** `feature/alpha002-esp32-supervisor`
 **Status:** the repeated USB CDC stalls are now **diagnosed as device-side**,
@@ -33,6 +48,14 @@ At the moment of a stall:
 | Recovery | **a device-side hard reset** (over the UART bridge) always restores the stream | only an action on the device clears it |
 
 ### Diagnosis
+
+> **Revised by checkpoint 008.** What follows is correct about the *stall*
+> and incomplete about the *loss*. The "device-side" verdict below holds
+> for the 5.5-minute pauses, which happen even under perfect draining. The
+> dropped packets and the permanent wedge, however, are caused by the host
+> not draining the endpoint fast enough — and the "reproducible trigger"
+> named at the end of this section (the host releasing the port) is exactly
+> that: releasing the port means not draining.
 
 **Device-side, not host-side.** The host keeps the device visible, keeps
 another device on the same board working, and logs nothing; and the only

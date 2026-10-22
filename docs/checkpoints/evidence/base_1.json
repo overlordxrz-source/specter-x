@@ -1,0 +1,58 @@
+{
+  "port": "/dev/cu.usbmodem1101",
+  "window_s": 60.003,
+  "throughput": {
+    "packets": 8679,
+    "packets_per_s": 144.64,
+    "bytes_per_s": 63548.9,
+    "csi_iq_values": 1110912,
+    "queue_dropped": 0,
+    "packets_parsed": 8679
+  },
+  "sequence": {
+    "first_id": 68782,
+    "last_id": 77460,
+    "gaps": 0,
+    "missing_packets": 0
+  },
+  "timing": {
+    "arrival_median_ms": 5.323,
+    "arrival_p95_ms": 12.64,
+    "arrival_max_ms": 718.871,
+    "device_interval_median_us": 5698.0,
+    "device_interval_p95_us": 12932
+  },
+  "link": {
+    "outages": [],
+    "outage_count": 0,
+    "recovered_by_itself": false
+  },
+  "counters": {
+    "lines": 8680,
+    "csi_parsed": 8679,
+    "csi_malformed": 1,
+    "csi_dropped": 0,
+    "csi_sequence_gaps": 0,
+    "csi_missing_packets": 0,
+    "supervisor_parsed": 0,
+    "supervisor_malformed": 0,
+    "supervisor_dropped": 0,
+    "unknown_lines": 0,
+    "headers_seen": 0,
+    "bytes": 3813123,
+    "csi_queued": 0,
+    "supervisor_queued": 0,
+    "csi_last_seq": 77460,
+    "csi_first_seq": 68782
+  },
+  "ap": {
+    "macs": [
+      "b8:62:1f:e5:ac:62"
+    ],
+    "rssi_min": -72,
+    "rssi_max": -56,
+    "channels": [
+      11
+    ]
+  }
+}

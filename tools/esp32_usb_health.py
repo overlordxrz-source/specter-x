@@ -52,6 +52,11 @@ def main(argv=None) -> int:
     ap.add_argument("--stall-after", type=float, default=5.0,
                     help="seconds of silence that count as a stall")
     ap.add_argument("--port", default=None)
+    ap.add_argument("--poll-interval", type=float, default=0.0,
+                    help="seconds between reads; 0 (default) reads continuously. "
+                         "A slow poll lets the device's TX buffer overflow.")
+    ap.add_argument("--sample-interval", type=float, default=30.0,
+                    help="seconds between counter samples")
     ap.add_argument("--reopen-delay", type=float, default=2.0,
                     help="seconds to wait before reopening the port after a stall")
     ap.add_argument("-o", "--out", default="runs/usb_health.json")
@@ -73,6 +78,9 @@ def main(argv=None) -> int:
     t0 = time.time()
     reopen_pending = False
     last_byte = t0
+    last_sample = -1e9
+    # how fast the host drains the port. 0 = read continuously.
+    poll = args.poll_interval
     last_state = "OK"
     events: List[Dict] = []
     samples: List[Dict] = []
@@ -135,21 +143,26 @@ def main(argv=None) -> int:
                     time.sleep(args.reopen_delay)
                     try:
                         ser = serial.Serial(port, baudrate=115200, timeout=0.5)
-                        with self._lock:
-                            self._last_byte = time.time()
+                        last_byte = time.time()
                         print(f"  [{now - t0:7.1f}s] reopened", flush=True)
                     except Exception as exc:
                         print(f"  [{now - t0:7.1f}s] reopen failed: {exc}",
                               flush=True)
                         break
-            if int(now - t0) % 30 < 1.0:
+            if now - t0 - last_sample >= args.sample_interval:
+                last_sample = now - t0
                 c = dispatcher.snapshot()
                 samples.append({"t": round(now - t0, 2),
                                 "bytes": c["bytes"], "packets": c["csi_parsed"],
                                 "gaps": c["csi_sequence_gaps"],
                                 "missing": c["csi_missing_packets"],
                                 "malformed": c["csi_malformed"]})
-            time.sleep(0.05)
+            # The ONLY sleep in the read loop. A sleep here lets the device's
+            # USB TX buffer overflow while the host is not draining it, which
+            # makes the device drop CSI packets and print non-consecutive ids.
+            # poll_interval=0 means "read continuously".
+            if poll:
+                time.sleep(poll)
     finally:
         try:
             ser.close()
