@@ -22,8 +22,11 @@ from specter.sensors.di188.driver import DeviceCalibration, DI188Identity, Sampl
 from specter.sensors.di188.measure import AnalogSource, DeviceState
 from specter.sensors.di188.stats import ChannelState, default_specs
 
-AMBER = (40, 200, 255)     # BGR, as the HUD draws it
-GREEN = (90, 255, 120)
+# The health colours come from the theme, so the test asserts on the
+# *semantic* colour ("the warning colour") and not on a literal RGB triple
+# that the palette is free to change.
+from specter.hud.theme import OK as GREEN      # noqa: E402
+from specter.hud.theme import WARN as AMBER    # noqa: E402
 
 
 class FakeDriver:

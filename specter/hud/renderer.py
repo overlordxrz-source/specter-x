@@ -2,6 +2,10 @@
 
 The HUD only draws things that arrive as Measurements (with provenance) or
 SensorStatus records. Every overlay is tagged with its source.
+
+The visual language lives in :mod:`specter.hud.theme` - a deep burgundy and
+charcoal ground with muted crimson and rose accents, and a four-step type
+scale. This module is about *what* is drawn, not how it is coloured.
 """
 from __future__ import annotations
 
@@ -13,6 +17,8 @@ import cv2
 import numpy as np
 
 from specter.fusion.measurement import Measurement
+from specter.hud import theme
+from specter.hud.csi_views import draw_csi_dashboard
 from specter.hud.team_overlay import (
     TeamOverlayState,
     draw_minimap,
@@ -20,6 +26,10 @@ from specter.hud.team_overlay import (
     draw_peer_contacts,
     draw_teammate_panel,
 )
+from specter.hud.theme import (CRIMSON, FAULT, OK, PANEL, ROSE, ROSE_DIM,
+                               ROSE_PALE, RULE, RULE_SOFT, SIM, TEXT, TEXT_DIM,
+                               TEXT_FAINT, T_LABEL, T_MICRO, T_SMALL, T_TITLE,
+                               T_VALUE, WARN, card, label, rule, text, value)
 from specter.sensors.base import SensorStatus
 from specter.sensors.di188.stats import ChannelState
 from specter.sensors.nightvision.camera import COCO_SKELETON
@@ -27,12 +37,13 @@ from specter.sensors.nightvision.camera import COCO_SKELETON
 HUD_W, HUD_H = 1280, 800
 PANEL_W = 270
 TOP_H = 44
-FONT = cv2.FONT_HERSHEY_SIMPLEX
-GREEN = (90, 255, 120)
-AMBER = (40, 200, 255)
-WHITE = (235, 235, 235)
-DIM = (140, 140, 140)
-RED = (60, 60, 235)
+
+#: the health colours, kept as names for the code below
+GREEN = OK
+AMBER = WARN
+RED = FAULT
+WHITE = TEXT
+DIM = TEXT_DIM
 
 MODES = ["OPTICAL", "NIGHT-GREEN", "POD", "ANALOG", "CSI"]
 
@@ -52,12 +63,12 @@ class HudState:
     analog: object = None  # DaqSnapshot when the DAQ is enabled; None hides the DAQ view
     supervisor: object = None  # SupervisorSnapshot or view dict; None hides the block
     csi: object = None  # CSI view dict; None hides the CSI view
+    csi_spectrum: bool = False  # the raw spectrum is the secondary CSI view
+    experiment: object = None  # the guided experiment, when one is running
 
 
-def _text(img, s, org, scale=0.55, color=WHITE, thick=1):
-    x, y = org
-    cv2.putText(img, s, (x + 1, y + 1), FONT, scale, (0, 0, 0), thick, cv2.LINE_AA)  # drop shadow
-    cv2.putText(img, s, org, FONT, scale, color, thick, cv2.LINE_AA)
+def _text(img, s, org, scale=0.55, color=TEXT, thick=1):
+    theme.text(img, s, org, scale, color, thick)
 
 
 def _letterbox(img: np.ndarray, W: int, H: int):
@@ -78,7 +89,7 @@ def _apply_mode(img: np.ndarray, mode: str) -> np.ndarray:
 
 def _spark(canvas, points, x, y, w, h, color):
     """Draw a bounded trace of (t, value) pairs."""
-    cv2.rectangle(canvas, (x, y), (x + w, y + h), (26, 26, 26), -1)
+    cv2.rectangle(canvas, (x, y), (x + w, y + h), theme.BG_DEEP, -1)
     vals = [p[1] for p in points]
     if len(vals) < 2:
         return
@@ -104,19 +115,19 @@ def draw_analog_view(canvas, snap, x0, y0, w, h):
     and the panel says in words that the reading is noise, not a measurement.
     """
     if snap is None:
-        _text(canvas, "DAQ DISABLED", (x0 + 30, y0 + 60), 0.9, DIM, 2)
+        _text(canvas, "DAQ DISABLED", (x0 + 30, y0 + 60), 0.9, TEXT_DIM, 2)
         return
 
     head = (f"{snap.model or 'DI-188'}  serial {snap.serial or '?'}  port {snap.port or '?'}"
             f"   {snap.rate_hz:g} Hz   frames {snap.frames}")
-    _text(canvas, head, (x0 + 24, y0 + 26), 0.58, WHITE, 1)
+    _text(canvas, head, (x0 + 24, y0 + 26), 0.58, TEXT, 1)
     _text(canvas, f"CAL: {snap.calibration_basis}", (x0 + 24, y0 + 52), 0.55,
-          AMBER if "UNCALIBRATED" in snap.calibration_basis else GREEN, 1)
+          AMBER if "UNCALIBRATED" in snap.calibration_basis else OK, 1)
 
     banner_y = y0 + 76
     if not snap.any_measurement:
         cv2.rectangle(canvas, (x0 + 20, banner_y), (x0 + w - 20, banner_y + 34),
-                      (30, 22, 6), -1)
+                      (44, 26, 22), -1)
         cv2.rectangle(canvas, (x0 + 20, banner_y), (x0 + w - 20, banner_y + 34),
                       AMBER, 1)
         _text(canvas, "FLOATING INPUTS - VALUES ARE ADC NOISE, NOT MEASUREMENTS",
@@ -131,26 +142,25 @@ def draw_analog_view(canvas, snap, x0, y0, w, h):
         cx = x0 + 20 + (i % 2) * (card_w + 20)
         cy = grid_y + (i // 2) * (card_h + 16)
         floating = ch.state is not ChannelState.CONNECTED
-        col = AMBER if floating else GREEN
-        cv2.rectangle(canvas, (cx, cy), (cx + card_w, cy + card_h), (20, 20, 20), -1)
-        cv2.rectangle(canvas, (cx, cy), (cx + card_w, cy + card_h), col, 1)
-        _text(canvas, f"{ch.label}  {ch.terminal}", (cx + 16, cy + 30), 0.62, WHITE, 1)
+        col = AMBER if floating else OK
+        card(canvas, cx, cy, cx + card_w, cy + card_h, PANEL, col)
+        _text(canvas, f"{ch.label}  {ch.terminal}", (cx + 16, cy + 30), 0.62, TEXT, 1)
         badge = "FLOATING / NOISE" if floating else "CONNECTED"
         _text(canvas, badge, (cx + 16, cy + 56), 0.55, col, 1)
         counts = ch.stats.last if ch.stats.last is not None else 0.0
-        _text(canvas, f"{counts:+.1f}", (cx + 16, cy + 100), 0.95, WHITE, 2)
-        _text(canvas, "counts", (cx + 130, cy + 100), 0.5, DIM, 1)
+        _text(canvas, f"{counts:+.1f}", (cx + 16, cy + 100), 0.95, TEXT, 2)
+        _text(canvas, "counts", (cx + 130, cy + 100), 0.5, TEXT_DIM, 1)
         if floating:
             _text(canvas, "no source connected - not a measurement",
                   (cx + 16, cy + 124), 0.44, AMBER, 1)
         else:
             volts = "n/a" if ch.volts is None else f"{ch.volts:+.4f} V"
             _text(canvas, f"{volts}  ({ch.calibration_basis})",
-                  (cx + 16, cy + 124), 0.5, GREEN, 1)
+                  (cx + 16, cy + 124), 0.5, OK, 1)
         _text(canvas, f"mean {ch.stats.mean:+.2f}   std {ch.stats.std:.2f}"
                       f"   min {ch.stats.minimum if ch.stats.n else 0:+.1f}"
                       f"   max {ch.stats.maximum if ch.stats.n else 0:+.1f}",
-              (cx + 16, cy + 148), 0.46, DIM, 1)
+              (cx + 16, cy + 148), 0.46, TEXT_DIM, 1)
         _spark(canvas, snap.series.get(ch.index, []), cx + 16, cy + 160,
                card_w - 32, max(40, card_h - 176), col)
 
@@ -172,22 +182,22 @@ def draw_supervisor_block(canvas, snap, x, y):
     """
     if snap is None:
         return y
-    value = _get(snap, "state", "N/A")
-    if hasattr(value, "value"):
-        value = value.value
+    value_ = _get(snap, "state", "N/A")
+    if hasattr(value_, "value"):
+        value_ = value_.value
     available = _get(snap, "available", True)
-    col = {"OK": GREEN, "DEGRADED": AMBER, "OFFLINE": RED}.get(value, DIM)
+    col = {"OK": OK, "DEGRADED": AMBER, "OFFLINE": RED}.get(value_, TEXT_DIM)
     if not available:
         col = AMBER
-    _text(canvas, "SUPERVISOR", (x, y), 0.58, GREEN, 1)
-    _text(canvas, value if available else "N/A", (x + 190, y), 0.5, col, 1)
+    _text(canvas, "SUPERVISOR", (x, y), 0.58, ROSE_DIM, 1)
+    _text(canvas, value_ if available else "N/A", (x + 190, y), 0.5, col, 1)
     y += 20
     if not available:
         _text(canvas, "telemetry not available", (x, y), 0.44, AMBER, 1)
         y += 16
         detail = str(_get(snap, "detail", ""))[:30]
         if detail:
-            _text(canvas, detail, (x, y), 0.38, DIM, 1)
+            _text(canvas, detail, (x, y), 0.38, TEXT_DIM, 1)
             y += 15
         return y
     ident = _get(snap, "identity", None)
@@ -200,105 +210,63 @@ def draw_supervisor_block(canvas, snap, x, y):
         mac = ident.get("mac", "") if isinstance(ident, dict) else ident.mac
         fwv = ident.get("fw_version", "") if isinstance(ident, dict) else ident.fw_version
         fwb = ident.get("fw_build", "") if isinstance(ident, dict) else ident.fw_build
-        _text(canvas, f"{board[:22]} {chip[:12]}", (x, y), 0.42, WHITE, 1)
+        _text(canvas, f"{board[:22]} {chip[:12]}", (x, y), 0.42, TEXT, 1)
         y += 16
-        _text(canvas, f"mac {mac}", (x, y), 0.40, DIM, 1)
+        _text(canvas, f"mac {mac}", (x, y), 0.40, TEXT_DIM, 1)
         y += 15
-        _text(canvas, f"fw {fwv} ({fwb[:12]})", (x, y), 0.40, DIM, 1)
+        _text(canvas, f"fw {fwv} ({fwb[:12]})", (x, y), 0.40, TEXT_DIM, 1)
         y += 16
     _text(canvas, f"up {_get(snap, 'uptime_s', 0.0):.1f}s   hb {_get(snap, 'heartbeat_seq', 0)}",
-          (x, y), 0.42, WHITE, 1)
+          (x, y), 0.42, TEXT, 1)
     y += 16
     _text(canvas, f"hb age {_get(snap, 'heartbeat_age_s', 0.0):.1f}s   "
                   f"missed {_get(snap, 'missed_heartbeats', 0)}",
-          (x, y), 0.40, DIM, 1)
+          (x, y), 0.40, TEXT_DIM, 1)
     y += 15
     _text(canvas, f"dev health {_get(snap, 'device_health', 'UNKNOWN')}", (x, y),
-          0.40, DIM, 1)
+          0.40, TEXT_DIM, 1)
     y += 16
     return y
 
 
-def draw_csi_view(canvas, view, x0, y0, w, h):
-    """Subcarrier amplitudes and packet statistics for the CSI link."""
-    if view is None:
-        _text(canvas, "CSI NOT ENABLED", (x0 + 30, y0 + 60), 0.9, DIM, 2)
-        return
-
-    state = str(view.get("link_state", "N/A"))
-    col = {"CONNECTED": GREEN, "STALLED": AMBER, "DISCONNECTED": RED,
-           "ERROR": RED, "CONNECTING": AMBER}.get(state, DIM)
-    _text(canvas, "CSI", (x0 + 24, y0 + 30), 0.9, GREEN, 2)
-    _text(canvas, state, (x0 + 100, y0 + 30), 0.6, col, 1)
-    _text(canvas, str(view.get("ap_mac", "-")), (x0 + 200, y0 + 30), 0.55, WHITE, 1)
-    _text(canvas, f"ch {view.get('channel', '-')}   {view.get('rssi', '-')} dBm",
-          (x0 + 400, y0 + 30), 0.55, WHITE, 1)
-    _text(canvas, f"board {view.get('board_mac', '-')}", (x0 + 600, y0 + 30),
-          0.5, DIM, 1)
-    _text(canvas, f"dev ts {view.get('local_timestamp', '-')} us", (x0 + 800, y0 + 30),
-          0.5, DIM, 1)
-
-    # --- subcarrier amplitude scope ---------------------------------------
-    scope_x = x0 + 30
-    scope_y = y0 + 60
-    scope_w = w - 60
-    scope_h = int(h * 0.46)
-    cv2.rectangle(canvas, (scope_x, scope_y), (scope_x + scope_w, scope_y + scope_h),
-                  (12, 12, 12), -1)
-    amps = view.get("amplitudes") or []
-    if amps:
-        peak = max(amps) or 1.0
-        n = len(amps)
-        bw = max(1, int(scope_w / n))
-        for i, a in enumerate(amps):
-            bh = int((a / peak) * (scope_h - 12))
-            x = scope_x + 2 + i * bw
-            cv2.rectangle(canvas, (x, scope_y + scope_h - 2 - bh),
-                          (x + bw - 1, scope_y + scope_h - 2),
-                          (90, 170, 255), -1)
-        _text(canvas, f"subcarrier amplitude  ({n} carriers, peak {peak:.0f})",
-              (scope_x + 8, scope_y + scope_h + 16), 0.45, DIM, 1)
-        _text(canvas, "0", (scope_x + 4, scope_y + scope_h - 6), 0.4, DIM, 1)
-        _text(canvas, str(n - 1), (scope_x + scope_w - 24, scope_y + scope_h - 6),
-              0.4, DIM, 1)
-    else:
-        _text(canvas, "no subcarrier data yet", (scope_x + 12, scope_y + scope_h // 2),
-              0.5, DIM, 1)
-
-    # --- packet statistics -------------------------------------------------
-    sy = scope_y + scope_h + 34
-    cols = [
-        ("packets", view.get("packets", 0)),
-        ("packets/s", f"{view.get('packets_per_s', 0.0):.1f}"),
-        ("id range", f"{view.get('first_id', '-')}..{view.get('last_id', '-')}"),
-        ("seq gaps", view.get("gaps", 0)),
-        ("missing", view.get("missing_packets", 0)),
-        ("malformed", view.get("malformed", 0)),
-        ("dropped", view.get("dropped", 0)),
-        ("unknown lines", view.get("unknown_lines", 0)),
-        ("silence", f"{view.get('silence_s', 0.0):.2f}s"),
-        ("reconnects", view.get("reconnects", 0)),
-        ("uptime", f"{view.get('uptime_s', 0.0):.0f}s"),
-        ("bytes", view.get("bytes", 0)),
-    ]
-    for i, (label, value) in enumerate(cols):
-        cx = x0 + 40 + (i % 6) * 160
-        cy = sy + (i // 6) * 46
-        _text(canvas, label, (cx, cy), 0.44, DIM, 1)
-        bad = label in ("seq gaps", "missing", "malformed", "dropped", "unknown lines") \
-            and value
-        _text(canvas, str(value), (cx, cy + 22), 0.6,
-              RED if bad else WHITE, 1)
+def draw_experiment_block(canvas, exp, x, y, w):
+    """The guided experiment: where it is, and what it is allowed to claim."""
+    if exp is None:
+        return y
+    phase = _get(exp, "phase", "IDLE")
+    col = {"IDLE": TEXT_DIM, "LEAD-IN": AMBER, "RECORDING": ROSE,
+           "ANALYSIS": ROSE_PALE, "DONE": OK}.get(str(phase), TEXT_DIM)
+    _text(canvas, "GUIDED TRIAL", (x, y), 0.58, ROSE_DIM, 1)
+    y += 22
+    _text(canvas, str(_get(exp, "phase_label", phase)).upper(), (x, y), 0.5, col, 1)
+    y += 18
+    remaining = _get(exp, "remaining_s", None)
+    if remaining is not None:
+        _text(canvas, f"{float(remaining):.0f}s left", (x, y), 0.44, TEXT_DIM, 1)
+        y += 16
+    trial = _get(exp, "trial_index", None)
+    total = _get(exp, "trial_total", None)
+    if trial and total:
+        _text(canvas, f"trial {trial} of {total}", (x, y), 0.44, TEXT, 1)
+        y += 17
+    verdict = _get(exp, "verdict", None)
+    if verdict:
+        _text(canvas, str(verdict)[:34], (x, y), 0.40, TEXT_DIM, 1)
+        y += 15
+    _text(canvas, "signal change != detection", (x, y), 0.38, WARN, 1)
+    y += 16
+    return y
 
 
 def render(image: np.ndarray, st: HudState) -> np.ndarray:
-    canvas = np.zeros((HUD_H, HUD_W, 3), np.uint8)
+    canvas = np.full((HUD_H, HUD_W, 3), theme.BG, np.uint8)
     view_w, view_h = HUD_W - PANEL_W, HUD_H - TOP_H
     if st.mode == "ANALOG":
         draw_analog_view(canvas, st.analog, 0, TOP_H, view_w, view_h)
         view, s, ox, oy = None, 1.0, 0, TOP_H
     elif st.mode == "CSI":
-        draw_csi_view(canvas, st.csi, 0, TOP_H, view_w, view_h)
+        draw_csi_dashboard(canvas, st.csi, 0, TOP_H, view_w, view_h,
+                           show_spectrum=st.csi_spectrum)
         view, s, ox, oy = None, 1.0, 0, TOP_H
     else:
         view, s, ox, oy = _letterbox(_apply_mode(image, st.mode), view_w, view_h)
@@ -309,7 +277,7 @@ def render(image: np.ndarray, st: HudState) -> np.ndarray:
     for m in (st.poses if st.mode not in ("ANALOG", "CSI") else []):
         kps = np.asarray(m.value["keypoints_xy"], float) * s + (ox, oy)
         kc = np.asarray(m.value["keypoint_conf"], float)
-        col = GREEN if m.sensor != "synthetic" else AMBER
+        col = OK if m.sensor != "synthetic" else SIM
         for a, b in COCO_SKELETON:
             if kc[a] > 0.3 and kc[b] > 0.3:
                 cv2.line(canvas, tuple(map(int, kps[a])), tuple(map(int, kps[b])), col, 2, cv2.LINE_AA)
@@ -321,31 +289,32 @@ def render(image: np.ndarray, st: HudState) -> np.ndarray:
         _text(canvas, m.hud_tag, (x0, max(TOP_H + 16, y0 - 8)), 0.55, col, 1)
 
     # --- top bar ------------------------------------------------------------
-    cv2.rectangle(canvas, (0, 0), (HUD_W, TOP_H), (18, 18, 18), -1)
-    cv2.line(canvas, (0, TOP_H), (HUD_W, TOP_H), GREEN, 1)
-    _text(canvas, "SPECTER-X", (14, 31), 0.9, GREEN, 2)
-    _text(canvas, f"MODE {st.mode}", (210, 29), 0.6, WHITE)
-    _text(canvas, f"{st.fps:5.1f} FPS", (420, 29), 0.6, WHITE)
-    _text(canvas, f"POSE {st.infer_ms:5.1f} ms", (550, 29), 0.6, DIM)
-    _text(canvas, "TGT LOCK" if st.pose_active else "NO TGT", (740, 29), 0.6,
-          GREEN if st.pose_active else DIM, 1)
+    cv2.rectangle(canvas, (0, 0), (HUD_W, TOP_H), theme.BURGUNDY_DEEP, -1)
+    rule(canvas, 0, TOP_H - 1, HUD_W, TOP_H - 1, CRIMSON, 1)
+    _text(canvas, "SPECTER-X", (14, 30), 0.88, ROSE, 2)
+    _text(canvas, f"{st.mode}", (170, 29), 0.6, TEXT, 1)
+    _text(canvas, f"{st.fps:5.1f} FPS", (270, 29), 0.55, TEXT_DIM, 1)
+    _text(canvas, f"POSE {st.infer_ms:5.1f} ms", (370, 29), 0.5, TEXT_FAINT, 1)
+    _text(canvas, "TGT LOCK" if st.pose_active else "NO TGT", (520, 29), 0.55,
+          OK if st.pose_active else TEXT_FAINT, 1)
     team = st.team if isinstance(st.team, TeamOverlayState) else None
     if team is not None:
-        _text(canvas, team.pose_badge[:24], (880, 29), 0.55, AMBER, 1)
-    _text(canvas, time.strftime("%H:%M:%S"), (HUD_W - 110, 29), 0.6, WHITE)
+        _text(canvas, team.pose_badge[:24], (640, 29), 0.55, AMBER, 1)
+    _text(canvas, time.strftime("%H:%M:%S"), (HUD_W - 110, 29), 0.6, TEXT, 1)
 
     # --- sensor health panel -----------------------------------------------
     px = HUD_W - PANEL_W
-    cv2.rectangle(canvas, (px, TOP_H + 1), (HUD_W, HUD_H), (14, 14, 14), -1)
-    cv2.line(canvas, (px, TOP_H), (px, HUD_H), (60, 60, 60), 1)
-    _text(canvas, "SENSOR HEALTH", (px + 14, TOP_H + 30), 0.6, GREEN, 1)
+    cv2.rectangle(canvas, (px, TOP_H + 1), (HUD_W, HUD_H), theme.PANEL, -1)
+    rule(canvas, px, TOP_H, px, HUD_H, RULE, 1)
+    label(canvas, "Sensor health", (px + 14, TOP_H + 28), ROSE_DIM, T_LABEL)
+    rule(canvas, px + 14, TOP_H + 38, HUD_W - 14, TOP_H + 38, RULE_SOFT)
     y = TOP_H + 62
     for ss in st.sensors:
         cv2.circle(canvas, (px + 22, y - 5), 7, ss.health.bgr, -1, cv2.LINE_AA)
-        _text(canvas, ss.label, (px + 38, y), 0.52, WHITE)
+        _text(canvas, ss.label, (px + 38, y), 0.52, TEXT)
         _text(canvas, ss.health.value, (px + 190, y), 0.48, ss.health.bgr)
         if ss.detail:
-            _text(canvas, ss.detail[:30], (px + 38, y + 19), 0.40, DIM)
+            _text(canvas, ss.detail[:30], (px + 38, y + 19), 0.40, TEXT_DIM)
         y += 48
 
     # --- supervisor block -----------------------------------------------------
@@ -355,6 +324,11 @@ def render(image: np.ndarray, st: HudState) -> np.ndarray:
     if st.supervisor is not None and st.mode != "CSI":
         y = draw_supervisor_block(canvas, st.supervisor, px + 14, y + 6) + 6
 
+    # --- the guided experiment ------------------------------------------------
+    if st.experiment is not None:
+        y = draw_experiment_block(canvas, st.experiment, px + 14, y + 6,
+                                  PANEL_W - 28) + 6
+
     # --- team block (teammates + peer tracks, provenance-tagged) ------------
     if team is not None:
         y = draw_teammate_panel(canvas, team, px + 14, y + 6) + 6
@@ -362,11 +336,11 @@ def render(image: np.ndarray, st: HudState) -> np.ndarray:
 
     # --- event ticker ---------------------------------------------------------
     y = HUD_H - 18 * max(1, len(st.ticker)) - 30
-    _text(canvas, "EVENTS", (px + 14, y), 0.5, GREEN)
+    label(canvas, "Events", (px + 14, y), ROSE_DIM, T_MICRO)
     for line in st.ticker:
         y += 18
-        _text(canvas, line[:38], (px + 14, y), 0.36, DIM)
-    _text(canvas, f"src:{st.source_name}  sess:{st.session[-6:]}", (12, HUD_H - 10), 0.42, DIM)
+        _text(canvas, line[:38], (px + 14, y), 0.36, TEXT_DIM)
+    _text(canvas, f"src:{st.source_name}  sess:{st.session[-6:]}", (12, HUD_H - 10), 0.42, TEXT_FAINT)
     if team is not None and (team.teammates or team.contacts):
         draw_minimap(canvas, team, 12, HUD_H - 252, 230)
         draw_offscreen_arrows(canvas, team, 0, TOP_H, HUD_W - PANEL_W, HUD_H - TOP_H)

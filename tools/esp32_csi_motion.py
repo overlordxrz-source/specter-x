@@ -37,6 +37,9 @@ if REPO not in sys.path:
     sys.path.insert(0, REPO)
 
 from specter.sensors.esp32.dispatcher import SerialDispatcher
+from specter.sensors.esp32.experiment import (analyse_offline,
+                                               per_carrier_screen,
+                                               trials_from_json)
 from specter.sensors.esp32.csi import subcarrier_amplitudes
 from specter.hw.usb import find_usb_serial_ports
 
@@ -166,7 +169,6 @@ def trial_stats(trial: Dict) -> Dict:
 
     carrier_stats = [_stats(v) for v in per_carrier_mean]
     return {
-        "motion": motion_features(trial),
         "label": trial["label"],
         "packets": trial["packets"],
         "duration_s": trial["actual_s"],
@@ -178,74 +180,6 @@ def trial_stats(trial: Dict) -> Dict:
         "per_carrier_mean": [round(c["mean"], 2) for c in carrier_stats],
         "per_carrier_std": [round(c["std"], 2) for c in carrier_stats],
         "carriers": n_carriers,
-    }
-
-
-def motion_features(trial: Dict) -> Dict:
-    """Features that do not simply track the received power.
-
-    The total CSI amplitude is almost proportional to the received signal
-    power, so it moves with RSSI for reasons that have nothing to do with
-    motion. The features here are therefore either *normalised* (the shape
-    of the multipath profile, with the packet's own gain divided out) or
-    *temporal* (how fast the profile changes from packet to packet), which
-    is what a person moving through the path actually alters.
-    """
-    samples = trial.get("samples") or []
-    if len(samples) < 2:
-        return {"n": len(samples)}
-    totals = [sum(x["amplitudes"]) if x["amplitudes"] else 0.0 for x in samples]
-    rssis = [x["rssi"] for x in samples if x.get("rssi") is not None]
-    n_carriers = max(len(x["amplitudes"]) for x in samples)
-
-    # normalised shape: each packet divided by its own total amplitude
-    shapes = []
-    for x in samples:
-        a = x["amplitudes"]
-        t = sum(a)
-        if t > 0:
-            shapes.append([v / t for v in a])
-    if not shapes:
-        return {"n": len(samples)}
-
-    # temporal roughness: mean |difference| between consecutive shapes
-    diffs = []
-    for i in range(1, len(shapes)):
-        a, b = shapes[i - 1], shapes[i]
-        m = min(len(a), len(b))
-        diffs.append(sum(abs(a[j] - b[j]) for j in range(m)) / max(m, 1))
-    roughness = statistics.mean(diffs) if diffs else 0.0
-
-    # the same, for the raw amplitude (amplitude volatility)
-    amp_diffs = [abs(totals[i] - totals[i - 1]) for i in range(1, len(totals))]
-    amp_vol = (statistics.mean(amp_diffs) / (statistics.mean(totals) or 1.0)
-               if amp_diffs else 0.0)
-
-    # correlation between packet amplitude and RSSI - exposes the confounder
-    pairs = [(sum(x["amplitudes"]), x["rssi"]) for x in samples
-             if x.get("rssi") is not None and x["amplitudes"]]
-    corr = 0.0
-    if len(pairs) > 2:
-        av = [p[0] for p in pairs]
-        rv = [p[1] for p in pairs]
-        ma, mr = statistics.mean(av), statistics.mean(rv)
-        num = sum((a - ma) * (r - mr) for a, r in pairs)
-        den = ((sum((a - ma) ** 2 for a in av) *
-                sum((r - mr) ** 2 for r in rv)) ** 0.5) or 1.0
-        corr = num / den
-
-    # per-carrier mean of the normalised shape
-    shape_mean = []
-    for j in range(min(n_carriers, min(len(sh) for sh in shapes))):
-        shape_mean.append(statistics.mean([sh[j] for sh in shapes]))
-
-    return {
-        "n": len(samples),
-        "shape_mean": [round(v, 6) for v in shape_mean],
-        "roughness": round(roughness, 6),
-        "amp_volatility": round(amp_vol, 6),
-        "amp_rssi_corr": round(corr, 4),
-        "rssi_mean": round(statistics.mean(rssis), 3) if rssis else None,
     }
 
 
@@ -269,177 +203,6 @@ def condition_comparison(stats: List[Dict]) -> Dict:
             "per_trial_rssi": [round(r, 2) for r in rssis],
         }
     return out
-
-
-def _betacf(a: float, b: float, x: float) -> float:
-    """Continued fraction for the incomplete beta function (Lentz)."""
-    tiny = 1e-300
-    qab, qap, qam = a + b, a + 1.0, a - 1.0
-    c = 1.0
-    d = 1.0 - qab * x / qap
-    if abs(d) < tiny:
-        d = tiny
-    d = 1.0 / d
-    h = d
-    for m in range(1, 200):
-        m2 = 2 * m
-        aa = m * (b - m) * x / ((qam + m2) * (a + m2))
-        d = 1.0 + aa * d
-        if abs(d) < tiny:
-            d = tiny
-        c = 1.0 + aa / c
-        if abs(c) < tiny:
-            c = tiny
-        d = 1.0 / d
-        h *= d * c
-        aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2))
-        d = 1.0 + aa * d
-        if abs(d) < tiny:
-            d = tiny
-        c = 1.0 + aa / c
-        if abs(c) < tiny:
-            c = tiny
-        d = 1.0 / d
-        delta = d * c
-        h *= delta
-        if abs(delta - 1.0) < 3e-12:
-            break
-    return h
-
-
-def _betai(a: float, b: float, x: float) -> float:
-    """Regularised incomplete beta function I_x(a, b)."""
-    if x <= 0.0:
-        return 0.0
-    if x >= 1.0:
-        return 1.0
-    lbeta = (math.lgamma(a + b) - math.lgamma(a) - math.lgamma(b)
-             + a * math.log(x) + b * math.log(1.0 - x))
-    front = math.exp(lbeta)
-    if x < (a + 1.0) / (a + b + 2.0):
-        return front * _betacf(a, b, x) / a
-    return 1.0 - front * _betacf(b, a, 1.0 - x) / b
-
-
-def f_sf(f: float, df1: int, df2: int) -> float:
-    """Survival function of the F distribution: P(F > f)."""
-    if df1 <= 0 or df2 <= 0 or f != f:
-        return float("nan")
-    if f <= 0:
-        return 1.0
-    x = df2 / (df2 + df1 * f)
-    return _betai(df2 / 2.0, df1 / 2.0, x)
-
-
-def one_way_f(groups: Dict[str, List[float]]) -> Dict:
-    """One-way ANOVA F test across the conditions."""
-    labels = list(groups)
-    grand = [v for lab in labels for v in groups[lab]]
-    if len(labels) < 2 or len(grand) <= len(labels):
-        return {"f": float("nan"), "p": float("nan"), "df1": 0, "df2": 0}
-    gm = statistics.mean(grand)
-    between = sum(len(groups[l]) * (statistics.mean(groups[l]) - gm) ** 2
-                  for l in labels)
-    within = sum(sum((v - statistics.mean(groups[l])) ** 2 for v in groups[l])
-                 for l in labels)
-    df1, df2 = len(labels) - 1, len(grand) - len(labels)
-    if within <= 0:
-        return {"f": float("inf"), "p": 0.0, "df1": df1, "df2": df2}
-    f = (between / df1) / (within / df2)
-    return {"f": round(f, 4), "p": round(f_sf(f, df1, df2), 6),
-            "df1": df1, "df2": df2}
-
-
-def condition_test(stats: List[Dict]) -> Dict:
-    """Test the gain-free motion features across the conditions.
-
-    The total amplitude is not used as a discriminator on its own: it tracks
-    the received power (the per-trial amp~rssi correlation is reported), so a
-    difference in it says as much about the radio as about the subject.
-    """
-    feats = {
-        "roughness": lambda m: m.get("roughness"),
-        "amp_volatility": lambda m: m.get("amp_volatility"),
-        "amp_rssi_corr": lambda m: m.get("amp_rssi_corr"),
-    }
-    out: Dict[str, Dict] = {}
-    for name, get in feats.items():
-        groups: Dict[str, List[float]] = {}
-        for st in stats:
-            m = st.get("motion") or {}
-            v = get(m)
-            if v is None:
-                continue
-            groups.setdefault(st["label"], []).append(v)
-        if len(groups) > 1:
-            out[name] = one_way_f(groups)
-    # for reference only - the confounded ones
-    groups = {}
-    for st in stats:
-        groups.setdefault(st["label"], []).append(st["total_amplitude"]["mean"])
-    out["total_amplitude (confounded)"] = one_way_f(groups)
-    groups = {}
-    for st in stats:
-        groups.setdefault(st["label"], []).append(st["rssi"]["mean"])
-    out["rssi (the confounder)"] = one_way_f(groups)
-    return out
-
-
-def separability(stats: List[Dict]) -> Dict:
-    """How distinguishable are the trials? A simple between/within variance ratio.
-
-    For each carrier, the variance of the carrier's mean across trials versus
-    the average within-trial variance gives a F-like ratio. A ratio well above
-    1 means the condition changes the spectrum, not just the noise.
-    """
-    labels = [s["label"] for s in stats if s.get("packets")]
-    usable = [s for s in stats if s.get("packets")]
-    if len(usable) < 2:
-        return {"verdict": "need at least two trials with data"}
-    n_carriers = min(len(s["per_carrier_mean"]) for s in usable)
-    ratios = []
-    null_carriers = []
-    for c in range(n_carriers):
-        means = [s["per_carrier_mean"][c] for s in usable]
-        stds = [s["per_carrier_std"][c] for s in usable]
-        # the ESP32 leaves a guard band of subcarriers unpopulated (zero
-        # amplitude in every trial). They carry no information and would drag
-        # the ratio towards zero, so they are excluded and reported.
-        if all(m == 0.0 for m in means):
-            null_carriers.append(c)
-            continue
-        within = statistics.mean([x * x for x in stds]) or 1e-9
-        between = statistics.pvariance(means) if len(means) > 1 else 0.0
-        ratios.append(between / within)
-    ratios_sorted = sorted(range(len(ratios)), key=lambda i: -ratios[i])
-    max_f = max(ratios) if ratios else 0.0
-    n_labels = len(set(labels))
-    # The per-carrier F is a *screen* over many carriers, so it has to be
-    # judged against the F distribution, and the multiplicity acknowledged.
-    critical = {2: 5.14, 3: 5.14, 4: 4.26}.get(n_labels, 4.26)
-    df2 = max(sum(1 for _ in usable) - n_labels, 1)
-    p = f_sf(max_f, n_labels - 1, df2) if (usable and n_labels > 1) else float("nan")
-    if max_f >= critical:
-        verdict = (f"conditions are separable (max F {max_f:.2f} >= the "
-                   f"alpha=0.05 critical value {critical})")
-    else:
-        verdict = (f"NOT separable - max F {max_f:.2f} is below the alpha=0.05 "
-                   f"critical value {critical} for {n_labels} conditions. "
-                   f"No effect was detected: this is the noise floor, so more "
-                   f"trials or a stronger stimulus are needed.")
-    return {
-        "labels": labels,
-        "carriers": n_carriers,
-        "carriers_used": len(ratios),
-        "null_carriers": null_carriers,
-        "per_carrier_f": [round(r, 3) for r in ratios],
-        "top_f_carriers": ratios_sorted[:8],
-        "max_f": round(max_f, 3) if ratios else 0.0,
-        "median_f": round(statistics.median(ratios), 3) if ratios else 0.0,
-        "max_f_p": p,
-        "critical_f": critical,
-        "verdict": verdict,
-    }
 
 
 def cmd_record(args) -> int:
@@ -495,7 +258,10 @@ def cmd_record(args) -> int:
               f"rssi {st['rssi']['mean']} dBm +/- {st['rssi']['std']}")
 
     out["stats"] = [trial_stats(t) for t in out["trials"]]
-    out["separability"] = separability(out["stats"])
+    offline = analyse_offline(out)
+    out["separability"] = offline["screen"]
+    out["condition_test"] = offline["test"]
+    out["verdict"] = offline["verdict"]
     os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
     with open(args.out, "w", encoding="utf-8") as fh:
         json.dump(out, fh, indent=2)
@@ -592,29 +358,38 @@ def cmd_analyse(args) -> int:
         print(f"               per-trial amplitude {c['per_trial_amplitude']}")
         print(f"               per-trial rssi       {c['per_trial_rssi']}")
 
+    # The statistics live in specter.sensors.esp32.experiment, so the tool
+    # and the HUD judge a recording with exactly the same code.
+    offline = analyse_offline(data)
+    feats = offline["features"]
     print("\n--- normalised (gain-free) motion features ---")
-    print(f"  {'trial':>28s}{'roughness':>12s}{'amp vol':>10s}{'amp~rssi':>10s}")
-    for i, st in enumerate(stats, start=1):
-        m = st.get("motion") or {}
-        if not m.get("n"):
+    print(f"  {'trial':>28s}{'roughness':>12s}{'rough used':>12s}"
+          f"{'amp vol':>10s}{'amp~rssi':>10s}")
+    for i, f in enumerate(feats, start=1):
+        if not f.get("n"):
             continue
-        print(f"  {i:>2d} {st['label']:>25s}{m['roughness']:>12.5f}"
-              f"{m['amp_volatility']:>10.4f}{m['amp_rssi_corr']:>10.3f}")
+        print(f"  {i:>2d} {f['label']:>25s}{f['roughness']:>12.5f}"
+              f"{f['roughness_used']:>12.5f}{f['amp_volatility']:>10.4f}"
+              f"{f['amp_rssi_corr']:>10.3f}")
 
     print("\n--- condition test (one-way ANOVA across the conditions) ---")
-    ct = condition_test(stats)
-    for name, r in ct.items():
+    for name, r in offline["test"].items():
         p = r["p"]
         ps = f"{p:.4f}" if p == p else "n/a"
-        sig = "  <-- significant at 0.05" if p == p and p < 0.05 else ""
+        sig = "  <-- significant at 0.05" if r.get("significant") else ""
         print(f"  {name:>28s}  F = {r['f']:>7.3f}  p = {ps:>7s} "
               f"(F {r['df1']},{r['df2']}){sig}")
 
-    sep = separability(stats)
+    sep = offline["screen"]
     print("\n--- separability (per-carrier screen) ---")
     print(f"  labels {sep.get('labels')}")
     print(f"  max F {sep.get('max_f')}  median F {sep.get('median_f')}")
     print(f"  verdict: {sep.get('verdict')}")
+
+    v = offline["verdict"]
+    print("\n--- verdict ---")
+    print(f"  {v['claim']}")
+    print(f"  {v['detail']}")
     if args.figure:
         path = _figure(stats, args.figure, data.get("consent", "")[:60])
         print(f"\nreference profile -> {path}")

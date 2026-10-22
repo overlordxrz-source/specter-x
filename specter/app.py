@@ -20,7 +20,10 @@ from specter.hud.pod import POLARITIES, ZOOMS, PodState, PodTelemetry, render_po
 from specter.hud.renderer import MODES, HUD_H, HUD_W, HudState, render
 from specter.ml.pose.estimator import PoseEstimator, make_pose_estimator
 from specter.sensors import stubs
-from specter.sensors.esp32.csi import csi_summary_measurement, subcarrier_amplitudes
+from specter.sensors.esp32.csi import csi_summary_measurement
+from specter.sensors.esp32.csi_analysis import CsiViewState
+from specter.sensors.esp32.experiment import (DEFAULT_INSTRUCTIONS, GuidedExperiment,
+                                               TrialSpec)
 from specter.sensors.base import Health, SensorStatus
 from specter.sensors.nightvision.camera import open_camera
 
@@ -62,6 +65,17 @@ def parse_args(argv=None):
                    help="ESP32 serial node (default: auto-detect the Espressif USB port)")
     p.add_argument("--csi-log-hz", type=float, default=1.0,
                    help="how often a CSI summary Measurement is written to the event log")
+    p.add_argument("--guided", action="store_true",
+                   help="run the guided motion experiment: labelled stationary / "
+                        "hand-motion trials with spoken cues, exported at the end")
+    p.add_argument("--guided-seconds", type=float, default=30.0,
+                   help="seconds per trial in the guided experiment")
+    p.add_argument("--guided-repeats", type=int, default=3,
+                   help="how many times the condition set is repeated")
+    p.add_argument("--guided-out", default="events/sessions/motion_experiment.json",
+                   help="where the guided experiment writes its metrics")
+    p.add_argument("--guided-consent", default="",
+                   help="who the subject is and that they were informed and agreed")
     p.add_argument("--supervisor-log-hz", type=float, default=1.0,
                    help="how often a supervisor Measurement is written to the event log")
     p.add_argument("--polarity", default="WHT", choices=POLARITIES, help="POD mode: white-hot or black-hot")
@@ -88,6 +102,23 @@ def main(argv=None) -> int:
         cam.close()
         return 2
     log.info("pose backend: %s", pose.name)
+
+    # The CSI view keeps its own rolling state (waterfall, baseline, change
+    # trace). It lives outside the renderer so the HUD stays a pure drawing
+    # surface, and so the rolling buffers are bounded no matter what the
+    # frame loop is doing.
+    csi_state = CsiViewState() if a.csi == "esp32" else None
+    experiment = None
+    if a.guided:
+        specs = []
+        for _ in range(max(1, a.guided_repeats)):
+            for label in ("stationary", "hand"):
+                specs.append(TrialSpec(label, a.guided_seconds,
+                                       DEFAULT_INSTRUCTIONS.get(label, "")))
+        experiment = GuidedExperiment(
+            specs, consent=a.guided_consent, lead_in=4.0, announce=True,
+            shuffle=True, seed=7)
+        experiment.start()
 
     events = EventLog(a.log_dir)
     try:
@@ -175,6 +206,7 @@ def main(argv=None) -> int:
     daq_state = None
     csi_last_log = 0.0
     csi_last_count = 0
+    guided_exported = False
     t_start = time.monotonic()
     try:
         while a.frames <= 0 or n < a.frames or (time.monotonic() - t_start) < a.min_seconds:
@@ -253,32 +285,32 @@ def main(argv=None) -> int:
                             ss.detail = "telemetry not available"
                 if a.csi == "esp32":
                     records = esp32.drain_csi()
-                    if records:
+                    if records and csi_state is not None:
+                        for rec in records:
+                            csi_state.push(rec)
+                            if experiment is not None:
+                                experiment.feed(rec)
                         latest = records[-1]
-                        amps = subcarrier_amplitudes(latest.iq)
-                        st.csi = {
-                            "link_state": health.state.value,
-                            "link_detail": health.detail,
-                            "ap_mac": latest.mac,
-                            "channel": latest.channel,
-                            "rssi": latest.rssi,
-                            "board_mac": health.board_mac,
-                            "local_timestamp": latest.local_timestamp,
-                            "amplitudes": [round(x, 1) for x in amps],
-                            "packets": health.packets,
-                            "packets_per_s": health.packets_per_s,
-                            "first_id": health.first_id,
-                            "last_id": health.last_id,
-                            "gaps": health.gaps,
-                            "missing_packets": health.missing_packets,
-                            "malformed": health.malformed,
-                            "dropped": health.dropped,
-                            "unknown_lines": health.unknown_lines,
-                            "silence_s": health.silence_s,
-                            "reconnects": health.reconnects,
-                            "uptime_s": health.uptime_s,
-                            "bytes": health.bytes,
-                        }
+                        view = csi_state.view(health)
+                        view["waterfall"] = csi_state.waterfall()
+                        view["trace"] = csi_state.trace()
+                        view["used_mask"] = csi_state.used_mask()
+                        view["board_mac"] = health.board_mac
+                        st.csi = view
+                    if experiment is not None:
+                        experiment.tick()
+                        st.experiment = experiment.state()
+                        if experiment.phase == "DONE" and not guided_exported:
+                            guided_exported = True
+                            try:
+                                summary = experiment.export(a.guided_out)
+                                events.log("motion_experiment",
+                                           {"verdict": summary["verdict"].get("claim"),
+                                            "headline": summary["verdict"].get("headline"),
+                                            "out": a.guided_out})
+                                log.info("guided experiment exported -> %s", a.guided_out)
+                            except Exception as e:
+                                log.warning("guided experiment export failed: %s", e)
                     if (time.monotonic() - csi_last_log) >= (1.0 / max(a.csi_log_hz, 0.01)):
                         csi_last_log = time.monotonic()
                         if records:
@@ -314,6 +346,12 @@ def main(argv=None) -> int:
                     pod.cycle_zoom()
                 elif k == ord("t"):
                     pod.track_enabled = not pod.track_enabled
+                elif k == ord("s"):
+                    st.csi_spectrum = not st.csi_spectrum
+                elif k == ord("e"):
+                    if experiment is not None and experiment.phase == "IDLE":
+                        experiment.start()
+                        events.log("motion_experiment_start", {})
     except KeyboardInterrupt:
         pass
     finally:
