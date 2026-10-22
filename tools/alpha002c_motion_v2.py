@@ -132,10 +132,13 @@ GEOMETRY_FIELDS = {
     "distance_m": (1.45, 1.55),
     "phone_height_m": (0.75, 0.85),
     "esp32_height_m": (0.75, 0.85),
-    "spot_from_midpoint_m": (0.40, 0.60),
-    "spot_off_axis_m": (0.20, 0.40),
+    # Amendment 1: S is centred longitudinally and offset laterally.
+    "spot_longitudinal_m": (-0.05, 0.05),
+    "spot_lateral_m": (0.25, 0.35),
 }
 GEOMETRY_TEXT = ("phone_orientation", "recorded_utc", "confirmed_by")
+#: measured distances from S to each antenna, checked against the geometry
+GEOMETRY_DERIVED = ("s_phone_m", "s_esp32_m")
 
 
 def validate_geometry(session):
@@ -157,6 +160,27 @@ def validate_geometry(session):
     for k in GEOMETRY_TEXT:
         if not geo.get(k):
             problems.append(f"geometry {k} missing")
+    for k in GEOMETRY_DERIVED:
+        if not _finite(geo.get(k)):
+            problems.append(f"geometry {k} is not finite ({geo.get(k)!r})")
+    # geometric consistency: recompute S-to-antenna distances from L, long, lat
+    if not problems:
+        L = float(geo["distance_m"])
+        lon = float(geo["spot_longitudinal_m"])
+        lat = float(geo["spot_lateral_m"])
+        radial = math.hypot(lon, lat)
+        if not (0.25 <= radial <= 0.36):
+            problems.append(f"geometry radial offset {radial:.3f} m outside "
+                            "[0.25, 0.36]")
+        d_phone = math.hypot(L / 2.0 + lon, lat)
+        d_esp = math.hypot(L / 2.0 - lon, lat)
+        if min(d_phone, d_esp) < 0.70:
+            problems.append("geometry places S closer than 0.70 m to an "
+                            "antenna")
+        for k, d in (("s_phone_m", d_phone), ("s_esp32_m", d_esp)):
+            if abs(float(geo[k]) - d) > 0.03:
+                problems.append(f"geometry {k}={geo[k]} disagrees with "
+                                f"L/long/lat ({d:.3f} m)")
     return problems
 
 

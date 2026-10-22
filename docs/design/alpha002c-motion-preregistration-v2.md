@@ -21,7 +21,7 @@ reach p < 0.01**: six blocks of one stationary and one hand trial give
 | height | **0.8 m** at both ends |
 | channel / width | 6, 20 MHz, LLTF |
 | phone | fixed on its mark, screen facing the board, untouched |
-| subject spot **S** | 0.5 m from the midpoint of the path, 0.3 m off the path axis, marked with tape |
+| subject spot **S** | **longitudinal 0.00 m** from the midpoint (±0.05) and **lateral 0.30 m** perpendicular to the axis (0.25–0.35), marked with tape |
 
 The subject stands at **S for both conditions**. Only the arm moves. This is
 the control that prevents the classifier from separating *body presence*
@@ -46,15 +46,46 @@ before GO the operator re-measures them and they are written to
 
 ```json
 {"distance_m": 1.50, "phone_height_m": 0.80, "esp32_height_m": 0.80,
- "spot_from_midpoint_m": 0.50, "spot_off_axis_m": 0.30,
+ "spot_longitudinal_m": 0.00, "spot_lateral_m": 0.30,
+ "s_phone_m": 0.808, "s_esp32_m": 0.808,
  "phone_orientation": "...", "recorded_utc": "...", "confirmed_by": "..."}
 ```
 
 The analysis **refuses** (INVALID) if the record is missing, a field is
-absent, or any value is outside: distance **1.45–1.55 m**, each height
-**0.75–0.85 m**, spot **0.40–0.60 m** from the midpoint and **0.20–0.40 m**
-off the axis. The recorded values are echoed into the result JSON, so the
-geometry travels with the verdict.
+absent, or any value is outside: axis **1.45–1.55 m**, each height
+**0.75–0.85 m**, longitudinal offset **−0.05…+0.05 m**, lateral offset
+**0.25–0.35 m**. It then **recomputes**
+
+```
+s_phone = hypot(L/2 + longitudinal, lateral)
+s_esp32 = hypot(L/2 - longitudinal, lateral)
+```
+
+and rejects the session if either measured distance disagrees with the
+computed one by more than **0.03 m**, if the radial offset
+`hypot(longitudinal, lateral)` is outside **0.25–0.36 m**, or if S is closer
+than **0.70 m** to either antenna. The recorded values are echoed into the
+result JSON, so the geometry travels with the verdict.
+
+### Amendment 1 — geometry only (2026-10-22, before any data)
+
+The original S definition was ambiguous ("0.5 m from the midpoint, 0.3 m off
+the axis" mixed radial and lateral distance), and its worksheet construction
+was arithmetically wrong: A and B at ±0.30 m with 0.50 m radii intersect at
+**0.40 m** perpendicular, not 0.50 m.
+
+Amended, and refrozen before collection:
+
+* S is **centred longitudinally** (0.00 m, tolerance ±0.05) and **0.30 m
+  lateral** (0.25–0.35). At L = 1.50 m this gives
+  `|S−phone| = |S−ESP32| = 0.808 m`, not 0.90 m.
+* The worksheet construction is now A/B at ±0.30 m with **0.425 m** radii
+  (√(0.30²+0.30²)).
+* The analysis checks the measured distances against the geometry.
+
+**Unchanged by this amendment:** H1 and its direction, the primary feature,
+the exact one-sided sign-flip test, the p/d_z/CI thresholds, the confound
+gates, the exclusions and the session length. No statistical rule moved.
 
 ## 2. Design
 
@@ -128,7 +159,7 @@ over blocks.
 
 ## 7. Acceptance criteria — all must hold
 
-1. A complete, in-range geometry record; all 20 trials valid; no malformed
+1. A complete, in-range, internally consistent geometry record; all 20 trials valid; no malformed
    CSI line after the first valid record;
    every trial 150+ payload frames, rate 9–11/s, span within 0.5 s of active,
    gap ≤ 0.5 s, boundary uncertainty ≤ 0.10 s.

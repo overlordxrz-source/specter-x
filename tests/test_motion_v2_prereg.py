@@ -78,8 +78,9 @@ def _session(tmp_path, hand_sigma=0.30, stationary_sigma=0.02,
             "design": {"seed": 7, "trial_order": [], "blocks": []},
             "geometry": {
                 "distance_m": 1.50, "phone_height_m": 0.80,
-                "esp32_height_m": 0.80, "spot_from_midpoint_m": 0.50,
-                "spot_off_axis_m": 0.30,
+                "esp32_height_m": 0.80,
+                "spot_longitudinal_m": 0.0, "spot_lateral_m": 0.30,
+                "s_phone_m": 0.808, "s_esp32_m": 0.808,
                 "phone_orientation": "screen facing the board",
                 "recorded_utc": "2026-10-22T00:00:00Z",
                 "confirmed_by": "operator",
@@ -231,3 +232,22 @@ def test_out_of_range_geometry_is_invalid(tmp_path):
     r = v2.analyse(s)
     assert r["verdict"] == "INVALID"
     assert any("distance_m" in p for p in r["geometry_problems"])
+
+
+def test_inconsistent_spot_distances_are_rejected(tmp_path):
+    """The measured S-to-antenna distances must follow from L, long and lat."""
+    s = _session(tmp_path)
+    # 0.90 m would be a 0.40 m lateral offset, not the recorded 0.30 m
+    s["geometry"]["s_phone_m"] = 0.90
+    s["geometry"]["s_esp32_m"] = 0.90
+    r = v2.analyse(s)
+    assert r["verdict"] == "INVALID"
+    assert any("disagrees" in p for p in r["geometry_problems"])
+
+
+def test_a_longitudinal_offset_outside_the_amendment_is_rejected(tmp_path):
+    s = _session(tmp_path)
+    s["geometry"]["spot_longitudinal_m"] = 0.30
+    r = v2.analyse(s)
+    assert r["verdict"] == "INVALID"
+    assert any("spot_longitudinal_m" in p for p in r["geometry_problems"])
