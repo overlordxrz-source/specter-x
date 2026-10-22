@@ -333,6 +333,8 @@ def cmd_record(args) -> int:
         elif ev == "stop":
             subprocess.Popen(["say", "stop. relax."])
 
+    jsonl_path = args.out + ".trials.jsonl"
+    jf = open(jsonl_path, "w", encoding="utf-8")
     try:
         for i, p in enumerate(plan, start=1):
             if args.cue:
@@ -345,7 +347,10 @@ def cmd_record(args) -> int:
                       f"for {p['seconds']:.0f}s", flush=True)
             t = rec.run_trial(p["label"], p["seconds"], p["block"], i,
                               lead_in_s=args.lead_in, on_cue=cue)
-            trials.append(trial_to_json(t, requested_s=p["seconds"]))
+            rec_json = trial_to_json(t, requested_s=p["seconds"])
+            trials.append(rec_json)
+            jf.write(json.dumps(rec_json) + "\n")
+            jf.flush()
             print(f"    {t.payload_frames} payload, {t.null_frames} null, "
                   f"active {t.active_s:.2f}s, sensor span "
                   f"{t.sensor_span_s:.2f}s, pre {t.excluded_pre} "
@@ -356,10 +361,20 @@ def cmd_record(args) -> int:
                   flush=True)
     finally:
         rec.stop_background()
+        jf.close()
         try:
             ser.close()
         except Exception:
             pass
+
+    late = rec.settle()
+    for d in trials:
+        n = late.get(d["index"], 0)
+        if n:
+            d["late_frames"] = n
+            d["valid"] = False
+            d["invalid_reason"] = ((d.get("invalid_reason") or "")
+                                   + f"; {n} late in-window frames").strip("; ")
 
     out = {
         "recorded_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
@@ -376,7 +391,12 @@ def cmd_record(args) -> int:
             "blocks": [p["block"] for p in plan],
         },
         "raw": raw_path,
+        "trials_jsonl": jsonl_path,
         "malformed": rec.malformed,
+        "other_lines": rec.other_lines,
+        "out_of_order": rec.out_of_order,
+        "clock_resets": rec.clock_resets,
+        "late_frames": late,
         "trials": trials,
     }
     os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)

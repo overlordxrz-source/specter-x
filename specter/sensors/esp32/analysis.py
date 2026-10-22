@@ -94,9 +94,13 @@ def lltf_used_mask(n_carriers: int = EXPECTED_SUBCARRIERS,
     carriers are dropped when the hardware flags the first word invalid.
     """
     mask = np.ones(int(n_carriers), dtype=bool)
-    for i in LLTF_NULL_CARRIERS:
-        if i < mask.size:
-            mask[i] = False
+    # The null indices are positions in the 64-slot LLTF layout. Applying
+    # them to any other width (e.g. a pre-masked 52-wide array) would remove
+    # 11 more carriers and leave 40. Only the real layout gets the mask.
+    if int(n_carriers) == EXPECTED_SUBCARRIERS:
+        for i in LLTF_NULL_CARRIERS:
+            if i < mask.size:
+                mask[i] = False
     if first_word_invalid:
         mask[:2] = False
     return mask
@@ -336,7 +340,11 @@ def effect_sizes(features: List[Dict], labels: Sequence[str],
 
 
 def _f_statistic(groups: Dict[str, List[float]]) -> float:
-    grand = [v for g in groups.values() for v in g if v == v]
+    # drop empty and all-NaN groups first: np.mean([]) is NaN, and 0 * NaN
+    # would turn an undefined contrast into a plausible-looking number
+    groups = {k: [v for v in g if v == v] for k, g in groups.items()}
+    groups = {k: g for k, g in groups.items() if g}
+    grand = [v for g in groups.values() for v in g]
     if len(groups) < 2 or len(grand) <= len(groups):
         return float("nan")
     gm = float(np.mean(grand))
@@ -489,90 +497,176 @@ def _auc(scores: np.ndarray, positive: np.ndarray) -> float:
                  / (pos.size * neg.size))
 
 
-def cross_validate(feats: List[Dict], labels: Sequence[str],
-                   feature: str = "roughness_used",
-                   folds: Optional[Sequence[Sequence[int]]] = None,
-                   blocks: Optional[Sequence] = None,
-                   positive: Optional[str] = None) -> Dict:
-    """Leave-one-block-out evaluation with train-only scaling.
+def _feature_columns(feature) -> List[str]:
+    return [feature] if isinstance(feature, str) else list(feature)
 
-    Two defects the audit verified are fixed here: the scaler is fitted on
-    the training fold and applied to the test fold (the test observations
-    never contribute to their own normalisation), and folds respect the
-    acquisition block when block ids are given, so the recording's
-    randomisation is not silently destroyed by the analyser's own shuffle.
-    """
-    labels = list(labels)
-    if folds is None and blocks is not None:
-        by_block: Dict = {}
+
+def _folds(labels: Sequence[str], blocks) -> List[List[int]]:
+    if blocks is not None:
+        by: Dict = {}
         for i, b in enumerate(blocks):
-            by_block.setdefault(b, []).append(i)
-        folds = [by_block[b] for b in sorted(by_block, key=str)]
-    if folds is None:
-        by_label: Dict[str, List[int]] = {}
-        for i, lab in enumerate(labels):
-            by_label.setdefault(lab, []).append(i)
-        reps = min(len(v) for v in by_label.values()) if by_label else 0
-        folds = [[by_label[lab][r] for lab in by_label] for r in range(reps)]
+            by.setdefault(str(b), []).append(i)
+        return [by[b] for b in sorted(by, key=str)]
+    by_label: Dict[str, List[int]] = {}
+    for i, lab in enumerate(labels):
+        by_label.setdefault(lab, []).append(i)
+    reps = min(len(v) for v in by_label.values()) if by_label else 0
+    return [[by_label[lab][r] for lab in by_label] for r in range(reps)]
 
-    classes = sorted(set(labels))
-    if positive is None:
-        positive = classes[-1] if classes else None
-    results = []
-    correct = 0
-    total = 0
-    oof = []
-    predictions = []
-    for f_i, fold in enumerate(folds):
-        test = set(fold)
-        train = [i for i in range(len(labels)) if i not in test]
-        if not train or not fold:
-            continue
-        Xtr = np.asarray([[feats[i].get(feature, np.nan)] for i in train], float)
-        Xte = np.asarray([[feats[i].get(feature, np.nan)] for i in fold], float)
-        if np.isnan(Xtr).any() or np.isnan(Xte).any():
-            continue
-        mu = Xtr.mean(axis=0)
-        sd = Xtr.std(axis=0)
-        sd = np.where(sd == 0, 1.0, sd)
-        Ztr = (Xtr - mu) / sd
-        Zte = (Xte - mu) / sd           # train-only transform
-        cents = {}
-        for lab in set(labels[i] for i in train):
-            cents[lab] = Ztr[[labels[i] == lab for i in train]].mean(axis=0)
-        hit = 0
-        for row, idx in zip(Zte, fold):
-            dist = {k: float(np.linalg.norm(row - cents[k])) for k in cents}
-            best = min(dist, key=dist.get)
-            hit += int(best == labels[idx])
-            predictions.append({"index": int(idx), "label": labels[idx],
-                                "predicted": best,
-                                "score": round(float(
-                                    -min(dist.values())), 6)})
-            if len(classes) == 2 and positive in dist and classes[0] in dist:
-                other = classes[0] if classes[0] != positive else classes[1]
-                oof.append((dist[other] - dist[positive],
-                            labels[idx] == positive))
-        results.append({"fold": f_i, "n_test": len(fold),
-                        "accuracy": round(hit / len(fold), 4)})
-        correct += hit
-        total += len(fold)
+
+def _cv_core(train_X, train_y, test_X, test_y, positive, classes):
+    """Train-only scaling, nearest centroid, out-of-fold scores."""
+    mu = train_X.mean(axis=0, keepdims=True)
+    sd = train_X.std(axis=0, keepdims=True)
+    sd = np.where(sd == 0, 1.0, sd)
+    Ztr = (train_X - mu) / sd
+    Zte = (test_X - mu) / sd           # transform uses train statistics only
+    cents = {}
+    for lab in set(train_y):
+        rows = Ztr[[y == lab for y in train_y]]
+        if len(rows):
+            cents[lab] = rows.mean(axis=0)
+    if len(cents) < 2:
+        return None, None
+    hits = 0
+    preds = []
+    for row, truth in zip(Zte, test_y):
+        dist = {k: float(np.linalg.norm(row - c)) for k, c in cents.items()}
+        best = min(dist, key=dist.get)
+        hits += int(best == truth)
+        score = None
+        if len(classes) == 2 and positive in dist:
+            other = classes[0] if classes[0] != positive else classes[1]
+            if other in dist:
+                score = dist[other] - dist[positive]
+        preds.append({"predicted": best, "label": truth, "score": score})
+    return hits, preds
+
+
+def _cv_result(feature, folds, predictions, correct, total, skipped,
+               positive, classes):
     auc = None
-    if oof and len(classes) == 2:
-        auc = _auc(np.asarray([x[0] for x in oof], float),
-                   np.asarray([x[1] for x in oof], bool))
+    if predictions and len(classes) == 2:
+        sc = [p["score"] for p in predictions if p["score"] is not None]
+        lab = [p["label"] == positive for p in predictions if p["score"] is not None]
+        if sc:
+            auc = _auc(np.asarray(sc, float), np.asarray(lab, bool))
     return {
-        "feature": feature,
-        "folds": results,
+        "feature": feature if isinstance(feature, str) else list(feature),
+        "folds": folds,
         "held_out_accuracy": round(correct / total, 4) if total else None,
         "held_out_auc": (round(auc, 4) if auc is not None and auc == auc
                          else None),
         "positive_class": positive,
         "n_scored": total,
+        "skipped_folds": skipped,
         "fold_indices": [list(f) for f in folds],
         "predictions": predictions,
-        "note": "train-only scaling; folds follow the acquisition blocks",
+        "note": ("train-only scaling; folds follow the acquisition blocks; "
+                 "any skipped fold carries its reason"),
     }
+
+
+def cross_validate(feats: List[Dict], labels: Sequence[str],
+                   feature: str = "roughness_used",
+                   folds: Optional[Sequence[Sequence[int]]] = None,
+                   blocks: Optional[Sequence] = None,
+                   positive: Optional[str] = None) -> Dict:
+    """Held-out evaluation of *pre-fitted* feature rows.
+
+    Use :func:`cross_validate_trials` when the features were learned across
+    trials: this function cannot refit them, so it cannot remove that
+    leakage.
+    """
+    labels = list(labels)
+    cols = _feature_columns(feature)
+    folds = [list(f) for f in folds] if folds is not None else _folds(labels, blocks)
+    classes = sorted(set(labels))
+    if positive is None:
+        positive = classes[-1] if classes else None
+    predictions, results, skipped = [], [], []
+    correct = total = 0
+    for f_i, fold in enumerate(folds):
+        test = set(fold)
+        train = [i for i in range(len(labels)) if i not in test]
+        if not train or not fold:
+            skipped.append({"fold": f_i, "reason": "empty train or test fold"})
+            continue
+        Xtr = np.asarray([[feats[i].get(c, np.nan) for c in cols]
+                          for i in train], float)
+        Xte = np.asarray([[feats[i].get(c, np.nan) for c in cols]
+                          for i in fold], float)
+        if np.isnan(Xtr).any() or np.isnan(Xte).any():
+            skipped.append({"fold": f_i, "reason": "NaN feature in the fold"})
+            continue
+        hit, preds = _cv_core(Xtr, [labels[i] for i in train], Xte,
+                              [labels[i] for i in fold], positive, classes)
+        if hit is None:
+            skipped.append({"fold": f_i, "reason": "fewer than two classes"})
+            continue
+        for idx, pr in zip(fold, preds):
+            pr["index"] = int(idx)
+            predictions.append(pr)
+        correct += hit
+        total += len(fold)
+        results.append({"fold": f_i, "n_test": len(fold),
+                        "accuracy": round(hit / len(fold), 4)})
+    return _cv_result(feature, folds, predictions, correct, total, skipped,
+                      positive, classes)
+
+
+def cross_validate_trials(trials: Sequence[Dict], labels: Sequence[str],
+                          feature="roughness_used",
+                          blocks: Optional[Sequence] = None,
+                          positive: Optional[str] = None,
+                          stationary_label: str = "stationary",
+                          folds: Optional[Sequence[Sequence[int]]] = None) -> Dict:
+    """Held-out evaluation with every learned statistic fitted **per fold**.
+
+    The audit's third major finding: cross-fitting leave-one-trial-out and
+    then scoring leave-one-block-out still lets a test trial's reference
+    include other trials in the same test block. Here the reference and the
+    noise floor for a fold are computed from that fold's *training* trials
+    only, so a held-out prediction can depend on nothing in its own block.
+    """
+    labels = list(labels)
+    cols = _feature_columns(feature)
+    folds = ([list(f) for f in folds] if folds is not None
+             else _folds(labels, blocks))
+    classes = sorted(set(labels))
+    if positive is None:
+        positive = classes[-1] if classes else None
+    predictions, results, skipped = [], [], []
+    correct = total = 0
+    for f_i, fold in enumerate(folds):
+        test = set(fold)
+        train = [i for i in range(len(labels)) if i not in test]
+        if not train or not fold:
+            skipped.append({"fold": f_i, "reason": "empty train or test fold"})
+            continue
+        fitted = extract_features(trials, stationary_label, fit_idx=train)
+        Xtr = np.asarray([[fitted[i].get(c, np.nan) for c in cols]
+                          for i in train], float)
+        Xte = np.asarray([[fitted[i].get(c, np.nan) for c in cols]
+                          for i in fold], float)
+        if np.isnan(Xtr).any() or np.isnan(Xte).any():
+            skipped.append({"fold": f_i,
+                            "reason": "NaN feature after per-fold fitting"})
+            continue
+        hit, preds = _cv_core(Xtr, [labels[i] for i in train], Xte,
+                              [labels[i] for i in fold], positive, classes)
+        if hit is None:
+            skipped.append({"fold": f_i, "reason": "fewer than two classes"})
+            continue
+        for idx, pr in zip(fold, preds):
+            pr["index"] = int(idx)
+            predictions.append(pr)
+        correct += hit
+        total += len(fold)
+        results.append({"fold": f_i, "n_test": len(fold),
+                        "accuracy": round(hit / len(fold), 4)})
+    return _cv_result(feature, folds, predictions, correct, total, skipped,
+                      positive, classes)
 
 
 def power_by_simulation(d: float, n_per_group: int, k: int = 2,
@@ -802,7 +896,16 @@ def permutation_test_crossfit(parts, labels: Sequence[str], blocks,
         if f2 >= f_obs:
             hits_observed += 1
     n_assign = _within_block_assignments(labels, blocks)
-    min_p = (1.0 / n_assign) if n_assign else (1.0 / (usable + 1) if usable else None)
+    n_classes = len(set(labels))
+    if n_assign:
+        # swapping labels leaves F unchanged, so an assignment and its
+        # complement give the same statistic: the two-sided floor is 2/N.
+        min_p = (2.0 if n_classes == 2 else 1.0) / n_assign
+    else:
+        min_p = (1.0 / (usable + 1)) if usable else None
+    p = ((hits_observed + 1) / (usable + 1)) if usable else None
+    if p is not None and min_p is not None:
+        p = max(p, min_p)
     return {
         "feature": feature,
         "observed_f": round(f_obs, 4) if f_obs == f_obs else None,
@@ -810,11 +913,11 @@ def permutation_test_crossfit(parts, labels: Sequence[str], blocks,
         "n_permutations": n_perm,
         "permutations_above_critical": hits_critical,
         "permutations_as_extreme_as_data": hits_observed,
-        "empirical_p": round((hits_observed + 1) / (usable + 1), 6) if usable else None,
+        "empirical_p": round(p, 6) if p is not None else None,
         "false_positive_rate": round(hits_critical / usable, 6) if usable else None,
         "min_attainable_p": round(min_p, 6) if min_p else None,
-        "at_floor": (min_p is not None and usable > 0
-                     and (hits_observed + 1) / (usable + 1) <= min_p + 1e-12),
+        "at_floor": bool(p is not None and min_p is not None
+                         and p <= min_p + 1e-12),
         "block_preserving": blocks is not None,
         "n_distinct_assignments": n_assign,
         "note": ("features are rebuilt under every permutation; labels are "
@@ -844,6 +947,11 @@ def analyse_blinded(trials: Sequence[Dict], seed: int = 0,
         blocks = cand if cand and all(b is not None for b in cand) else None
     else:
         blocks = list(blocks)
+        if len(blocks) != n:
+            raise ValueError(f"blocks has {len(blocks)} entries for {n} trials")
+        # the trials were shuffled; a caller's block list is in the original
+        # order and MUST be shuffled the same way or the folds are misaligned
+        blocks = [blocks[i] for i in order]
     parts = [_trial_parts(t) for t in shuffled]
     feats = crossfit_features(shuffled)
     out = {
@@ -866,6 +974,10 @@ def analyse_blinded(trials: Sequence[Dict], seed: int = 0,
         out["permutation"][name] = permutation_test_crossfit(
             parts, labels, blocks, name, n_perm=n_perm, seed=seed, alpha=alpha)
         out["effects"][name] = effect_sizes(feats, labels, name)
-        out["held_out"][name] = cross_validate(
-            feats, labels, name, blocks=blocks, positive=positive)
+        out["held_out"][name] = cross_validate_trials(
+            shuffled, labels, name, blocks=blocks, positive=positive)
+    # the pre-registration says "nearest centroid on z-scored features"
+    # (plural), so the full frozen set also gets a held-out score
+    out["held_out_multivariate"] = cross_validate_trials(
+        shuffled, labels, list(FEATURE_NAMES), blocks=blocks, positive=positive)
     return out

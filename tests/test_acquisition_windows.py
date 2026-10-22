@@ -84,7 +84,7 @@ def test_frames_inside_the_window_are_kept_by_sensor_time():
     # acquired at sensor 1.00..1.09 but delivered 0.2 s late
     sched += [(1.2 + i * 0.001, _line(100 + i, int((1.0 + i * 0.01) * 1e6)))
               for i in range(10)]
-    rec = _recorder(clock, FakeSource(clock, sched))
+    rec = _recorder(clock, FakeSource(clock, sched), guard_s=0.30)
     rec.pump_for(0.05)
     t = rec.run_trial("stationary", 1.5, block=0, index=0, lead_in_s=0.05)
     assert t.payload_frames == 10, (t.payload_frames, t.excluded_guard,

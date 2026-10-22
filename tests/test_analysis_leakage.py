@@ -13,8 +13,11 @@ Each test is written so that it FAILS against the pre-audit implementation:
 from __future__ import annotations
 
 import math
+from unittest.mock import patch
 
 import numpy as np
+
+import specter.sensors.esp32.analysis as A
 import pytest
 
 from specter.sensors.esp32.analysis import (FEATURE_NAMES, _auc, _f_statistic,
@@ -173,3 +176,49 @@ def test_features_use_the_fifty_two_carrier_mask_by_default():
     m2 = lltf_used_mask(first_word_invalid=True)
     assert m2.sum() == 51
     assert not m2[0] and not m2[1]
+
+
+def test_change_rate_never_uses_its_own_trial():
+    """The floor must exclude trial i, not merely other trials' labels.
+
+    A very noisy trial dominates the 99th percentile if it is allowed into
+    its own reference, which drives its own change_rate down. Excluding it
+    is the difference between a cross-fitted feature and a self-fitted one.
+    """
+    trials = [make_trial("stationary", 0.01, 31),
+              make_trial("stationary", 0.01, 32),
+              make_trial("stationary", 0.01, 33),
+              make_trial("stationary", 0.60, 34)]
+    parts = [A._trial_parts(t) for t in trials]
+    labels = [t["label"] for t in trials]
+    vals = A._change_rate_crossfit(parts, labels)
+
+    all_d = np.concatenate([p["d"] for p in parts])
+    thr_with_self = float(np.percentile(all_d, 99.0))
+    with_self = float((parts[3]["d"] > thr_with_self).mean())
+    assert vals[3] != pytest.approx(with_self)
+
+
+def test_every_permutation_passes_permuted_labels_to_the_supervised_feature():
+    """If the permutation reuses the observed labels, the test is invalid.
+
+    Spying on the labels each call receives catches a 'fixed features' run
+    even when the resulting p-value happens to look plausible.
+    """
+    trials = [make_trial("stationary", 0.02, 41),
+              make_trial("stationary", 0.02, 42),
+              make_trial("hand", 0.30, 43),
+              make_trial("hand", 0.30, 44)]
+    parts = [A._trial_parts(t) for t in trials]
+    labels = [t["label"] for t in trials]
+    seen = []
+    original = A._change_rate_crossfit
+
+    def spy(p, labs, stationary_label="stationary"):
+        seen.append(tuple(labs))
+        return original(p, labs, stationary_label)
+
+    with patch.object(A, "_change_rate_crossfit", side_effect=spy):
+        A.permutation_test_crossfit(parts, labels, None, "change_rate",
+                                    n_perm=20, seed=1)
+    assert len(set(seen)) > 1, "every call received the observed labels"
