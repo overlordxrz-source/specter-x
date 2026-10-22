@@ -27,6 +27,35 @@ The subject stands at **S for both conditions**. Only the arm moves. This is
 the control that prevents the classifier from separating *body presence*
 instead of *motion*.
 
+### 1.1 Frozen directional hypothesis
+
+* **H1:** the mean paired difference
+  `roughness(hand) − roughness(stationary)` is **greater than zero**.
+* **H0:** it is less than or equal to zero.
+
+The permutation test is **one-sided in that direction**: the p-value is the
+fraction of the 1 024 sign-flip assignments whose mean is at least the
+observed mean. A negative effect is reported with its sign and is a
+**FAIL**; it is never converted into a two-sided PASS.
+
+### 1.2 Recorded geometry — a session fact, not an example
+
+The values in the table above are the measured bench setup. Immediately
+before GO the operator re-measures them and they are written to
+`<session>.geometry.json`:
+
+```json
+{"distance_m": 1.50, "phone_height_m": 0.80, "esp32_height_m": 0.80,
+ "spot_from_midpoint_m": 0.50, "spot_off_axis_m": 0.30,
+ "phone_orientation": "...", "recorded_utc": "...", "confirmed_by": "..."}
+```
+
+The analysis **refuses** (INVALID) if the record is missing, a field is
+absent, or any value is outside: distance **1.45–1.55 m**, each height
+**0.75–0.85 m**, spot **0.40–0.60 m** from the midpoint and **0.20–0.40 m**
+off the axis. The recorded values are echoed into the result JSON, so the
+geometry travels with the verdict.
+
 ## 2. Design
 
 **10 randomised blocks. Each block contains exactly one `stationary` and one
@@ -99,7 +128,8 @@ over blocks.
 
 ## 7. Acceptance criteria — all must hold
 
-1. All 20 trials valid; no malformed CSI line after the first valid record;
+1. A complete, in-range geometry record; all 20 trials valid; no malformed
+   CSI line after the first valid record;
    every trial 150+ payload frames, rate 9–11/s, span within 0.5 s of active,
    gap ≤ 0.5 s, boundary uncertainty ≤ 0.10 s.
 2. Exact one-sided **p ≤ 0.01**.
@@ -179,7 +209,8 @@ python3 tools/alpha002c_motion_v2.py \
   --out runs/alpha002c_motion_v2/result.json
 ```
 
-The tool has no option that changes the statistics. It prints PASS / FAIL /
+The tool has no option that changes the statistics. It reads
+`<session>.geometry.json` automatically; without it the verdict is INVALID. It prints PASS / FAIL /
 INCONCLUSIVE / INVALID with the reason, the ten paired differences, the exact
 p, `d_z`, its CI, the confound table and the five Bonferroni secondaries.
 Tests (`tests/test_motion_v2_prereg.py`) pin each verdict: a synthetic

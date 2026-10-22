@@ -128,6 +128,38 @@ def payload_only(trials, min_sig_len=33):
     return out
 
 
+GEOMETRY_FIELDS = {
+    "distance_m": (1.45, 1.55),
+    "phone_height_m": (0.75, 0.85),
+    "esp32_height_m": (0.75, 0.85),
+    "spot_from_midpoint_m": (0.40, 0.60),
+    "spot_off_axis_m": (0.20, 0.40),
+}
+GEOMETRY_TEXT = ("phone_orientation", "recorded_utc", "confirmed_by")
+
+
+def validate_geometry(session):
+    """The exact geometry is a recorded session fact, not an assumption.
+
+    The protocol fixes the permitted ranges; the operator records the
+    measured values immediately before GO. The analysis refuses without it.
+    """
+    geo = session.get("geometry")
+    if not isinstance(geo, dict):
+        return ["geometry record missing (no measured session geometry)"]
+    problems = []
+    for k, (lo, hi) in GEOMETRY_FIELDS.items():
+        v = geo.get(k)
+        if not _finite(v):
+            problems.append(f"geometry {k} is not finite ({v!r})")
+        elif not (lo <= float(v) <= hi):
+            problems.append(f"geometry {k}={v} outside [{lo}, {hi}]")
+    for k in GEOMETRY_TEXT:
+        if not geo.get(k):
+            problems.append(f"geometry {k} missing")
+    return problems
+
+
 def validate_design(trials, session):
     problems = []
     if len(trials) != BLOCKS * TRIALS_PER_BLOCK:
@@ -288,9 +320,10 @@ def paired(rows, feature):
 def analyse(session):
     trials = payload_only(session.get("trials", []))
     design = validate_design(trials, session)
+    geometry = validate_geometry(session)
     trial_problems = validate_trials(trials)
     raw_problems = validate_raw(session, trials)
-    base_problems = design or trial_problems or raw_problems
+    base_problems = design or geometry or trial_problems or raw_problems
 
     out = {
         "preregistration": {
@@ -303,6 +336,8 @@ def analyse(session):
                            "80% at 1.4"),
         },
         "design_problems": design,
+        "geometry_problems": geometry,
+        "geometry": session.get("geometry"),
         "trial_problems": trial_problems,
         "raw_problems": raw_problems,
     }
@@ -384,7 +419,8 @@ def analyse(session):
 
 def show(result):
     print(f"verdict: {result['verdict']} - {result.get('reason','')}")
-    for k in ("design_problems", "trial_problems", "raw_problems"):
+    for k in ("design_problems", "geometry_problems", "trial_problems",
+              "raw_problems"):
         for p in result.get(k) or []:
             print(f"  {k}: {p}")
     if "confounds" in result:
@@ -421,6 +457,10 @@ def main(argv=None) -> int:
     args = ap.parse_args(argv)
     with open(args.session, encoding="utf-8") as fh:
         session = json.load(fh)
+    sidecar = args.session + ".geometry.json"
+    if "geometry" not in session and os.path.exists(sidecar):
+        with open(sidecar, encoding="utf-8") as fh:
+            session["geometry"] = json.load(fh)
     result = analyse(session)
     show(result)
     if args.out:

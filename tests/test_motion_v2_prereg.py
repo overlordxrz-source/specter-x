@@ -76,6 +76,14 @@ def _session(tmp_path, hand_sigma=0.30, stationary_sigma=0.02,
         raw_path.write_bytes(raw)
     return {"trials": trials, "raw": str(raw_path),
             "design": {"seed": 7, "trial_order": [], "blocks": []},
+            "geometry": {
+                "distance_m": 1.50, "phone_height_m": 0.80,
+                "esp32_height_m": 0.80, "spot_from_midpoint_m": 0.50,
+                "spot_off_axis_m": 0.30,
+                "phone_orientation": "screen facing the board",
+                "recorded_utc": "2026-10-22T00:00:00Z",
+                "confirmed_by": "operator",
+            },
             "malformed": 0, "clock_resets": 0, "late_frames": {}}
 
 
@@ -198,3 +206,28 @@ def test_a_sample_span_mismatch_invalidates(tmp_path):
     r = v2.analyse(s)
     assert r["verdict"] == "INVALID"
     assert any("sample span" in p for p in r["trial_problems"])
+
+
+def test_the_direction_is_frozen_and_negative_effects_fail(tmp_path):
+    """H1 is hand > stationary; a negative effect is not a two-sided PASS."""
+    assert v2.signflip_p([1.0] * 10)[0] == 1 / 1024
+    assert v2.signflip_p([-1.0] * 10)[0] == 1.0
+    r = v2.analyse(_session(tmp_path, hand_sigma=0.02, stationary_sigma=0.30))
+    assert r["verdict"] == "FAIL"
+    assert r["primary"]["dz"] < 0
+
+
+def test_the_geometry_record_is_required(tmp_path):
+    s = _session(tmp_path)
+    del s["geometry"]
+    r = v2.analyse(s)
+    assert r["verdict"] == "INVALID"
+    assert any("geometry" in p for p in r["geometry_problems"])
+
+
+def test_out_of_range_geometry_is_invalid(tmp_path):
+    s = _session(tmp_path)
+    s["geometry"]["distance_m"] = 1.70
+    r = v2.analyse(s)
+    assert r["verdict"] == "INVALID"
+    assert any("distance_m" in p for p in r["geometry_problems"])
