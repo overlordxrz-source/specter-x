@@ -1,0 +1,11 @@
+# The station role: the board joins the LAB access point (the Mac, or a
+# second board) and measures the DOWNLINK CSI. This is the role the original
+# image used, so the behaviour is known.
+#
+# Build it into its own directory and its own sdkconfig, so the two roles
+# can never overwrite each other:
+#
+#   idf.py -B build -D SDKCONFIG=sdkconfig.station \
+#          -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.station.defaults" build
+CONFIG_SPECTER_ROLE_STATION=y
+# CONFIG_SPECTER_ROLE_SOFTAP is not set

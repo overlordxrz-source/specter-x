@@ -30,9 +30,11 @@
 extern "C" {
 #endif
 
-/*: The longest line this build can produce: 128 values of up to 5
- *  characters, plus the header fields. */
-#define CSI_LINE_MAX 1024
+/*: The longest line this build can produce. A 20 MHz LLTF record is 128
+ *  bytes and about 900 characters; an HT40 record is 256 bytes and about
+ *  1600. The buffer is sized for the larger case so a 40 MHz peer cannot
+ *  produce a line that silently fails to format. */
+#define CSI_LINE_MAX 2048
 
 /*! The CSV header the upstream prints once, before the first packet. */
 const char *csi_output_header(void);

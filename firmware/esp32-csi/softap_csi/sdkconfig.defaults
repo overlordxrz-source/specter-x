@@ -1,3 +1,16 @@
+# The target is part of the recipe, not of the shell environment. On a
+# clean checkout without this line idf.py silently builds for the ORIGINAL
+# ESP32 (bootloader at 0x1000, entry point 0x4008xxxx), which is not this
+# board and would not boot.
+CONFIG_IDF_TARGET="esp32s3"
+
+# --- flash --------------------------------------------------------------
+# The board has 16 MB (verified with esptool). The default would say 2 MB,
+# and `idf.py flash` would then patch the bootloader header to 2 MB.
+# The experiment flashes the APP only, but the build should still describe
+# the hardware it is built for.
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+
 # --- Wi-Fi -------------------------------------------------------------------
 CONFIG_ESP32_WIFI_CSI_ENABLED=y
 CONFIG_ESP32_WIFI_AMPDU_TX_ENABLED=

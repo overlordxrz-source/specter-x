@@ -1,5 +1,6 @@
 #include "dq_ring.h"
 
+#include <stdlib.h>
 #include <string.h>
 
 dq_state_t *dq_create(uint32_t depth, bool drop_oldest)

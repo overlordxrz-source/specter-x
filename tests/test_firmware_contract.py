@@ -157,3 +157,39 @@ def test_the_firmware_keeps_the_gain_compensation():
     # and it is applied to the bytes, as the upstream did
     out = _source("csi_output.c")
     assert "rec->gain_compensation * (float)rec->iq[i]" in out
+
+def test_wifi_is_initialised_before_it_is_configured():
+    """A boot-blocking bug the preflight caught: calling esp_wifi_set_mode()
+    without esp_wifi_init() returns ESP_ERR_WIFI_NOT_INIT and the board
+    resets in a loop. The order is checked inside app_main, because the
+    helpers are defined earlier in the file than the calls to them."""
+    src = _source("app_main.c")
+    body = src[src.index("void app_main(void)"):]
+    init = body.index("esp_wifi_init(")
+    for call in ("wifi_softap_start(", "wifi_station_start(", "wifi_csi_init("):
+        if call in body:
+            assert body.index(call) > init, f"{call}) runs before esp_wifi_init"
+
+
+def test_the_netif_matches_the_role():
+    """The SoftAP branch must create the AP netif, or the Mac associates and
+    never gets an address."""
+    src = _source("app_main.c")
+    body = src[src.index("void app_main(void)"):]
+    start = body.index("#if CONFIG_SPECTER_ROLE_SOFTAP")
+    block = body[start:body.index("#endif", start)]
+    ap, sta = block.split("#else")
+    assert "esp_netif_create_default_wifi_ap()" in ap
+    assert "esp_netif_create_default_wifi_sta()" in sta
+
+
+def test_the_writer_does_not_add_a_second_closing_quote():
+    """The formatter closes the quoted IQ tail; the terminator must not."""
+    src = _source("app_main.c")
+    body = src[src.index("static void writer_task"):]
+    body = body[:body.index("/* --- the status task")]
+    calls = [line for line in body.splitlines() if "fputs(" in line]
+    assert len(calls) == 1, calls
+    terminator = calls[0]
+    assert "\\r" not in terminator, "the writer must not add a carriage return"
+    assert terminator.count('"') == 2, "the writer adds a quote to a quoted tail"

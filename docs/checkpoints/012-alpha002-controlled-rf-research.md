@@ -5,6 +5,15 @@
 **Status:** the synthetic validation is done, the controlled-link firmware is
 **built but not flashed**, and the campus gateway was not used.
 
+> **Corrected by checkpoint 013 (2026-10-22).** The build status in §3 was
+> wrong: `-D SDKCONFIG_DEFAULTS` is ignored when an `sdkconfig` already
+> exists, so **the SoftAP role was never built** — both build directories
+> held station images. The preflight also found a boot-blocking missing
+> `esp_wifi_init()`, a duplicated closing quote in every CSI line, the wrong
+> netif in the SoftAP role, and a clean build that targeted the original
+> ESP32. All are fixed; sizes and hashes changed. See
+> [`013-firmware-preflight.md`](013-firmware-preflight.md).
+
 **Nothing is claimed.** No motion detection, no vital-sign detection. The
 16 MB backup is untouched, the board was not flashed, erased, reset or
 modified, and `main` was not touched.
@@ -135,7 +144,7 @@ the campus link could never offer.
 | Toolchain | ESP-IDF **v5.2.2**, target `esp32s3`, Xtensa LX7 |
 | App binary | **449 216 bytes** - 57 % of the 1 MB app partition free |
 | Layout | **unchanged**: bootloader 0x0, table 0x8000, app 0x10000 |
-| Roles built | station **and** SoftAP, both compile |
+| Roles built | station **and** SoftAP — see checkpoint 013; the first attempt built station twice |
 | Component | `esp_csi_gain_ctrl` from the registry, the same one the original image used |
 | Artefacts | `docs/checkpoints/012` §7 |
 

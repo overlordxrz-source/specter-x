@@ -11,6 +11,8 @@ firmware/esp32-csi/softap_csi/build/
 firmware/esp32-csi/softap_csi/build-softap/
 firmware/esp32-csi/softap_csi/managed_components/
 firmware/esp32-csi/softap_csi/sdkconfig
+firmware/esp32-csi/softap_csi/sdkconfig.station
+firmware/esp32-csi/softap_csi/sdkconfig.softap
 firmware/esp32-csi/softap_csi/sdkconfig.old
 firmware/esp32-csi/softap_csi/dependencies.lock
 

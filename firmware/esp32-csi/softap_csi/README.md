@@ -3,13 +3,21 @@
 **Status: built, not flashed.** Neither image has been written to the board,
 and the board has not been reset, erased or modified.
 
+> **Preflight changed this firmware.** Six defects that compiled cleanly were
+> found and fixed before the first flash: a missing `esp_wifi_init()` (boot
+> loop), a duplicated closing quote in every CSI line, the wrong netif in the
+> SoftAP role, a SoftAP role that had never actually been built, a clean build
+> that targeted the original ESP32, and a 2 MB flash size on a 16 MB part.
+> See [checkpoint 013](../../docs/checkpoints/013-firmware-preflight.md) and
+> [`docs/design/flash-preflight-and-rollback.md`](../../docs/design/flash-preflight-and-rollback.md).
+
 | | |
 |---|---|
 | Build | ESP-IDF **v5.2.2**, target `esp32s3`, Xtensa LX7 |
-| App binary | **449 216 bytes** - 57 % of the 1 MB app partition free |
+| App binary | **743 984 B** (SoftAP) / **743 744 B** (station) - 29 % of the 1 MB app partition free |
 | Partition layout | **unchanged** from the running image: bootloader at 0x0, table at 0x8000, app at 0x10000 |
 | Wire format | **unchanged** - Espressif's `csi_recv_router`, byte for byte |
-| Artefact SHA-256 | recorded in `docs/checkpoints/012-*.md` |
+| Artefact SHA-256 | recorded in `docs/checkpoints/013-firmware-preflight.md` |
 
 ---
 
@@ -106,14 +114,24 @@ checked, so the two cannot drift apart silently.
 cd firmware/esp32-csi/softap_csi
 source ~/esp/esp-idf/export.sh
 
-# the station role (the default)
-idf.py set-target esp32s3
-idf.py build
+# the station role
+idf.py -B build -D SDKCONFIG=sdkconfig.station \
+       -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.station.defaults" build
 
 # the SoftAP role
-idf.py -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.softap.defaults" \
-       -B build-softap build
+idf.py -B build-softap -D SDKCONFIG=sdkconfig.softap \
+       -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.softap.defaults" build
 ```
+
+Two traps this recipe exists to avoid, both found in preflight (checkpoint 013):
+
+* **`SDKCONFIG_DEFAULTS` is ignored when `sdkconfig` already exists**, so two
+  builds sharing one sdkconfig silently produce the same role twice. Each
+  role therefore gets its own `SDKCONFIG` file.
+* **Without a target, `idf.py` builds for the original ESP32** (bootloader at
+  0x1000, entry point `0x4008xxxx`). `CONFIG_IDF_TARGET="esp32s3"` is in
+  `sdkconfig.defaults`, and the build log must say
+  `Building ESP-IDF components for target esp32s3`.
 
 The `esp_csi_gain_ctrl` component is fetched by the component manager.
 
@@ -156,17 +174,22 @@ Sharing**:
    connectivity.** Do it in a way that survives it - a local terminal, not
    over the network.
 
-### 5.3 Flash the new image (over the UART bridge, not the native USB)
+### 5.3 Flash the new image - the APP ONLY, over the UART bridge
+
+The bootloader and the partition table on the board already match this build
+(the bootloader entry point is identical and the table is byte-identical), so
+**only the app region changes**. That keeps the flash to one 743 KB write and
+makes the rollback a single write of the original app.
 
 ```bash
 cd firmware/esp32-csi/softap_csi
-# the native USB port is the fastest path, but the UART bridge is the one
-# that is proven; pick one and use it consistently
 esptool --port /dev/cu.usbmodem5B901602281 --baud 115200 \
-         write-flash 0x0  build/bootloader/bootloader.bin \
-                      0x8000 build/partition_table/partition-table.bin \
-                      0x10000 build/specter_csi_lab.bin
+        write-flash 0x10000 build-softap/specter_csi_lab.bin
+esptool --port /dev/cu.usbmodem5B901602281 --baud 115200 \
+        verify-flash 0x10000 build-softap/specter_csi_lab.bin
 ```
+
+Rollback, and the full procedure: `docs/design/flash-preflight-and-rollback.md`.
 
 ### 5.4 Check it, in this order
 

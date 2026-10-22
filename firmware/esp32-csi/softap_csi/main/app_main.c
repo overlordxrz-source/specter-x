@@ -42,6 +42,7 @@
 #include <string.h>
 
 #include "esp_csi_gain_ctrl.h"
+#include "esp_err.h"
 #include "esp_event.h"
 #include "esp_log.h"
 #include "esp_mac.h"
@@ -212,9 +213,11 @@ static void writer_task(void *arg)
         if (n == 0) {
             continue;
         }
-        /* One write for the whole line, then the terminator. */
+        /* One write for the whole line, then the terminator. The
+         * formatter has ALREADY closed the quoted IQ tail, so the
+         * terminator must not add another quote. */
         fwrite(line, 1, n, stdout);
-        fputs("\"\r\n", stdout);
+        fputs("\n", stdout);
         fflush(stdout);
 
         if (!s_header_printed) {
@@ -242,16 +245,19 @@ static void status_task(void *arg)
 #else
             "station";
 #endif
+        /* "printed" must be what actually reached the wire, not what was
+         * accepted: the difference is the rejections plus the queue losses,
+         * and the preflight uses it to separate the two. */
         size_t n = csi_format_status(line, sizeof(line), role, peer,
                                      s_last_channel, s_last_rssi,
-                                     s_csi_callbacks, s_csi_accepted,
+                                     s_csi_callbacks, s_dq ? s_dq->written : 0,
                                      s_dq ? s_dq->dropped_old : 0,
                                      s_dq ? s_dq->dropped_new : 0,
                                      s_dq ? uxQueueMessagesWaiting(s_dq->queue) : 0,
                                      s_queue_high_water);
         if (n) {
             fwrite(line, 1, n, stdout);
-            fputs("\r\n", stdout);
+            fputs("\n", stdout);
             fflush(stdout);
         }
         (void)last;
@@ -320,15 +326,18 @@ static void wifi_station_start(void)
 }
 #endif
 
-static void wifi_event_handler(void *arg, esp_event_base_t *base,
+/* esp_event_base_t is itself a pointer (const char *), so the handler takes
+ * it by value - declaring it as esp_event_base_t * made every
+ * `base == WIFI_EVENT` comparison a comparison of distinct pointer types. */
+static void wifi_event_handler(void *arg, esp_event_base_t base,
                                int32_t id, void *data)
 {
     (void)arg;
     if (base == WIFI_EVENT && id == WIFI_EVENT_STA_START) {
 #if !CONFIG_SPECTER_ROLE_SOFTAP
-        wifi_scan_config_t scan = { 0 };
-        memcpy(scan.ssid, CONFIG_SPECTER_LAB_SSID, strlen(CONFIG_SPECTER_LAB_SSID));
-        esp_wifi_scan_start(&scan, NULL);
+        /* esp_wifi_start() brings the station up with the configured AP, so
+         * there is nothing to scan for and a scan would only delay the link. */
+        esp_wifi_connect();
 #endif
     } else if (base == WIFI_EVENT && id == WIFI_EVENT_STA_CONNECTED) {
         wifi_event_sta_connected_t *e = (wifi_event_sta_connected_t *)data;
@@ -337,7 +346,11 @@ static void wifi_event_handler(void *arg, esp_event_base_t *base,
                  e->bssid[0], e->bssid[1], e->bssid[2],
                  e->bssid[3], e->bssid[4], e->bssid[5]);
     } else if (base == WIFI_EVENT && id == WIFI_EVENT_STA_DISCONNECTED) {
-        ESP_LOGW(TAG, "peer disconnected");
+        /* The campus link's failure mode was a disconnect followed by five
+         * minutes of CSI silence (checkpoint 011). A lab link must not
+         * inherit that: reconnect, and say so in the log. */
+        ESP_LOGW(TAG, "peer disconnected - reconnecting");
+        esp_wifi_connect();
     } else if (base == IP_EVENT && id == IP_EVENT_STA_GOT_IP) {
         ip_event_got_ip_t *e = (ip_event_got_ip_t *)data;
         ESP_LOGI(TAG, "got ip " IPSTR ", gw " IPSTR,
@@ -357,10 +370,41 @@ static void wifi_event_handler(void *arg, esp_event_base_t *base,
 
 void app_main(void)
 {
-    ESP_ERROR_CHECK(nvs_flash_init());
+    /* NVS is not needed by this firmware: the lab credentials are compiled
+     * in and the driver is told to keep its state in RAM, so the device does
+     * not write to flash. It is initialised anyway because the Wi-Fi driver
+     * may look for calibration data, and a corrupt NVS is repaired here
+     * rather than allowed to abort the boot. */
+    esp_err_t nvs = nvs_flash_init();
+    if (nvs != ESP_OK) {
+        ESP_LOGW(TAG, "nvs init: %s - erasing the nvs partition",
+                 esp_err_to_name(nvs));
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        ESP_ERROR_CHECK(nvs_flash_init());
+    }
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
+    /* The netif must match the role. The station role needs a DHCP client;
+     * the SoftAP role needs the AP netif, which is what gives the board
+     * 192.168.4.1 and runs the DHCP server the Mac expects. Creating the
+     * station netif in SoftAP mode leaves the AP with no IP stack at all,
+     * so the Mac associates and then gets no address. */
+#if CONFIG_SPECTER_ROLE_SOFTAP
+    esp_netif_create_default_wifi_ap();
+#else
     esp_netif_create_default_wifi_sta();
+#endif
+
+    /* esp_wifi_init() MUST come before set_mode / set_config / start. The
+     * upstream example got it indirectly from example_connect(); this
+     * firmware is standalone, so it has to do it itself. Without it every
+     * esp_wifi_* call returns ESP_ERR_WIFI_NOT_INIT and ESP_ERROR_CHECK
+     * aborts the boot - the board would reset in a loop. */
+    wifi_init_config_t init_cfg = WIFI_INIT_CONFIG_DEFAULT();
+    ESP_ERROR_CHECK(esp_wifi_init(&init_cfg));
+    /* Keep the driver's state in RAM: nothing needs to survive a reboot,
+     * and a research device should not be writing to flash. */
+    ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
 
     s_dq = dq_create(CONFIG_SPECTER_CSI_QUEUE_DEPTH, true);
     ESP_ERROR_CHECK(s_dq ? ESP_OK : ESP_ERR_NO_MEM);
@@ -372,7 +416,8 @@ void app_main(void)
 
     /* The writer and the status task are started before the radio, so the
      * output path is ready before the first packet can arrive. */
-    xTaskCreate(writer_task, "csi_writer", 4096, NULL, 4, NULL);
+    /* 6 KB: the line buffer is 2 KB after the HT40 case was allowed for. */
+    xTaskCreate(writer_task, "csi_writer", 6144, NULL, 4, NULL);
     xTaskCreate(status_task, "csi_status", 3072, NULL, 3, NULL);
 
 #if CONFIG_SPECTER_ROLE_SOFTAP

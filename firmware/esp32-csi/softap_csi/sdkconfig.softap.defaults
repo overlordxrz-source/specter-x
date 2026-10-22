@@ -1,8 +1,10 @@
-# The SoftAP role: the board is the access point and the Mac is the station.
-# Built with:
-#   idf.py -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.softap.defaults" \
-#          -B build-softap build
+# The SoftAP role: the board IS the access point and the Mac is the station,
+# so the board would measure the UPLINK CSI. Whether the ESP32-S3's CSI
+# callback fires in AP mode is UNKNOWN (checkpoint 012), which is what the
+# SPECTER_STAT csi_cb counter probes at runtime.
+#
+#   idf.py -B build-softap -D SDKCONFIG=sdkconfig.softap \
+#          -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.softap.defaults" build
 CONFIG_SPECTER_ROLE_SOFTAP=y
-CONFIG_SPECTER_ROLE_STATION=n
-CONFIG_SPECTER_LAB_SSID="SPECTER-LAB"
+# CONFIG_SPECTER_ROLE_STATION is not set
 CONFIG_SPECTER_LAB_CHANNEL=6
