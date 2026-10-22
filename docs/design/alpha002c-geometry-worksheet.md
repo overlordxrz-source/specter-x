@@ -6,8 +6,14 @@ from an earlier session or estimated.
 
 ## Definitions (Amendment 1)
 
-* **Axis** — the straight line from the **phone antenna** (phone body centre)
-  to the **ESP32 antenna** (PCB-antenna end, away from the USB connector).
+* **All distances in this worksheet are HORIZONTAL (floor-plane)
+  distances.** They are measured on the floor between the projections of the
+  points, not from the floor mark up to an antenna ~0.8 m above it. The 3D
+  slant from S to an antenna is ≈ **1.14 m** at this height and is **never**
+  recorded as `s_*_horizontal_m`.
+* **Axis** — the horizontal line from the **phone antenna** (phone body
+  centre) to the **ESP32 antenna** (PCB-antenna end, away from the USB
+  connector), measured between their floor projections.
 * **M** — the midpoint of the axis.
 * **Longitudinal offset** — displacement along the axis from M, positive
   toward the phone.
@@ -29,17 +35,22 @@ With `L = 1.50 m` (accepted range 1.45–1.55):
    both heights. The chair must not be at S.
 2. **Fix the endpoints.** Phone screen facing the board. Neither moves after
    this step.
-3. **Measure L** from antenna to antenna. → 1.45–1.55 m.
+3. **Project both antennas to the floor** (drop a string with a weight from
+   each). **Measure L on the floor** between the two projections →
+   1.45–1.55 m. This is the horizontal distance; do not measure up to the
+   antennas.
 4. **Mark M** at L/2 on the floor (plumb down).
 5. **Mark A and B on the axis**, 0.30 m either side of M (0.60 m apart).
 6. **Find S:** from A measure **0.425 m** to the floor; from B measure
    **0.425 m**; where the two marks meet is S.
    *Why 0.425:* √(0.30² + 0.30²) = 0.4243. This puts S exactly 0.30 m
    perpendicular from M.
-7. **Verify:**
+7. **Verify on the floor:**
    * `|S−A| = |S−B| = 0.425 m ± 0.01`;
-   * `|S−phone| = |S−ESP32| ≈ 0.81 m ± 0.02`
-     (exactly √(0.75² + 0.30²) = 0.808 m at L = 1.50);
+   * `|S−phone| = |S−ESP32| ≈ 0.81 m ± 0.02` **horizontal**, measured from
+     the S mark to each antenna's floor projection
+     (exactly √(0.75² + 0.30²) = 0.808 m at L = 1.50). The slant from S up
+     to an antenna at 0.80 m is ≈1.14 m — **not this number**;
    * the torso is off the axis; extend the sweeping arm — the hand crosses
      the line near M, the torso does not.
 8. **Mark the feet** shoulder-width apart, facing the midpoint.
@@ -60,16 +71,19 @@ actual value.
 | `esp32_height_m` | 0.75–0.85 | |
 | `spot_longitudinal_m` | −0.05…+0.05 | |
 | `spot_lateral_m` | 0.25–0.35 | |
-| `s_phone_m` | ≈ 0.81 (computed) | |
-| `s_esp32_m` | ≈ 0.81 (computed) | |
+| `s_phone_horizontal_m` | ≈ 0.81 on the floor | |
+| `s_esp32_horizontal_m` | ≈ 0.81 on the floor | |
 | `phone_orientation` | screen facing board | |
 | `recorded_utc` | UTC timestamp | |
 | `confirmed_by` | who measured | |
 
-The analysis recomputes `s_phone_m` and `s_esp32_m` from `L`, the
-longitudinal and the lateral offsets, and rejects the session (INVALID) if
-the measured distances disagree by more than 0.03 m, if the radial offset is
-outside 0.25–0.36 m, or if S is closer than 0.70 m to either antenna.
+The analysis recomputes `s_phone_horizontal_m` and
+`s_esp32_horizontal_m` from the horizontal `L`, longitudinal and lateral
+offsets, and rejects the session (INVALID) if the measured distances
+disagree by more than 0.03 m, if the radial offset is outside 0.25–0.36 m,
+or if S is closer than 0.70 m (horizontal) to either antenna. It also
+computes and records the 3D slant (≈1.14 m) for transparency, but the slant
+is never an input.
 
 ## Decision rule
 

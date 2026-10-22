@@ -80,7 +80,8 @@ def _session(tmp_path, hand_sigma=0.30, stationary_sigma=0.02,
                 "distance_m": 1.50, "phone_height_m": 0.80,
                 "esp32_height_m": 0.80,
                 "spot_longitudinal_m": 0.0, "spot_lateral_m": 0.30,
-                "s_phone_m": 0.808, "s_esp32_m": 0.808,
+                "s_phone_horizontal_m": 0.808,
+                "s_esp32_horizontal_m": 0.808,
                 "phone_orientation": "screen facing the board",
                 "recorded_utc": "2026-10-22T00:00:00Z",
                 "confirmed_by": "operator",
@@ -238,8 +239,8 @@ def test_inconsistent_spot_distances_are_rejected(tmp_path):
     """The measured S-to-antenna distances must follow from L, long and lat."""
     s = _session(tmp_path)
     # 0.90 m would be a 0.40 m lateral offset, not the recorded 0.30 m
-    s["geometry"]["s_phone_m"] = 0.90
-    s["geometry"]["s_esp32_m"] = 0.90
+    s["geometry"]["s_phone_horizontal_m"] = 0.90
+    s["geometry"]["s_esp32_horizontal_m"] = 0.90
     r = v2.analyse(s)
     assert r["verdict"] == "INVALID"
     assert any("disagrees" in p for p in r["geometry_problems"])
@@ -251,3 +252,21 @@ def test_a_longitudinal_offset_outside_the_amendment_is_rejected(tmp_path):
     r = v2.analyse(s)
     assert r["verdict"] == "INVALID"
     assert any("spot_longitudinal_m" in p for p in r["geometry_problems"])
+
+
+def test_a_3d_slant_cannot_be_recorded_as_a_horizontal_distance(tmp_path):
+    """At 0.8 m height the slant is ~1.14 m; the field is the plan value."""
+    s = _session(tmp_path)
+    s["geometry"]["s_phone_horizontal_m"] = 1.137
+    s["geometry"]["s_esp32_horizontal_m"] = 1.137
+    r = v2.analyse(s)
+    assert r["verdict"] == "INVALID"
+    assert any("horizontal" in p for p in r["geometry_problems"])
+
+
+def test_the_derived_geometry_reports_horizontal_and_slant(tmp_path):
+    s = _session(tmp_path)
+    r = v2.analyse(s)
+    d = r["geometry_derived"]
+    assert abs(d["s_phone_horizontal_m"] - 0.8078) < 0.001
+    assert abs(d["s_phone_slant_3d_m"] - 1.1369) < 0.002

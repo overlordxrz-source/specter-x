@@ -137,8 +137,10 @@ GEOMETRY_FIELDS = {
     "spot_lateral_m": (0.25, 0.35),
 }
 GEOMETRY_TEXT = ("phone_orientation", "recorded_utc", "confirmed_by")
-#: measured distances from S to each antenna, checked against the geometry
-GEOMETRY_DERIVED = ("s_phone_m", "s_esp32_m")
+#: HORIZONTAL (floor-plane) distances from the S mark to the floor
+#: projections of each antenna. Not the 3D slant: at 0.8 m height the slant
+#: is ~1.14 m and must never be entered here.
+GEOMETRY_DERIVED = ("s_phone_horizontal_m", "s_esp32_horizontal_m")
 
 
 def validate_geometry(session):
@@ -177,11 +179,37 @@ def validate_geometry(session):
         if min(d_phone, d_esp) < 0.70:
             problems.append("geometry places S closer than 0.70 m to an "
                             "antenna")
-        for k, d in (("s_phone_m", d_phone), ("s_esp32_m", d_esp)):
+        for k, d in (("s_phone_horizontal_m", d_phone),
+                     ("s_esp32_horizontal_m", d_esp)):
             if abs(float(geo[k]) - d) > 0.03:
-                problems.append(f"geometry {k}={geo[k]} disagrees with "
-                                f"L/long/lat ({d:.3f} m)")
+                problems.append(f"geometry {k}={geo[k]} disagrees with the "
+                                f"horizontal L/long/lat value ({d:.3f} m)")
     return problems
+
+
+def _derived_geometry(geo):
+    """Horizontal and 3D slant distances, for the record only.
+
+    The horizontal values are the ones measured and validated. The slant is
+    computed from the antenna height so a 1.14 m slant cannot be mistaken
+    for a 0.81 m plan distance.
+    """
+    if not isinstance(geo, dict):
+        return None
+    try:
+        L = float(geo["distance_m"])
+        lon = float(geo["spot_longitudinal_m"])
+        lat = float(geo["spot_lateral_m"])
+        hp = float(geo["phone_height_m"])
+        he = float(geo["esp32_height_m"])
+    except (KeyError, TypeError, ValueError):
+        return None
+    dp = math.hypot(L / 2 + lon, lat)
+    de = math.hypot(L / 2 - lon, lat)
+    return {"s_phone_horizontal_m": round(dp, 4),
+            "s_esp32_horizontal_m": round(de, 4),
+            "s_phone_slant_3d_m": round(math.hypot(dp, hp), 4),
+            "s_esp32_slant_3d_m": round(math.hypot(de, he), 4)}
 
 
 def validate_design(trials, session):
@@ -362,6 +390,7 @@ def analyse(session):
         "design_problems": design,
         "geometry_problems": geometry,
         "geometry": session.get("geometry"),
+        "geometry_derived": _derived_geometry(session.get("geometry")),
         "trial_problems": trial_problems,
         "raw_problems": raw_problems,
     }

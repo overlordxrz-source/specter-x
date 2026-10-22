@@ -47,7 +47,7 @@ before GO the operator re-measures them and they are written to
 ```json
 {"distance_m": 1.50, "phone_height_m": 0.80, "esp32_height_m": 0.80,
  "spot_longitudinal_m": 0.00, "spot_lateral_m": 0.30,
- "s_phone_m": 0.808, "s_esp32_m": 0.808,
+ "s_phone_horizontal_m": 0.808, "s_esp32_horizontal_m": 0.808,
  "phone_orientation": "...", "recorded_utc": "...", "confirmed_by": "..."}
 ```
 
@@ -57,15 +57,22 @@ absent, or any value is outside: axis **1.45–1.55 m**, each height
 **0.25–0.35 m**. It then **recomputes**
 
 ```
-s_phone = hypot(L/2 + longitudinal, lateral)
-s_esp32 = hypot(L/2 - longitudinal, lateral)
+s_phone_horizontal = hypot(L/2 + longitudinal, lateral)
+s_esp32_horizontal = hypot(L/2 - longitudinal, lateral)
 ```
 
 and rejects the session if either measured distance disagrees with the
 computed one by more than **0.03 m**, if the radial offset
 `hypot(longitudinal, lateral)` is outside **0.25–0.36 m**, or if S is closer
-than **0.70 m** to either antenna. The recorded values are echoed into the
-result JSON, so the geometry travels with the verdict.
+than **0.70 m** to either antenna.
+
+**All of these distances are horizontal (floor-plane) distances.** The 3D
+slant from the S mark to an antenna at ~0.8 m is
+`hypot(0.808, 0.80) ≈ 1.14 m`; it is computed and recorded for transparency
+but is never an input and must never be entered as `s_*_horizontal_m`.
+
+The recorded values are echoed into the result JSON, so the geometry travels
+with the verdict.
 
 ### Amendment 1 — geometry only (2026-10-22, before any data)
 
@@ -86,6 +93,18 @@ Amended, and refrozen before collection:
 **Unchanged by this amendment:** H1 and its direction, the primary feature,
 the exact one-sided sign-flip test, the p/d_z/CI thresholds, the confound
 gates, the exclusions and the session length. No statistical rule moved.
+
+### Amendment 2 — distance definition only (2026-10-22, before any data)
+
+0.808 m is a **horizontal** distance from the floor mark to an antenna's
+floor projection. The 3D slant from the same mark to an antenna 0.80 m above
+the floor is **≈1.14 m**, and recording it in the horizontal field would be
+a unit/definition error. The fields are therefore named
+`s_phone_horizontal_m` and `s_esp32_horizontal_m`; the analysis validates
+only those and records the slant separately as derived information.
+
+Nothing statistical changed: same hypothesis, direction, feature, test,
+thresholds, exclusions and session length.
 
 ## 2. Design
 
