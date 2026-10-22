@@ -1,0 +1,53 @@
+menu "SPECTER-X lab configuration"
+
+    choice SPECTER_WIFI_ROLE
+        prompt "Wi-Fi role"
+        default SPECTER_ROLE_STATION
+        help
+            STATION: the board joins a LOCAL access point (the Mac, or a
+            second board) and measures the downlink CSI of the frames that
+            point sends. This is the role the original image used and its
+            behaviour is known.
+
+            SOFTAP: the board IS the access point and the Mac is the
+            station, so the board would measure the UPLINK CSI. Espressif
+            ships no example of this and the ESP32-S3's Wi-Fi is a
+            precompiled library, so whether the CSI callback fires in this
+            mode is UNKNOWN. The firmware probes it at runtime: the
+            SPECTER_STAT line carries csi_cb, and if it stays at zero while
+            a station is connected and sending, the answer is no.
+        config SPECTER_ROLE_STATION
+            bool "Station - a local access point is the transmitter"
+        config SPECTER_ROLE_SOFTAP
+            bool "SoftAP - the Mac is the station"
+    endchoice
+
+    config SPECTER_LAB_SSID
+        string "Lab network name"
+        default "SPECTER-LAB"
+        help
+            The station role joins this SSID. The SoftAP role publishes it.
+            It MUST be a local network - never a campus network.
+
+    config SPECTER_LAB_PASSWORD
+        string "Lab network password (empty for an open network)"
+        default ""
+
+    config SPECTER_LAB_CHANNEL
+        int "Channel for the SoftAP role"
+        depends on SPECTER_ROLE_SOFTAP
+        default 6
+        range 1 13
+
+    config SPECTER_CSI_QUEUE_DEPTH
+        int "CSI record queue depth"
+        default 32
+        range 8 256
+        help
+            How many CSI records may be waiting for the writer. At 178
+            packets/s, 32 records is about 180 ms of buffer. When the queue
+            is full the OLDEST record is dropped and the loss is counted
+            and reported, so a slow host costs counted loss rather than a
+            corrupted stream.
+
+endmenu

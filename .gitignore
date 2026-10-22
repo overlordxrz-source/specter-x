@@ -7,6 +7,12 @@ events/sessions/*.jsonl
 *.pt
 *.hef
 firmware/esp32-csi/build/
+firmware/esp32-csi/softap_csi/build/
+firmware/esp32-csi/softap_csi/build-softap/
+firmware/esp32-csi/softap_csi/managed_components/
+firmware/esp32-csi/softap_csi/sdkconfig
+firmware/esp32-csi/softap_csi/sdkconfig.old
+firmware/esp32-csi/softap_csi/dependencies.lock
 
 # DI-188 acquisition artefacts
 runs/

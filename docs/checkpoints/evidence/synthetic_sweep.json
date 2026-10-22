@@ -1,0 +1,1064 @@
+{
+  "preregistration": {
+    "primary_feature": "roughness_used",
+    "features": [
+      "roughness_used",
+      "amp_volatility",
+      "shape_shift",
+      "change_rate"
+    ],
+    "alpha": 0.05,
+    "conditions": [
+      "stationary",
+      "hand"
+    ],
+    "decision_rule": "one-way ANOVA on the primary feature, p < alpha"
+  },
+  "seed": 20261022,
+  "n_runs_per_effect": 12,
+  "repetitions_per_condition": 4,
+  "seconds_per_trial": 12.0,
+  "elapsed_s": 42.8,
+  "rows": [
+    {
+      "effect": 0.0,
+      "n_runs": 12,
+      "detection_rate": 0.0,
+      "abs_d_null_band": {
+        "median": 0.5285,
+        "p95": 1.28,
+        "max": 1.28
+      },
+      "held_out_accuracy_mean": 0.5208,
+      "median_p": 0.48296,
+      "median_max_abs_d": 0.5285,
+      "mean_measured_fpr": 0.0321,
+      "runs": [
+        {
+          "effect": 0.0,
+          "seed": 20261022,
+          "f": 0.4086,
+          "p": 0.546274,
+          "permutation_p": 0.46766,
+          "fpr_estimate": 0.06,
+          "held_out_accuracy": 0.75,
+          "max_abs_d": 0.452,
+          "significant": false
+        },
+        {
+          "effect": 0.0,
+          "seed": 20262022,
+          "f": 0.4069,
+          "p": 0.547101,
+          "permutation_p": 0.51741,
+          "fpr_estimate": 0.01,
+          "held_out_accuracy": 0.25,
+          "max_abs_d": 0.451,
+          "significant": false
+        },
+        {
+          "effect": 0.0,
+          "seed": 20263022,
+          "f": 1.5149,
+          "p": 0.264455,
+          "permutation_p": 0.22388,
+          "fpr_estimate": 0.05,
+          "held_out_accuracy": 0.75,
+          "max_abs_d": 0.87,
+          "significant": false
+        },
+        {
+          "effect": 0.0,
+          "seed": 20264022,
+          "f": 0.0497,
+          "p": 0.831,
+          "permutation_p": 0.85572,
+          "fpr_estimate": 0.05,
+          "held_out_accuracy": 0.25,
+          "max_abs_d": 0.158,
+          "significant": false
+        },
+        {
+          "effect": 0.0,
+          "seed": 20265022,
+          "f": 0.5329,
+          "p": 0.492889,
+          "permutation_p": 0.72637,
+          "fpr_estimate": 0.0,
+          "held_out_accuracy": 0.5,
+          "max_abs_d": 0.516,
+          "significant": false
+        },
+        {
+          "effect": 0.0,
+          "seed": 20266022,
+          "f": 0.0026,
+          "p": 0.961167,
+          "permutation_p": 0.93035,
+          "fpr_estimate": 0.035,
+          "held_out_accuracy": 0.0,
+          "max_abs_d": 0.036,
+          "significant": false
+        },
+        {
+          "effect": 0.0,
+          "seed": 20267022,
+          "f": 1.3679,
+          "p": 0.286529,
+          "permutation_p": 0.28358,
+          "fpr_estimate": 0.0,
+          "held_out_accuracy": 0.75,
+          "max_abs_d": 0.827,
+          "significant": false
+        },
+        {
+          "effect": 0.0,
+          "seed": 20268022,
+          "f": 0.6304,
+          "p": 0.457451,
+          "permutation_p": 0.46269,
+          "fpr_estimate": 0.02,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 0.561,
+          "significant": false
+        },
+        {
+          "effect": 0.0,
+          "seed": 20269022,
+          "f": 1.3873,
+          "p": 0.28346,
+          "permutation_p": 0.26866,
+          "fpr_estimate": 0.08,
+          "held_out_accuracy": 0.75,
+          "max_abs_d": 0.833,
+          "significant": false
+        },
+        {
+          "effect": 0.0,
+          "seed": 20270022,
+          "f": 0.318,
+          "p": 0.593255,
+          "permutation_p": 0.61194,
+          "fpr_estimate": 0.025,
+          "held_out_accuracy": 0.25,
+          "max_abs_d": 0.399,
+          "significant": false
+        },
+        {
+          "effect": 0.0,
+          "seed": 20271022,
+          "f": 0.5859,
+          "p": 0.473032,
+          "permutation_p": 0.66169,
+          "fpr_estimate": 0.0,
+          "held_out_accuracy": 0.25,
+          "max_abs_d": 0.541,
+          "significant": false
+        },
+        {
+          "effect": 0.0,
+          "seed": 20272022,
+          "f": 3.278,
+          "p": 0.120187,
+          "permutation_p": 0.12438,
+          "fpr_estimate": 0.055,
+          "held_out_accuracy": 0.75,
+          "max_abs_d": 1.28,
+          "significant": false
+        }
+      ]
+    },
+    {
+      "effect": 0.01,
+      "n_runs": 12,
+      "detection_rate": 0.0,
+      "abs_d_null_band": {
+        "median": 0.613,
+        "p95": 1.307,
+        "max": 1.307
+      },
+      "held_out_accuracy_mean": 0.4792,
+      "median_p": 0.42228,
+      "median_max_abs_d": 0.613,
+      "mean_measured_fpr": 0.0579,
+      "runs": [
+        {
+          "effect": 0.01,
+          "seed": 20271022,
+          "f": 0.5622,
+          "p": 0.481719,
+          "permutation_p": 0.66169,
+          "fpr_estimate": 0.0,
+          "held_out_accuracy": 0.25,
+          "max_abs_d": 0.53,
+          "significant": false
+        },
+        {
+          "effect": 0.01,
+          "seed": 20272022,
+          "f": 3.4182,
+          "p": 0.113973,
+          "permutation_p": 0.12438,
+          "fpr_estimate": 0.055,
+          "held_out_accuracy": 0.75,
+          "max_abs_d": 1.307,
+          "significant": false
+        },
+        {
+          "effect": 0.01,
+          "seed": 20273022,
+          "f": 1.6041,
+          "p": 0.252264,
+          "permutation_p": 0.23881,
+          "fpr_estimate": 0.01,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 0.896,
+          "significant": false
+        },
+        {
+          "effect": 0.01,
+          "seed": 20274022,
+          "f": 1.4796,
+          "p": 0.26952,
+          "permutation_p": 0.23881,
+          "fpr_estimate": 0.065,
+          "held_out_accuracy": 0.75,
+          "max_abs_d": 0.86,
+          "significant": false
+        },
+        {
+          "effect": 0.01,
+          "seed": 20275022,
+          "f": 0.1468,
+          "p": 0.714847,
+          "permutation_p": 0.75124,
+          "fpr_estimate": 0.1,
+          "held_out_accuracy": 0.25,
+          "max_abs_d": 0.271,
+          "significant": false
+        },
+        {
+          "effect": 0.01,
+          "seed": 20276022,
+          "f": 0.0002,
+          "p": 0.990001,
+          "permutation_p": 1.0,
+          "fpr_estimate": 0.08,
+          "held_out_accuracy": 0.0,
+          "max_abs_d": 0.009,
+          "significant": false
+        },
+        {
+          "effect": 0.01,
+          "seed": 20277022,
+          "f": 1.5923,
+          "p": 0.253833,
+          "permutation_p": 0.19403,
+          "fpr_estimate": 0.075,
+          "held_out_accuracy": 0.75,
+          "max_abs_d": 0.892,
+          "significant": false
+        },
+        {
+          "effect": 0.01,
+          "seed": 20278022,
+          "f": 0.3026,
+          "p": 0.602117,
+          "permutation_p": 0.76119,
+          "fpr_estimate": 0.105,
+          "held_out_accuracy": 0.25,
+          "max_abs_d": 0.389,
+          "significant": false
+        },
+        {
+          "effect": 0.01,
+          "seed": 20279022,
+          "f": 1.0592,
+          "p": 0.343092,
+          "permutation_p": 0.30846,
+          "fpr_estimate": 0.065,
+          "held_out_accuracy": 0.75,
+          "max_abs_d": 0.728,
+          "significant": false
+        },
+        {
+          "effect": 0.01,
+          "seed": 20280022,
+          "f": 0.9694,
+          "p": 0.36285,
+          "permutation_p": 0.43284,
+          "fpr_estimate": 0.0,
+          "held_out_accuracy": 0.5,
+          "max_abs_d": 0.696,
+          "significant": false
+        },
+        {
+          "effect": 0.01,
+          "seed": 20281022,
+          "f": 0.0024,
+          "p": 0.962635,
+          "permutation_p": 0.95522,
+          "fpr_estimate": 0.03,
+          "held_out_accuracy": 0.25,
+          "max_abs_d": 0.035,
+          "significant": false
+        },
+        {
+          "effect": 0.01,
+          "seed": 20282022,
+          "f": 0.1189,
+          "p": 0.742025,
+          "permutation_p": 0.70647,
+          "fpr_estimate": 0.11,
+          "held_out_accuracy": 0.25,
+          "max_abs_d": 0.244,
+          "significant": false
+        }
+      ]
+    },
+    {
+      "effect": 0.02,
+      "n_runs": 12,
+      "detection_rate": 0.0,
+      "abs_d_null_band": {
+        "median": 0.3425,
+        "p95": 1.251,
+        "max": 1.251
+      },
+      "held_out_accuracy_mean": 0.4583,
+      "median_p": 0.64555,
+      "median_max_abs_d": 0.3425,
+      "mean_measured_fpr": 0.055,
+      "runs": [
+        {
+          "effect": 0.02,
+          "seed": 20281022,
+          "f": 0.0022,
+          "p": 0.964484,
+          "permutation_p": 0.95522,
+          "fpr_estimate": 0.03,
+          "held_out_accuracy": 0.25,
+          "max_abs_d": 0.033,
+          "significant": false
+        },
+        {
+          "effect": 0.02,
+          "seed": 20282022,
+          "f": 0.1236,
+          "p": 0.737185,
+          "permutation_p": 0.70647,
+          "fpr_estimate": 0.11,
+          "held_out_accuracy": 0.25,
+          "max_abs_d": 0.249,
+          "significant": false
+        },
+        {
+          "effect": 0.02,
+          "seed": 20283022,
+          "f": 0.936,
+          "p": 0.370682,
+          "permutation_p": 0.43781,
+          "fpr_estimate": 0.0,
+          "held_out_accuracy": 0.75,
+          "max_abs_d": 0.684,
+          "significant": false
+        },
+        {
+          "effect": 0.02,
+          "seed": 20284022,
+          "f": 0.141,
+          "p": 0.720203,
+          "permutation_p": 0.72637,
+          "fpr_estimate": 0.04,
+          "held_out_accuracy": 0.0,
+          "max_abs_d": 0.266,
+          "significant": false
+        },
+        {
+          "effect": 0.02,
+          "seed": 20285022,
+          "f": 0.38,
+          "p": 0.560226,
+          "permutation_p": 0.61194,
+          "fpr_estimate": 0.075,
+          "held_out_accuracy": 0.25,
+          "max_abs_d": 0.436,
+          "significant": false
+        },
+        {
+          "effect": 0.02,
+          "seed": 20286022,
+          "f": 3.128,
+          "p": 0.127369,
+          "permutation_p": 0.1592,
+          "fpr_estimate": 0.015,
+          "held_out_accuracy": 0.75,
+          "max_abs_d": 1.251,
+          "significant": false
+        },
+        {
+          "effect": 0.02,
+          "seed": 20287022,
+          "f": 0.4423,
+          "p": 0.530731,
+          "permutation_p": 0.56716,
+          "fpr_estimate": 0.145,
+          "held_out_accuracy": 0.75,
+          "max_abs_d": 0.47,
+          "significant": false
+        },
+        {
+          "effect": 0.02,
+          "seed": 20288022,
+          "f": 0.2215,
+          "p": 0.654542,
+          "permutation_p": 0.58209,
+          "fpr_estimate": 0.05,
+          "held_out_accuracy": 0.5,
+          "max_abs_d": 0.333,
+          "significant": false
+        },
+        {
+          "effect": 0.02,
+          "seed": 20289022,
+          "f": 0.2475,
+          "p": 0.636557,
+          "permutation_p": 0.59204,
+          "fpr_estimate": 0.01,
+          "held_out_accuracy": 0.5,
+          "max_abs_d": 0.352,
+          "significant": false
+        },
+        {
+          "effect": 0.02,
+          "seed": 20290022,
+          "f": 0.0178,
+          "p": 0.898207,
+          "permutation_p": 0.99005,
+          "fpr_estimate": 0.095,
+          "held_out_accuracy": 0.0,
+          "max_abs_d": 0.094,
+          "significant": false
+        },
+        {
+          "effect": 0.02,
+          "seed": 20291022,
+          "f": 0.1601,
+          "p": 0.702879,
+          "permutation_p": 0.51741,
+          "fpr_estimate": 0.035,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 0.283,
+          "significant": false
+        },
+        {
+          "effect": 0.02,
+          "seed": 20292022,
+          "f": 0.9645,
+          "p": 0.363991,
+          "permutation_p": 0.36816,
+          "fpr_estimate": 0.055,
+          "held_out_accuracy": 0.5,
+          "max_abs_d": 0.694,
+          "significant": false
+        }
+      ]
+    },
+    {
+      "effect": 0.05,
+      "n_runs": 12,
+      "detection_rate": 0.0,
+      "abs_d_null_band": {
+        "median": 0.8215,
+        "p95": 1.52,
+        "max": 1.52
+      },
+      "held_out_accuracy_mean": 0.5208,
+      "median_p": 0.29027,
+      "median_max_abs_d": 0.8215,
+      "mean_measured_fpr": 0.0646,
+      "runs": [
+        {
+          "effect": 0.05,
+          "seed": 20311022,
+          "f": 3.3227,
+          "p": 0.118156,
+          "permutation_p": 0.16418,
+          "fpr_estimate": 0.06,
+          "held_out_accuracy": 0.75,
+          "max_abs_d": 1.289,
+          "significant": false
+        },
+        {
+          "effect": 0.05,
+          "seed": 20312022,
+          "f": 0.0044,
+          "p": 0.949508,
+          "permutation_p": 0.93532,
+          "fpr_estimate": 0.055,
+          "held_out_accuracy": 0.0,
+          "max_abs_d": 0.047,
+          "significant": false
+        },
+        {
+          "effect": 0.05,
+          "seed": 20313022,
+          "f": 1.2018,
+          "p": 0.315009,
+          "permutation_p": 0.35821,
+          "fpr_estimate": 0.045,
+          "held_out_accuracy": 0.75,
+          "max_abs_d": 0.775,
+          "significant": false
+        },
+        {
+          "effect": 0.05,
+          "seed": 20314022,
+          "f": 1.9197,
+          "p": 0.215195,
+          "permutation_p": 0.24378,
+          "fpr_estimate": 0.09,
+          "held_out_accuracy": 0.75,
+          "max_abs_d": 0.98,
+          "significant": false
+        },
+        {
+          "effect": 0.05,
+          "seed": 20315022,
+          "f": 0.0541,
+          "p": 0.823766,
+          "permutation_p": 0.75124,
+          "fpr_estimate": 0.05,
+          "held_out_accuracy": 0.25,
+          "max_abs_d": 0.165,
+          "significant": false
+        },
+        {
+          "effect": 0.05,
+          "seed": 20316022,
+          "f": 4.6206,
+          "p": 0.075152,
+          "permutation_p": 0.16418,
+          "fpr_estimate": 0.07,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 1.52,
+          "significant": false
+        },
+        {
+          "effect": 0.05,
+          "seed": 20317022,
+          "f": 0.2446,
+          "p": 0.6385,
+          "permutation_p": 0.57214,
+          "fpr_estimate": 0.065,
+          "held_out_accuracy": 0.25,
+          "max_abs_d": 0.35,
+          "significant": false
+        },
+        {
+          "effect": 0.05,
+          "seed": 20318022,
+          "f": 1.5072,
+          "p": 0.26554,
+          "permutation_p": 0.30348,
+          "fpr_estimate": 0.08,
+          "held_out_accuracy": 0.75,
+          "max_abs_d": 0.868,
+          "significant": false
+        },
+        {
+          "effect": 0.05,
+          "seed": 20319022,
+          "f": 0.0962,
+          "p": 0.766911,
+          "permutation_p": 0.81095,
+          "fpr_estimate": 0.06,
+          "held_out_accuracy": 0.0,
+          "max_abs_d": 0.219,
+          "significant": false
+        },
+        {
+          "effect": 0.05,
+          "seed": 20320022,
+          "f": 3.6633,
+          "p": 0.104133,
+          "permutation_p": 0.15423,
+          "fpr_estimate": 0.065,
+          "held_out_accuracy": 0.5,
+          "max_abs_d": 1.353,
+          "significant": false
+        },
+        {
+          "effect": 0.05,
+          "seed": 20321022,
+          "f": 2.7577,
+          "p": 0.147852,
+          "permutation_p": 0.11443,
+          "fpr_estimate": 0.06,
+          "held_out_accuracy": 0.75,
+          "max_abs_d": 1.174,
+          "significant": false
+        },
+        {
+          "effect": 0.05,
+          "seed": 20322022,
+          "f": 0.9461,
+          "p": 0.368287,
+          "permutation_p": 0.49254,
+          "fpr_estimate": 0.075,
+          "held_out_accuracy": 0.5,
+          "max_abs_d": 0.688,
+          "significant": false
+        }
+      ]
+    },
+    {
+      "effect": 0.1,
+      "n_runs": 12,
+      "detection_rate": 0.0833,
+      "abs_d_null_band": {
+        "median": 1.1535,
+        "p95": 2.342,
+        "max": 2.342
+      },
+      "held_out_accuracy_mean": 0.75,
+      "median_p": 0.15398,
+      "median_max_abs_d": 1.1535,
+      "mean_measured_fpr": 0.065,
+      "runs": [
+        {
+          "effect": 0.1,
+          "seed": 20361022,
+          "f": 4.0579,
+          "p": 0.090598,
+          "permutation_p": 0.09453,
+          "fpr_estimate": 0.075,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 1.424,
+          "significant": false
+        },
+        {
+          "effect": 0.1,
+          "seed": 20362022,
+          "f": 0.0328,
+          "p": 0.8623,
+          "permutation_p": 0.91045,
+          "fpr_estimate": 0.115,
+          "held_out_accuracy": 0.25,
+          "max_abs_d": 0.128,
+          "significant": false
+        },
+        {
+          "effect": 0.1,
+          "seed": 20363022,
+          "f": 2.7672,
+          "p": 0.147273,
+          "permutation_p": 0.14428,
+          "fpr_estimate": 0.08,
+          "held_out_accuracy": 0.75,
+          "max_abs_d": 1.176,
+          "significant": false
+        },
+        {
+          "effect": 0.1,
+          "seed": 20364022,
+          "f": 10.9686,
+          "p": 0.016167,
+          "permutation_p": 0.03483,
+          "fpr_estimate": 0.12,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 2.342,
+          "significant": true
+        },
+        {
+          "effect": 0.1,
+          "seed": 20365022,
+          "f": 1.7185,
+          "p": 0.237827,
+          "permutation_p": 0.38308,
+          "fpr_estimate": 0.075,
+          "held_out_accuracy": 0.5,
+          "max_abs_d": 0.927,
+          "significant": false
+        },
+        {
+          "effect": 0.1,
+          "seed": 20366022,
+          "f": 1.5579,
+          "p": 0.258475,
+          "permutation_p": 0.23881,
+          "fpr_estimate": 0.06,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 0.883,
+          "significant": false
+        },
+        {
+          "effect": 0.1,
+          "seed": 20367022,
+          "f": 0.3493,
+          "p": 0.576057,
+          "permutation_p": 0.56716,
+          "fpr_estimate": 0.015,
+          "held_out_accuracy": 0.75,
+          "max_abs_d": 0.418,
+          "significant": false
+        },
+        {
+          "effect": 0.1,
+          "seed": 20368022,
+          "f": 5.2697,
+          "p": 0.061471,
+          "permutation_p": 0.07463,
+          "fpr_estimate": 0.02,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 1.623,
+          "significant": false
+        },
+        {
+          "effect": 0.1,
+          "seed": 20369022,
+          "f": 2.5605,
+          "p": 0.160681,
+          "permutation_p": 0.1592,
+          "fpr_estimate": 0.08,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 1.131,
+          "significant": false
+        },
+        {
+          "effect": 0.1,
+          "seed": 20370022,
+          "f": 0.0,
+          "p": 0.997801,
+          "permutation_p": 1.0,
+          "fpr_estimate": 0.02,
+          "held_out_accuracy": 0.0,
+          "max_abs_d": 0.002,
+          "significant": false
+        },
+        {
+          "effect": 0.1,
+          "seed": 20371022,
+          "f": 3.776,
+          "p": 0.099998,
+          "permutation_p": 0.14428,
+          "fpr_estimate": 0.035,
+          "held_out_accuracy": 0.75,
+          "max_abs_d": 1.374,
+          "significant": false
+        },
+        {
+          "effect": 0.1,
+          "seed": 20372022,
+          "f": 3.5745,
+          "p": 0.107559,
+          "permutation_p": 0.13433,
+          "fpr_estimate": 0.085,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 1.337,
+          "significant": false
+        }
+      ]
+    },
+    {
+      "effect": 0.2,
+      "n_runs": 12,
+      "detection_rate": 0.9167,
+      "abs_d_null_band": {
+        "median": 2.9425,
+        "p95": 5.662,
+        "max": 5.662
+      },
+      "held_out_accuracy_mean": 0.9792,
+      "median_p": 0.006,
+      "median_max_abs_d": 2.9425,
+      "mean_measured_fpr": 0.0633,
+      "runs": [
+        {
+          "effect": 0.2,
+          "seed": 20461022,
+          "f": 64.1088,
+          "p": 0.000203,
+          "permutation_p": 0.03483,
+          "fpr_estimate": 0.03,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 5.662,
+          "significant": true
+        },
+        {
+          "effect": 0.2,
+          "seed": 20462022,
+          "f": 8.8595,
+          "p": 0.024749,
+          "permutation_p": 0.00995,
+          "fpr_estimate": 0.085,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 2.105,
+          "significant": true
+        },
+        {
+          "effect": 0.2,
+          "seed": 20463022,
+          "f": 18.3729,
+          "p": 0.005169,
+          "permutation_p": 0.0199,
+          "fpr_estimate": 0.015,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 3.031,
+          "significant": true
+        },
+        {
+          "effect": 0.2,
+          "seed": 20464022,
+          "f": 25.322,
+          "p": 0.002375,
+          "permutation_p": 0.0199,
+          "fpr_estimate": 0.07,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 3.558,
+          "significant": true
+        },
+        {
+          "effect": 0.2,
+          "seed": 20465022,
+          "f": 9.7919,
+          "p": 0.020345,
+          "permutation_p": 0.04478,
+          "fpr_estimate": 0.075,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 2.213,
+          "significant": true
+        },
+        {
+          "effect": 0.2,
+          "seed": 20466022,
+          "f": 20.2551,
+          "p": 0.004101,
+          "permutation_p": 0.02985,
+          "fpr_estimate": 0.07,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 3.182,
+          "significant": true
+        },
+        {
+          "effect": 0.2,
+          "seed": 20467022,
+          "f": 8.9336,
+          "p": 0.024354,
+          "permutation_p": 0.11443,
+          "fpr_estimate": 0.11,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 2.113,
+          "significant": true
+        },
+        {
+          "effect": 0.2,
+          "seed": 20468022,
+          "f": 32.2022,
+          "p": 0.00129,
+          "permutation_p": 0.05473,
+          "fpr_estimate": 0.05,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 4.013,
+          "significant": true
+        },
+        {
+          "effect": 0.2,
+          "seed": 20469022,
+          "f": 16.2959,
+          "p": 0.006827,
+          "permutation_p": 0.03483,
+          "fpr_estimate": 0.085,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 2.854,
+          "significant": true
+        },
+        {
+          "effect": 0.2,
+          "seed": 20470022,
+          "f": 35.6002,
+          "p": 0.000993,
+          "permutation_p": 0.03483,
+          "fpr_estimate": 0.03,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 4.219,
+          "significant": true
+        },
+        {
+          "effect": 0.2,
+          "seed": 20471022,
+          "f": 4.4514,
+          "p": 0.079391,
+          "permutation_p": 0.1194,
+          "fpr_estimate": 0.08,
+          "held_out_accuracy": 0.75,
+          "max_abs_d": 1.492,
+          "significant": false
+        },
+        {
+          "effect": 0.2,
+          "seed": 20472022,
+          "f": 8.6137,
+          "p": 0.02612,
+          "permutation_p": 0.01493,
+          "fpr_estimate": 0.06,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 2.075,
+          "significant": true
+        }
+      ]
+    },
+    {
+      "effect": 0.4,
+      "n_runs": 12,
+      "detection_rate": 1.0,
+      "abs_d_null_band": {
+        "median": 13.2525,
+        "p95": 24.341,
+        "max": 24.341
+      },
+      "held_out_accuracy_mean": 1.0,
+      "median_p": 0.0,
+      "median_max_abs_d": 13.2525,
+      "mean_measured_fpr": 0.0275,
+      "runs": [
+        {
+          "effect": 0.4,
+          "seed": 20661022,
+          "f": 283.6825,
+          "p": 3e-06,
+          "permutation_p": 0.0199,
+          "fpr_estimate": 0.015,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 11.91,
+          "significant": true
+        },
+        {
+          "effect": 0.4,
+          "seed": 20662022,
+          "f": 212.7752,
+          "p": 7e-06,
+          "permutation_p": 0.02985,
+          "fpr_estimate": 0.025,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 10.314,
+          "significant": true
+        },
+        {
+          "effect": 0.4,
+          "seed": 20663022,
+          "f": 290.9102,
+          "p": 3e-06,
+          "permutation_p": 0.03483,
+          "fpr_estimate": 0.03,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 12.06,
+          "significant": true
+        },
+        {
+          "effect": 0.4,
+          "seed": 20664022,
+          "f": 252.8074,
+          "p": 4e-06,
+          "permutation_p": 0.04478,
+          "fpr_estimate": 0.04,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 11.243,
+          "significant": true
+        },
+        {
+          "effect": 0.4,
+          "seed": 20665022,
+          "f": 172.4064,
+          "p": 1.2e-05,
+          "permutation_p": 0.0398,
+          "fpr_estimate": 0.035,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 9.285,
+          "significant": true
+        },
+        {
+          "effect": 0.4,
+          "seed": 20666022,
+          "f": 447.7314,
+          "p": 1e-06,
+          "permutation_p": 0.02488,
+          "fpr_estimate": 0.02,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 14.962,
+          "significant": true
+        },
+        {
+          "effect": 0.4,
+          "seed": 20667022,
+          "f": 636.6729,
+          "p": 0.0,
+          "permutation_p": 0.03483,
+          "fpr_estimate": 0.03,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 17.842,
+          "significant": true
+        },
+        {
+          "effect": 0.4,
+          "seed": 20668022,
+          "f": 417.3376,
+          "p": 1e-06,
+          "permutation_p": 0.02488,
+          "fpr_estimate": 0.02,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 14.445,
+          "significant": true
+        },
+        {
+          "effect": 0.4,
+          "seed": 20669022,
+          "f": 442.3216,
+          "p": 1e-06,
+          "permutation_p": 0.0398,
+          "fpr_estimate": 0.035,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 14.871,
+          "significant": true
+        },
+        {
+          "effect": 0.4,
+          "seed": 20670022,
+          "f": 1184.9742,
+          "p": 0.0,
+          "permutation_p": 0.04478,
+          "fpr_estimate": 0.04,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 24.341,
+          "significant": true
+        },
+        {
+          "effect": 0.4,
+          "seed": 20671022,
+          "f": 107.3411,
+          "p": 4.7e-05,
+          "permutation_p": 0.03483,
+          "fpr_estimate": 0.03,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 7.326,
+          "significant": true
+        },
+        {
+          "effect": 0.4,
+          "seed": 20672022,
+          "f": 682.4246,
+          "p": 0.0,
+          "permutation_p": 0.01493,
+          "fpr_estimate": 0.01,
+          "held_out_accuracy": 1.0,
+          "max_abs_d": 18.472,
+          "significant": true
+        }
+      ]
+    }
+  ],
+  "false_positive_rate": 0.0,
+  "smallest_effect_with_80_percent_power": 0.2,
+  "trials_needed_at_d_0_95": 19,
+  "trials_needed_total": 38
+}
