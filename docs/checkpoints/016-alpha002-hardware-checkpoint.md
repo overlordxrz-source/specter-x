@@ -3,8 +3,10 @@
 **Date:** 2026-10-22
 **Branch:** `feature/alpha002-esp32-supervisor`
 **Verdict:** **The firmware is verified on hardware for everything it claims to
-do at this stage. Sampling adequacy is unproven.** No flash, no reset, no merge,
-no change to host networking in this checkpoint.
+do at this stage, and dense acquisition is demonstrated for 60 s with an awake
+station.** Unattended operation is not demonstrated: the station sleeps when it
+decides to. No flash, no reset, no merge, no change to host networking in this
+checkpoint.
 
 Supersedes the subcarrier verdict in checkpoint 015. The v1 score there is
 preserved unchanged and is **not comparable** to a v2 score.
@@ -77,20 +79,65 @@ there the corrected scoring agrees with the hardware: the IQ map is intact.
 v2 is a fresh capture. The v1 run's raw bytes were never saved, so a corrected
 score *of that run* cannot be derived; that gap is why `--raw-out` now exists.
 
+## 3a. Addendum — the same link, 60 s, fully passing
+
+Every earlier run failed on the same thing: the station slept. With the phone
+kept awake (auto-lock off, traffic app in the foreground), the same 10 Hz ping
+to `192.168.4.1`, on the same link, produced:
+
+| | |
+|---|---|
+| CSI frames | **2364** (39.0/s) |
+| data frames, 122 B | **600** → 10.07/s, i.e. the offered rate |
+| null-data frames, 28 B | 1757 (the station's power-save traffic) |
+| longest gap | **0.224 s** host-side, 79 ms device-side |
+| gaps > 0.5 s | **0** |
+| subcarrier nulls | 2364 / 2364 |
+| active coverage | 52 / 52 |
+| malformed / seq gaps / queue drops | 0 / 0 / 0 |
+| USB↔console drift | 0.25% |
+| **verdict** | **PASS** |
+
+Cadence is bimodal, not uniform: median 26.9 ms, p95 61.8 ms, and only 50.3% of
+intervals are under 28.6 ms. So the stream is gap-free but **not** a steady
+35 Hz feed; a 35 FPS HUD cannot be assumed from this.
+
+What this changes: dense acquisition is demonstrated, not merely possible.
+What it does not change: the earlier failures were the station sleeping, which
+is a property of the phone, not of the firmware.
+
+**Caveat on the continuity metric.** It compares *all* callbacks to the offered
+rate, so null-data frames inflate it (394% here). It passes, but it is not a
+loss measurement. The honest loss figure comes from the data frames alone:
+600 received against 596 expected at 10 Hz for 59.6 s, i.e. ≤ 0.7%.
+Splitting the metric by frame length is a follow-up.
+
 ## 4. Packet cadence: measured versus hypothesised
 
-**Measured** (123 s, 676 records): median inter-packet interval 0.011 s, p95
-0.956 s, 63 gaps > 0.5 s recurring roughly every 2 s, maximum 1.96 s. In the
-v2 run, with the phone idle, the maximum gap reached 16.443 s.
+**Measured, same link, same 10 Hz ping, two states of the phone:**
 
-**Not measured:** the cause. Power save with a DTIM wake schedule is the
-leading hypothesis and would explain the shape, but no 802.11 frame capture was
-taken, the phone's power-save state was never read, and there was no control
-condition with power save known to be off. "Phone power save" is a hypothesis,
-not a finding.
+| state | frames | data frames (122 B) | null-data (28 B) | longest gap |
+|---|---|---|---|---|
+| idle / screen off | 17 per 60 s | **1** | 16 | 35.1 s |
+| awake, app in foreground | 2364 per 60 s | 600 | 1757 | 0.079 s |
 
-What follows regardless of cause: this station yields bursts separated by long
-silences, so it cannot feed the 35 FPS HUD or any timing-sensitive measurement.
+**Not measured:** the precise mechanism. Two candidates remain and were not
+separated: 802.11 power save with a DTIM wake schedule, and iOS suspending a
+backgrounded app. No 802.11 frame capture was taken, the phone's power-save
+state was never read, and there was no control with power save known to be off.
+The 28-byte null-data frames are consistent with a station holding association
+in power save, but they are also present in the awake run, so they do not
+identify the mechanism by themselves.
+
+What is now established is that the silence is **phone-side, not firmware-side**:
+the same association, the same AP, the same firmware and the same 10 Hz offered
+load yield either 39 frames/s or 0.3 frames/s depending only on the phone's
+state. The board's own counters never show loss (`drop_old=0`, `drop_new=0`,
+`q=0`) in any run.
+
+The consequence that survives either explanation: an unattended iOS station
+cannot be relied on for a continuous feed, so unattended operation needs a
+station whose sleep behaviour we control.
 
 ## 5. Verified on hardware
 
@@ -104,19 +151,23 @@ silences, so it cannot feed the 35 FPS HUD or any timing-sensitive measurement.
 | Channel metadata correct | `ch=6` on all 676 records, no roam |
 | IQ structure intact | 128 B / 64 slots on every record; nulls zero 672/672; `first_word_invalid=0` |
 | No firmware-side loss | `drop_old=0`, `drop_new=0`, `q=0` throughout |
-| Both USB paths carry the same stream | drift 0.05% (v1), 0.17% (v2) |
+| Both USB paths carry the same stream | drift 0.05% (v1), 0.17% (v2), 0.25% (dense run) |
+| Dense, gap-free acquisition is achievable | 2364 frames in 60 s, 39.0/s, longest gap 79 ms, zero gaps > 0.5 s |
+| Offered load is received without loss | 600 ping frames against 596 expected, ≤ 0.7% |
 | Rollback was unnecessary but real | verified before the write; never exercised |
 
 ## 6. Still unproven
 
 | Question | Status |
 |---|---|
-| Dense, gap-free acquisition | **no** — bursts with 1–16 s holes |
-| Continuity against a known offered rate | **no** — no controlled generator existed |
+| Dense, gap-free acquisition | **demonstrated** for 60 s: 39/s, max gap 79 ms, zero gaps > 0.5 s |
+| Continuity against a known offered rate | **demonstrated**: 600 ping frames vs 596 expected, ≤ 0.7% loss |
+| Dense acquisition unattended | **no** — the station sleeps when it decides to |
+| Uniform 35 Hz cadence | **no** — median 26.9 ms, p95 61.8 ms, bimodal |
 | Motion or vital-sign detection | **nothing measured**; no human-subject run |
 | SoftAP under WPA2 | **no** — the AP is currently open |
 | Correct flash-size declaration | **no** — runtime falls back to 2 MB and warns |
-| Cause of the cadence | **hypothesis only** |
+| Cause of the cadence | **hypothesis only** — phone-side either way, mechanism not separated |
 | Multi-station behaviour, long soak | **no** |
 | Behaviour on the campus network | deliberately not tested |
 
@@ -124,9 +175,13 @@ silences, so it cannot feed the 35 FPS HUD or any timing-sensitive measurement.
 
 1. WPA2 on the SoftAP (`CONFIG_SPECTER_LAB_PASSWORD` is empty).
 2. Declare 16 MB properly in the app image header.
-3. A station that does not power-save — second ESP32, or a host with power
-   save known to be off — before any timing-sensitive work.
-4. Only then: motion, and only against the null distribution.
+3. A station whose sleep behaviour we control — second ESP32, or a host with
+   power save known to be off. This is the control condition the cadence
+   hypothesis still lacks, and it is also what unattended operation needs.
+4. Split the continuity metric by frame length. It currently counts null-data
+   frames toward the offered rate and so reports 394% where the data-frame
+   loss is ≤ 0.7%.
+5. Only then: motion, and only against the null distribution.
 
 ## 8. Evidence
 
@@ -138,6 +193,8 @@ silences, so it cannot feed the 35 FPS HUD or any timing-sensitive measurement.
 | `preflight-phone-station-v2.json` | `fbfac8ee218b6596` |
 | `preflight-phone-station-v2.raw` | `ead83703030f8149` |
 | `phone-station.raw` (672 records) | `f2c208488d60f975` |
+| `preflight-phone-station-v2-ping10hz-run4.json` (PASS) | `c3382bc7d0c9b694` |
+| `preflight-phone-station-v2-ping10hz-run4.raw` | `35da65ce03ccc354` |
 
 Regression fixtures committed: `tests/fixtures/esp32_csi/phone_station_lltf.jsonl`
 — one exact record and two real truncation cases from the capture.
