@@ -85,7 +85,8 @@ int main(void)
     char status[256];
     size_t n = csi_format_status(status, sizeof(status), "softap",
                                  "b8:62:1f:e5:ac:62", 6, -62,
-                                 1200, 1180, 0, 0, 2, 7);
+                                 1200, 1180, 5, 980, 200, 0, 16384,
+                                 16384, 0, 0, 2, 7);
     if (n) {
         fwrite(status, 1, n, stdout);
         fputs("\n", stdout);

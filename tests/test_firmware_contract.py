@@ -31,6 +31,18 @@ def _source(name: str) -> str:
         return fh.read()
 
 
+def _code(name: str) -> str:
+    """The source with its comments removed.
+
+    A contract test has to look at what the code DOES, and a word that
+    appears in a comment explaining why a call was removed is not a call.
+    """
+    src = _source(name)
+    src = re.sub(r"/\*.*?\*/", " ", src, flags=re.S)
+    src = re.sub(r"//[^\n]*", " ", src)
+    return src
+
+
 def test_the_firmware_header_is_the_host_header():
     """The CSV header the firmware prints is the header the parser expects."""
     src = _source("csi_output.c")
@@ -99,21 +111,96 @@ def test_the_callback_does_not_format_or_print():
 
 
 def test_only_the_writer_task_writes():
-    """One writer means the output is serialised by construction."""
+    """One writer means the output is serialised by construction.
+
+    This test used to permit TWO writers - the data task and the status
+    task - because both called fwrite() on the same FILE*. That was the
+    open gate the handbook recorded: the captured evidence contains a
+    status line cut in half with a second copy of its own text spliced
+    into the gap, which is what a buffered stdio plus two writers
+    produces. There is now ONE output path.
+    """
     src = _source("app_main.c")
     assert "static void writer_task" in src
-    # every fwrite/fputs in the file must be inside the writer or the status
-    writer = src[src.index("static void writer_task"):]
-    writer = writer[:writer.index("/* --- the status task")]
-    assert "fwrite" in writer
-    # the status task writes its own line, and that is the only other writer
-    status = src[src.index("static void status_task"):]
-    status = status[:status.index("/* --- Wi-Fi setup")]
-    assert "fwrite" in status
-    # nothing else
-    rest = src.replace(writer, "").replace(status, "")
-    assert "fwrite" not in rest and "fputs" not in rest, \
-        "only the writer and the status task may write"
+    assert "console_emit" in src
+    # no stdio writing anywhere: every line goes out through console_emit
+    code = _code("app_main.c")
+    assert "fwrite" not in code, "the firmware must not use buffered stdio"
+    assert "fputs" not in code, "the firmware must not use buffered stdio"
+    # and the line is emitted with ONE write, terminator included
+    assert "write(fileno(stdout)" in code
+    assert "setvbuf(stdout, NULL, _IONBF, 0)" in code, \
+        "stdout must be unbuffered or a line can be split by stdio"
+
+
+def test_the_log_lines_share_the_one_output_path():
+    """The IDF's own log lines go to stdout too. If they did not take the
+    same path they could still land in the middle of a record."""
+    src = _source("app_main.c")
+    assert "esp_log_set_vprintf(console_log_vprintf)" in src
+    assert "console_log_vprintf" in src
+
+
+def test_the_lab_credential_is_not_in_the_source_tree():
+    """The passphrase must not be in Git.
+
+    A Kconfig option would put it in a tracked sdkconfig.defaults, which is
+    a published passphrase. The credential is compiled in from a header the
+    build generates into the BUILD DIRECTORY, and the build refuses to
+    produce an open lab network unless that is asked for explicitly.
+    """
+    kconfig = _source("Kconfig.projbuild")
+    assert "SPECTER_LAB_PASSWORD" not in kconfig, \
+        "the passphrase must not be a Kconfig option"
+    cmake = _source("CMakeLists.txt")
+    assert "SPECTER_LAB_PSK" in cmake
+    assert "SPECTER_LAB_ALLOW_OPEN" in cmake, \
+        "an open lab network must be an explicit choice"
+    assert "FATAL_ERROR" in cmake, \
+        "the build must fail closed without a credential"
+    assert "CMAKE_CURRENT_BINARY_DIR" in cmake, \
+        "the generated header must land in the build directory"
+    # the build writes the header itself, into the build directory
+    assert "file(WRITE" in cmake
+    assert "SPECTER_LAB_PSK" in cmake
+    assert 'define SPECTER_LAB_PSK' in cmake
+
+
+def test_the_firmware_reads_the_generated_credential():
+    src = _source("app_main.c")
+    assert '#include "lab_credentials.h"' in src
+    assert "WIFI_AUTH_WPA2_PSK" in src
+    assert "WIFI_AUTH_OPEN" in src, \
+        "the open path must still exist for an explicitly open build"
+    # and the secret must never be printed
+    assert "lab_credential()" in src
+
+
+def test_the_frames_are_classified_and_reported():
+    """A CSI callback fires for every frame the radio hears, including the
+    empty ones a station sends to keep an association alive. The three
+    counts must be kept apart and reported."""
+    src = _source("app_main.c")
+    assert "s_frames_data" in src
+    assert "s_frames_null" in src
+    assert "s_frames_ambiguous" in src
+    assert "s_csi_rejected" in src
+    out = _source("csi_output.c")
+    for key in ("rej=", "data=", "null=", "amb="):
+        assert key in out, f"the status line must report {key}"
+
+
+def test_the_flash_size_is_reported_by_the_device():
+    """The runtime flash size comes from the BOOTLOADER's header, not the
+    app image's, and on this board the bootloader says 2 MB while the chip
+    is 16 MB. The device must say what it actually has, and the chip size
+    too, because the difference between them IS the defect."""
+    src = _source("app_main.c")
+    assert "esp_flash_get_size(" in src
+    assert "esp_flash_get_physical_size(" in src
+    out = _source("csi_output.c")
+    assert "flash_kb=" in out
+    assert "flash_phys_kb=" in out
 
 
 def test_the_csi_configuration_is_unchanged_from_the_original_image():
@@ -188,8 +275,11 @@ def test_the_writer_does_not_add_a_second_closing_quote():
     src = _source("app_main.c")
     body = src[src.index("static void writer_task"):]
     body = body[:body.index("/* --- the status task")]
-    calls = [line for line in body.splitlines() if "fputs(" in line]
-    assert len(calls) == 1, calls
-    terminator = calls[0]
-    assert "\\r" not in terminator, "the writer must not add a carriage return"
-    assert terminator.count('"') == 2, "the writer adds a quote to a quoted tail"
+    # the terminator is a newline character in the same buffer, not a
+    # second string, so it cannot add a quote
+    assert "line[n] = '\\n';" in body
+    assert 'console_emit(line, n + 1)' in body
+    assert '"\\r"' not in body, "the writer must not add a carriage return"
+    quotes = [ln for ln in body.splitlines() if '"' in ln and "console_emit" not in ln]
+    for line in quotes:
+        assert line.count('"') % 2 == 0, f"unbalanced quote: {line}"

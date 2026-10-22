@@ -4,7 +4,8 @@ The controlled-link firmware emits one ``SPECTER_STAT`` line a second, from
 the device, about the device:
 
     SPECTER_STAT,role=softap,peer=b8:62:1f:e5:ac:62,ch=6,rssi=-62,
-    csi_cb=1200,printed=1180,drop_old=0,drop_new=0,q=2,q_high=7
+    csi_cb=1200,printed=1180,rej=4,data=980,null=200,amb=0,flash_kb=2048,
+    drop_old=0,drop_new=0,q=2,q_high=7
 
 It is deliberately **not** the supervisor protocol (``HELLO``/``STAT``/
 ``HB``, checkpoint 003): that protocol is a separate piece of work, and a
@@ -15,6 +16,27 @@ tag, different meaning.
 times the CSI callback fired at all, so a value that stays at zero while a
 station is associated and sending is the answer to "does the ESP32-S3 do
 AP-side CSI".
+
+The counters answer different questions and must not be added together:
+
+``csi_cb``
+    how often the CSI callback fired at all;
+``printed``
+    how many records reached the wire;
+``rej``
+    how many callbacks produced nothing, because the transmitter was not
+    the peer or the record was too long;
+``data`` / ``null`` / ``amb``
+    how the records that reached the wire split into frames that carried a
+    payload, frames that carried none, and frames whose length is too
+    close to the boundary to classify. A null-data frame is a station
+    keeping an association alive, not traffic, and counting it as traffic
+    is what made an earlier continuity figure meaningless.
+
+``flash_kb`` is the flash the runtime actually has, which is set by the
+BOOTLOADER's header rather than by the app image, and ``flash_phys_kb`` is
+the size of the chip itself. On this board the two differ - 2 MB against
+16 MB - and that difference is the defect the preflight reports.
 """
 from __future__ import annotations
 
@@ -29,6 +51,12 @@ _INT_FIELDS = {
     "rssi": "rssi",
     "csi_cb": "csi_callbacks",
     "printed": "printed",
+    "rej": "rejected",
+    "data": "frames_data",
+    "null": "frames_null",
+    "amb": "frames_ambiguous",
+    "flash_kb": "flash_kb",
+    "flash_phys_kb": "flash_physical_kb",
     "drop_old": "dropped_old",
     "drop_new": "dropped_new",
     "q": "queue_depth",

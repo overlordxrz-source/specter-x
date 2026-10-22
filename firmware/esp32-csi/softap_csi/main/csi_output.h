@@ -44,10 +44,20 @@ const char *csi_output_header(void);
 size_t csi_format_line(const dq_record_t *rec, char *out, size_t out_len);
 
 /*! Format the periodic status line: the counters that say whether the
- *  link is healthy, including the queue's own losses. */
+ *  link is healthy, including the queue's own losses.
+ *
+ *  The counters answer three different questions and are kept apart:
+ *  ``csi_callbacks`` is how often the CSI callback fired at all,
+ *  ``printed`` is how many records reached the wire, ``rejected`` is how
+ *  many callbacks produced nothing, and the frame counts separate the
+ *  records that carried a payload from the station's empty ones. */
 size_t csi_format_status(char *out, size_t out_len, const char *role,
                           const char *peer_mac, uint8_t channel, int8_t rssi,
                           uint32_t csi_callbacks, uint32_t printed,
+                          uint32_t rejected,
+                          uint32_t frames_data, uint32_t frames_null,
+                          uint32_t frames_ambiguous, uint32_t flash_kb,
+                          uint32_t flash_phys_kb,
                           uint32_t dropped_old, uint32_t dropped_new,
                           uint32_t queue_depth, uint32_t queue_high_water);
 

@@ -110,6 +110,10 @@ size_t csi_format_line(const dq_record_t *rec, char *out, size_t out_len)
 size_t csi_format_status(char *out, size_t out_len, const char *role,
                           const char *peer_mac, uint8_t channel, int8_t rssi,
                           uint32_t csi_callbacks, uint32_t printed,
+                          uint32_t rejected,
+                          uint32_t frames_data, uint32_t frames_null,
+                          uint32_t frames_ambiguous, uint32_t flash_kb,
+                          uint32_t flash_phys_kb,
                           uint32_t dropped_old, uint32_t dropped_new,
                           uint32_t queue_depth, uint32_t queue_high_water)
 {
@@ -121,8 +125,22 @@ size_t csi_format_status(char *out, size_t out_len, const char *role,
     line_addf(&l, "SPECTER_STAT,role=%s,peer=%s,ch=%u,rssi=%d",
               role ? role : "?", (peer_mac && peer_mac[0]) ? peer_mac : "-",
               (unsigned)channel, (int)rssi);
+    /* The three counts that answer three different questions:
+     *   csi_cb   how often the callback fired at all
+     *   printed  how many records reached the wire
+     *   rej      how many callbacks were rejected (not our peer, or too
+     *             long) and therefore produced nothing
+     * The frame counts split what did reach the wire into the frames that
+     * carried a payload and the station's empty ones, so a host can stop
+     * counting a null-data frame as if it were traffic. */
     line_addf(&l, ",csi_cb=%" PRIu32, csi_callbacks);
     line_addf(&l, ",printed=%" PRIu32, printed);
+    line_addf(&l, ",rej=%" PRIu32, rejected);
+    line_addf(&l, ",data=%" PRIu32, frames_data);
+    line_addf(&l, ",null=%" PRIu32, frames_null);
+    line_addf(&l, ",amb=%" PRIu32, frames_ambiguous);
+    line_addf(&l, ",flash_kb=%" PRIu32, flash_kb);
+    line_addf(&l, ",flash_phys_kb=%" PRIu32, flash_phys_kb);
     line_addf(&l, ",drop_old=%" PRIu32, dropped_old);
     line_addf(&l, ",drop_new=%" PRIu32, dropped_new);
     line_addf(&l, ",q=%" PRIu32, queue_depth);

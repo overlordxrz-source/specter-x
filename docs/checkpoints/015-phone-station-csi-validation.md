@@ -96,6 +96,17 @@ mechanisms, and none was tested: no 802.11 frame capture, no read of the
 phone's power-save state, no control condition with power save known to be
 off. Treat "power save" as the leading hypothesis, not the cause.
 
+**Correction (checkpoint 017).** The failing and the succeeding iPhone
+trials did **not** use the same traffic app. The difference between them is
+therefore confounded: it cannot be attributed to the phone's power saving
+alone, because the app's own behaviour - whether it sends at all, at what
+rate, and whether the operating system suspends it - changed at the same
+time. The device-side evidence still establishes something narrower and
+still useful: in the failing captures the phone put **one** payload frame on
+the link in 60 seconds, and in the succeeding one it put **600**. The phone
+transmitted almost nothing. Which of the candidate mechanisms was
+responsible was never separated.
+
 Consequence, independent of cause: ~5 packets/s with holes of a second or more
 is **not** a usable sampling rate, and the 35 FPS HUD cannot be fed from it.
 

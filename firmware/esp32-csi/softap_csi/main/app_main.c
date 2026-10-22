@@ -37,27 +37,49 @@
  *   * the queue is bounded and its losses are COUNTED and reported, so a
  *     slow host costs counted packet loss instead of a corrupted stream.
  */
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "esp_csi_gain_ctrl.h"
 #include "esp_err.h"
 #include "esp_event.h"
+#include "esp_flash.h"
 #include "esp_log.h"
 #include "esp_mac.h"
 #include "esp_netif.h"
 #include "esp_system.h"
 #include "esp_wifi.h"
 #include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
 #include "freertos/task.h"
 #include "nvs_flash.h"
 #include "sdkconfig.h"
 
 #include "csi_output.h"
 #include "dq_ring.h"
+#include "lab_credentials.h"
 
 static const char *TAG = "specter_csi";
+
+/* --- frame classification --------------------------------------------------
+ *
+ * The Wi-Fi driver does not expose the 802.11 frame type, so the only
+ * discriminator available for "did this frame carry a payload" is the
+ * SIGNAL LENGTH. A frame with no payload is exactly 28 bytes - a 24-byte
+ * MAC header plus the 4-byte frame check sequence - and every payload
+ * frame observed on this link has been longer.
+ *
+ * The 29..32 band is counted SEPARATELY rather than guessed into either
+ * side, because a short QoS null frame would land there and would
+ * otherwise be silently counted as payload. The counts are reported on
+ * the status line so the assumption can be audited on every run instead
+ * of being trusted once.
+ */
+#define SIG_LEN_NULL_DATA_MAX 28
+#define SIG_LEN_AMBIGUOUS_MAX 32
 
 /* --- state ---------------------------------------------------------------- */
 
@@ -68,11 +90,76 @@ static portMUX_TYPE s_peer_lock = portMUX_INITIALIZER_UNLOCKED;
 static volatile uint32_t s_csi_callbacks;
 static volatile uint32_t s_csi_accepted;
 static volatile uint32_t s_csi_rejected;
+static volatile uint32_t s_frames_data;
+static volatile uint32_t s_frames_null;
+static volatile uint32_t s_frames_ambiguous;
 static volatile int8_t s_last_rssi;
 static volatile uint8_t s_last_channel;
 static uint32_t s_seq;
 static uint32_t s_queue_high_water;
+static uint32_t s_flash_kb;
+static uint32_t s_flash_phys_kb;
 static bool s_header_printed;
+
+/* --- the one output path --------------------------------------------------
+ *
+ * The captured evidence shows a status line cut in half with a second copy
+ * of its own text spliced into the gap. That is what two writers and a
+ * buffered stdio produce: fwrite() of a 500-byte line goes out in
+ * stdio-sized chunks, and the other task's output lands between two of
+ * them. The fix is not a bigger buffer, it is ONE write() per line:
+ *
+ *   * stdout is unbuffered, so a line is never split by the stdio layer;
+ *   * every line - data, status and log - goes out through console_emit(),
+ *     which issues a single write() for the whole line;
+ *   * a mutex orders the lines, so a status line cannot appear in the
+ *     middle of a data line.
+ *
+ * The write is then atomic as far as the UART driver is concerned, which
+ * is what makes a record impossible to tear.
+ */
+static SemaphoreHandle_t s_out_lock;
+
+static void console_emit(const char *buf, size_t len)
+{
+    if (buf == NULL || len == 0) {
+        return;
+    }
+    if (s_out_lock != NULL) {
+        xSemaphoreTake(s_out_lock, portMAX_DELAY);
+    }
+    size_t off = 0;
+    while (off < len) {
+        ssize_t n = write(fileno(stdout), buf + off, len - off);
+        if (n <= 0) {
+            break;      /* the port is gone; a stuck console must not wedge
+                         * the radio */
+        }
+        off += (size_t)n;
+    }
+    if (s_out_lock != NULL) {
+        xSemaphoreGive(s_out_lock);
+    }
+}
+
+/* The IDF's own log lines go to stdout too, so they have to share the one
+ * path or they can still land in the middle of a record. */
+static int console_log_vprintf(const char *fmt, va_list args)
+{
+    char buf[512];
+    int n = vsnprintf(buf, sizeof(buf), fmt, args);
+    if (n <= 0) {
+        return n;
+    }
+    if (n >= (int)sizeof(buf)) {
+        /* Truncate, but terminate the line: a truncated log line must not
+         * merge with the next one. */
+        n = (int)sizeof(buf) - 1;
+        buf[n - 1] = '\n';
+    }
+    console_emit(buf, (size_t)n);
+    return n;
+}
 
 /* The gain control, exactly as the original image used it. */
 static uint8_t s_agc_gain;
@@ -187,6 +274,17 @@ static void wifi_csi_rx_cb(void *ctx, wifi_csi_info_t *info)
     s_last_channel = rx->channel;
     s_csi_accepted++;
 
+    /* Classify the frame. The driver gives no frame type, so the signal
+     * length is the discriminator - and the counts are reported rather than
+     * assumed. */
+    if (rx->sig_len <= SIG_LEN_NULL_DATA_MAX) {
+        s_frames_null++;
+    } else if (rx->sig_len <= SIG_LEN_AMBIGUOUS_MAX) {
+        s_frames_ambiguous++;
+    } else {
+        s_frames_data++;
+    }
+
     if (!dq_push(s_dq, &rec)) {
         /* counted by dq_push; nothing to do here */
     }
@@ -203,22 +301,22 @@ static void wifi_csi_rx_cb(void *ctx, wifi_csi_info_t *info)
 static void writer_task(void *arg)
 {
     (void)arg;
-    char line[CSI_LINE_MAX];
+    char line[CSI_LINE_MAX + 2];
     dq_record_t rec;
     while (1) {
         if (!dq_pop(s_dq, &rec, 200)) {
             continue;
         }
-        size_t n = csi_format_line(&rec, line, sizeof(line));
+        size_t n = csi_format_line(&rec, line, sizeof(line) - 1);
         if (n == 0) {
             continue;
         }
-        /* One write for the whole line, then the terminator. The
-         * formatter has ALREADY closed the quoted IQ tail, so the
-         * terminator must not add another quote. */
-        fwrite(line, 1, n, stdout);
-        fputs("\n", stdout);
-        fflush(stdout);
+        /* The terminator goes in the SAME buffer, so the whole record -
+         * payload and terminator - leaves in ONE write. The formatter has
+         * already closed the quoted IQ tail, so the terminator must not
+         * add another quote. */
+        line[n] = '\n';
+        console_emit(line, n + 1);
 
         if (!s_header_printed) {
             s_header_printed = true;
@@ -247,21 +345,46 @@ static void status_task(void *arg)
 #endif
         /* "printed" must be what actually reached the wire, not what was
          * accepted: the difference is the rejections plus the queue losses,
-         * and the preflight uses it to separate the two. */
-        size_t n = csi_format_status(line, sizeof(line), role, peer,
+         * and the preflight uses it to separate the two. The data/null/
+         * ambiguous counts separate the frames that carried a payload from
+         * the station's empty ones, which is a different question again. */
+        size_t n = csi_format_status(line, sizeof(line) - 1, role, peer,
                                      s_last_channel, s_last_rssi,
                                      s_csi_callbacks, s_dq ? s_dq->written : 0,
+                                     s_csi_rejected,
+                                     s_frames_data, s_frames_null,
+                                     s_frames_ambiguous, s_flash_kb,
+                                     s_flash_phys_kb,
                                      s_dq ? s_dq->dropped_old : 0,
                                      s_dq ? s_dq->dropped_new : 0,
                                      s_dq ? uxQueueMessagesWaiting(s_dq->queue) : 0,
                                      s_queue_high_water);
         if (n) {
-            fwrite(line, 1, n, stdout);
-            fputs("\n", stdout);
-            fflush(stdout);
+            line[n] = '\n';
+            console_emit(line, n + 1);
         }
         (void)last;
     }
+}
+
+/* --- the lab credential ---------------------------------------------------- */
+
+/* The passphrase is compiled in from a generated header that the build puts
+ * in the BUILD DIRECTORY, so it never enters the source tree and never
+ * reaches Git. The image that carries it is therefore a SECRET ARTEFACT:
+ * anyone holding it can associate with the lab network. The flash backups
+ * taken before this change contain no credential and stay safe. */
+static const char *lab_credential(void)
+{
+    if (SPECTER_LAB_PSK[0] != '\0') {
+        return SPECTER_LAB_PSK;
+    }
+    return NULL;
+}
+
+static const char *lab_auth_mode(void)
+{
+    return (lab_credential() != NULL) ? "WPA2" : "OPEN";
 }
 
 /* --- Wi-Fi setup ----------------------------------------------------------- */
@@ -290,9 +413,9 @@ static void wifi_softap_start(void)
     memcpy(cfg.ap.ssid, CONFIG_SPECTER_LAB_SSID,
            strlen(CONFIG_SPECTER_LAB_SSID));
     cfg.ap.ssid_len = strlen(CONFIG_SPECTER_LAB_SSID);
-    if (strlen(CONFIG_SPECTER_LAB_PASSWORD) > 0) {
-        memcpy(cfg.ap.password, CONFIG_SPECTER_LAB_PASSWORD,
-               strlen(CONFIG_SPECTER_LAB_PASSWORD));
+    const char *cred = lab_credential();
+    if (cred != NULL) {
+        memcpy(cfg.ap.password, cred, strlen(cred));
         cfg.ap.authmode = WIFI_AUTH_WPA2_PSK;
     } else {
         cfg.ap.authmode = WIFI_AUTH_OPEN;
@@ -304,17 +427,26 @@ static void wifi_softap_start(void)
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &cfg));
     ESP_ERROR_CHECK(esp_wifi_start());
-    ESP_LOGI(TAG, "SoftAP '%s' on channel %u, waiting for a station",
-             CONFIG_SPECTER_LAB_SSID, CONFIG_SPECTER_LAB_CHANNEL);
+    if (cred != NULL) {
+        ESP_LOGI(TAG, "SoftAP '%s' on channel %u, %s, waiting for a station",
+                 CONFIG_SPECTER_LAB_SSID, CONFIG_SPECTER_LAB_CHANNEL,
+                 lab_auth_mode());
+    } else {
+        /* An open lab network is a deliberate, exceptional choice. Say so
+         * loudly, every boot, because it is invisible from the outside. */
+        ESP_LOGW(TAG, "SoftAP '%s' is OPEN - no credential was compiled in. "
+                 "The build refuses to do this by default.",
+                 CONFIG_SPECTER_LAB_SSID);
+    }
 }
 #else
 static void wifi_station_start(void)
 {
     wifi_config_t cfg = { 0 };
     memcpy(cfg.sta.ssid, CONFIG_SPECTER_LAB_SSID, strlen(CONFIG_SPECTER_LAB_SSID));
-    if (strlen(CONFIG_SPECTER_LAB_PASSWORD) > 0) {
-        memcpy(cfg.sta.password, CONFIG_SPECTER_LAB_PASSWORD,
-               strlen(CONFIG_SPECTER_LAB_PASSWORD));
+    const char *cred = lab_credential();
+    if (cred != NULL) {
+        memcpy(cfg.sta.password, cred, strlen(cred));
     }
     cfg.sta.scan_method = WIFI_ALL_CHANNEL_SCAN;
     cfg.sta.threshold.authmode = WIFI_AUTH_OPEN;
@@ -322,7 +454,8 @@ static void wifi_station_start(void)
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &cfg));
     ESP_ERROR_CHECK(esp_wifi_start());
-    ESP_LOGI(TAG, "station: scanning for '%s'", CONFIG_SPECTER_LAB_SSID);
+    ESP_LOGI(TAG, "station: scanning for '%s' (%s)", CONFIG_SPECTER_LAB_SSID,
+             lab_auth_mode());
 }
 #endif
 
@@ -370,6 +503,41 @@ static void wifi_event_handler(void *arg, esp_event_base_t base,
 
 void app_main(void)
 {
+    /* ONE output path, set up before anything can print. stdout is
+     * unbuffered so that a line is never split by the stdio layer, and the
+     * IDF's log lines are routed through the same writer so they cannot
+     * land in the middle of a record. */
+    setvbuf(stdout, NULL, _IONBF, 0);
+    s_out_lock = xSemaphoreCreateMutex();
+    if (s_out_lock != NULL) {
+        esp_log_set_vprintf(console_log_vprintf);
+    }
+
+    /* The flash size the runtime actually has, and the size the chip
+     * physically has. The app image header says 16 MB, but the size the
+     * ROM gives the driver comes from the BOOTLOADER's header, and the
+     * bootloader in this device was built for 2 MB - so the device runs
+     * with a 2 MB flash and says so. Reporting both numbers is better
+     * than leaving it to be inferred from a warning: the difference
+     * between them is exactly the defect. */
+    uint32_t runtime_bytes = 0;
+    uint32_t physical_bytes = 0;
+    if (esp_flash_get_size(esp_flash_default_chip, &runtime_bytes) == ESP_OK) {
+        s_flash_kb = runtime_bytes / 1024;
+    }
+    if (esp_flash_get_physical_size(esp_flash_default_chip, &physical_bytes)
+        == ESP_OK) {
+        s_flash_phys_kb = physical_bytes / 1024;
+    }
+    ESP_LOGI(TAG, "flash: %u kB available at runtime, %u kB on the chip",
+             (unsigned)s_flash_kb, (unsigned)s_flash_phys_kb);
+    if (s_flash_phys_kb > s_flash_kb) {
+        ESP_LOGW(TAG,
+                 "the runtime sees less flash than the chip has: the "
+                 "BOOTLOADER's header decides, and this one says %u kB",
+                 (unsigned)s_flash_kb);
+    }
+
     /* NVS is not needed by this firmware: the lab credentials are compiled
      * in and the driver is told to keep its state in RAM, so the device does
      * not write to flash. It is initialised anyway because the Wi-Fi driver
@@ -428,5 +596,7 @@ void app_main(void)
     wifi_csi_init();
 
     ESP_LOGI(TAG, "SPECTER-X controlled-link firmware ready");
+    ESP_LOGI(TAG, "lab network %s, %s", CONFIG_SPECTER_LAB_SSID,
+             lab_auth_mode());
     ESP_LOGI(TAG, "the wire format is Espressif's csi_recv_router, unchanged");
 }

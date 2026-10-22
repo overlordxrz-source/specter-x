@@ -2,7 +2,85 @@
 
 The board on the bench runs **Espressif's `csi_recv_router` example** and
 streams Wi-Fi CSI over its native USB CDC port. This file records what the
-hardware actually does, measured on 2026-10-21.
+hardware actually does, measured on 2026-10-21, and how the SPECTER-X
+controlled-link build is produced and flashed.
+
+> **Alpha 002-B (checkpoint 017).** This repository now also carries the
+> SPECTER-X **controlled-link firmware**, in `softap_csi/`, with two roles:
+> the board as a **station** (joining a local access point) and the board as
+> a **SoftAP** (the Mac or a phone is the station). The SoftAP role is the
+> one that has been run on hardware: its CSI callback fires, and a 60-second
+> acquisition preflight passes. The lab network is **WPA2**, and the
+> passphrase is **not in Git**. The build, the credential and the flash
+> procedure are below.
+
+## Building
+
+The credential is read from the environment, and the build **fails closed**
+without one — an accidentally open lab network is impossible by accident.
+
+```bash
+source ~/esp/esp-idf/export.sh
+
+# once: create the credential (gitignored, mode 600, never printed)
+.venv/bin/python tools/lab_credentials.py init
+
+# export it for this shell (this line IS the secret - do not paste it)
+eval "$(.venv/bin/python tools/lab_credentials.py env)"
+
+# the SoftAP role - the board is the access point
+idf.py -C firmware/esp32-csi/softap_csi \
+  -B firmware/esp32-csi/softap_csi/build-softap \
+  -D SDKCONFIG=sdkconfig.softap \
+  -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.softap.defaults" build
+
+# the station role - the board joins a local access point
+idf.py -C firmware/esp32-csi/softap_csi \
+  -B firmware/esp32-csi/softap_csi/build-station \
+  -D SDKCONFIG=sdkconfig.station \
+  -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.station.defaults" build
+```
+
+The generated `lab_credentials.h` lands in the **build** directory, never in
+the source tree. The resulting app image contains the passphrase, so **the
+image and any backup taken from it are secrets**; the backups taken before
+Alpha 002-B contain no credential.
+
+To build an open lab image on purpose: `-DSPECTER_LAB_ALLOW_OPEN=ON`.
+
+## Flashing
+
+The **runtime** flash size is set by the **bootloader's** image header, not
+by the app's: the ROM gives the driver the size from the image it loads
+first. The bootloader in this device was built for 2 MB, so the device ran
+with 2 MB of a 16 MB chip even though the app image declared 16 MB. The
+Alpha 002-B build produces a 16 MB bootloader, so **the bootloader has to be
+written too** — an app-only write cannot fix it.
+
+```bash
+# read the current state first; the rollback base must be what we think
+esptool --port /dev/cu.usbmodem1101 read-flash 0x0 0x10000 boot-check.bin
+
+# write all three regions, then verify independently
+esptool --port /dev/cu.usbmodem1101 --after hard-reset write_flash \
+  --flash_mode dio --flash_freq 80m --flash_size 16MB \
+  0x0      firmware/esp32-csi/softap_csi/build-softap/bootloader/bootloader.bin \
+  0x8000   firmware/esp32-csi/softap_csi/build-softap/partition_table/partition-table.bin \
+  0x10000  firmware/esp32-csi/softap_csi/build-softap/specter_csi_lab.bin
+
+esptool --port /dev/cu.usbmodem1101 verify_flash \
+  0x0      firmware/esp32-csi/softap_csi/build-softap/bootloader/bootloader.bin
+```
+
+**The app partition is 1 MB** and the app is 745 KB — it fits, with 29% to
+spare. Growing it means writing the partition table at `0x8000`.
+
+The device reports what it actually has, so the configuration can be checked
+from its own output rather than from a warning in a log:
+
+```
+flash: 2048 kB available at runtime, 16384 kB on the chip
+```
 
 ## Hardware (identified with read-only esptool)
 

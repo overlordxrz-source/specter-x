@@ -6,6 +6,7 @@ of them grow without bound.
 """
 import pytest
 
+from specter.sensors.esp32.firmware_status import parse_status_line
 from specter.sensors.esp32.dispatcher import (CSI_FIELD_NAMES, BoundedQueue,
                                               CsiParser, SerialDispatcher,
                                               classify)
@@ -258,3 +259,75 @@ def test_a_full_consumer_does_not_stop_the_other():
     d.feed_line(HB)
     assert d.snapshot()["supervisor_parsed"] == 1
     assert len(d.drain_supervisor()) == 1
+
+
+# --- surviving a damaged line ------------------------------------------------
+
+
+def _csi_line(seq: int = 610, mac: str = "16:01:cc:d5:06:18") -> str:
+    iq = ",".join(["0", "0", "14", "9"] * 32)
+    return (f'CSI_DATA,{seq},{mac},-36,9,0,0,0,0,0,0,0,0,0,-96,0,6,0,'
+            f'402520000,0,28,0,128,0,"[{iq}]"')
+
+
+def test_a_damaged_line_does_not_end_the_stream():
+    """The requirement from the captured evidence: a malformed record must
+    not cost the records that follow it."""
+    parser = CsiParser()
+    outcome = parser.feed_resilient(_csi_line(seq=1))
+    assert len(outcome.records) == 1 and not outcome.malformed
+
+    # the same line with its middle cut out and a status line spliced in
+    damaged = _csi_line(seq=2)[:60] + "role=softap"
+    outcome = parser.feed_resilient(damaged)
+    assert outcome.malformed
+    assert not outcome.records
+
+    # the next good record is still parsed
+    outcome = parser.feed_resilient(_csi_line(seq=3))
+    assert len(outcome.records) == 1
+    assert outcome.records[0].seq == 3
+    assert not outcome.malformed
+
+
+def test_both_records_survive_a_lost_newline():
+    """A splice joins two records. Both are intact, and throwing one away
+    would lose a measurement that was really made."""
+    parser = CsiParser()
+    spliced = _csi_line(seq=7) + _csi_line(seq=8)
+    outcome = parser.feed_resilient(spliced)
+    assert outcome.spliced, "the lost newline must be noticed"
+    assert not outcome.malformed, "no data was lost"
+    assert [r.seq for r in outcome.records] == [7, 8]
+    assert all(len(r.iq) == 128 for r in outcome.records)
+
+
+def test_a_status_line_spliced_into_a_csi_line_is_salvaged_as_text():
+    parser = CsiParser()
+    damaged = _csi_line(seq=9)[:50] + (
+        "SPECTER_STAT,role=softap,peer=16:01:cc:d5:06:18,ch=6,rssi=-36,"
+        "csi_cb=4221,printed=3859,drop_old=0,drop_new=0,q=0,q_high=13")
+    outcome = parser.feed_resilient(damaged)
+    assert outcome.malformed
+    assert not outcome.records
+    assert outcome.salvaged is not None
+    assert outcome.salvaged.startswith("SPECTER_STAT,")
+    st = parse_status_line(outcome.salvaged)
+    assert st is not None and st["role"] == "softap"
+    assert st["csi_callbacks"] == 4221
+
+
+def test_the_damage_is_counted_and_the_sequence_gap_is_visible():
+    """A lost record must show up as a gap, not be closed silently."""
+    parser = CsiParser()
+    parser.feed_resilient(_csi_line(seq=100))
+    parser.feed_resilient(_csi_line(seq=102))     # 101 never arrived
+    assert parser.gaps == 1
+    assert parser.missing == 1
+
+
+def test_a_line_with_one_record_is_not_a_splice():
+    parser = CsiParser()
+    outcome = parser.feed_resilient(_csi_line(seq=11))
+    assert not outcome.spliced
+    assert not outcome.malformed

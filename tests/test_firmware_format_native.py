@@ -109,3 +109,15 @@ def test_the_status_line_parses(lines):
     assert st["printed"] == 1180
     assert st["dropped_old"] == 0
     assert st["queue_high"] == 7
+
+
+def test_the_status_line_reports_the_three_counts_apart(lines):
+    """The counts must be separable: a callback, a record on the wire, a
+    rejected callback, and the frames that carried a payload."""
+    st = parse_status_line(lines[4])
+    assert st["rejected"] == 5
+    assert st["frames_data"] == 980
+    assert st["frames_null"] == 200
+    assert st["frames_ambiguous"] == 0
+    assert st["flash_kb"] == 16384
+    assert st["flash_physical_kb"] == 16384

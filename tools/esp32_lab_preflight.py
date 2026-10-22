@@ -10,12 +10,18 @@ they answer different questions:
 * the CH343 bridge carries the same stream **and** the ESP-IDF log at
   921600 baud - the thing that says *why* if the first goes quiet.
 
-It scores five things, with the thresholds written down:
+It scores these things, with the thresholds written down:
 
     activity        the CSI callback is firing, and at a plausible rate
-    continuity      packets keep arriving; nothing is silently missing
+    frame mix       the frames that carried a payload, the empty ones, and
+                    any that could not be classified
+    continuity      the PAYLOAD frames keep arriving against the offered
+                    rate; nothing is silently missing
     rf              RSSI, noise floor, channel and the subcarrier map are sane
     usb             no stall, no torn line, no device-side queue loss
+    accounting      the device's own counters against the host's, so a
+                    transport loss cannot hide inside an average
+    flash           the flash the runtime actually has
     telemetry       the supervisor protocol - NOT IN THIS BUILD (deferred)
 
     python3 tools/esp32_lab_preflight.py --seconds 60
@@ -24,6 +30,13 @@ It scores five things, with the thresholds written down:
 
 The score is deliberately conservative: a metric that cannot be measured
 is reported as UNKNOWN, not as a pass.
+
+**Three counts that must not be added together.** A CSI callback fires for
+every frame the radio hears, including the empty ones a station sends to keep
+an association alive. Scoring the callback total against the offered traffic
+rate made a healthy capture report 394% continuity. The payload frames, the
+empty frames and the callbacks are therefore counted separately, and
+continuity is computed from the payload frames alone.
 """
 from __future__ import annotations
 
@@ -50,12 +63,25 @@ CONSOLE_PORT = "/dev/cu.usbmodem5B901602281"
 CONSOLE_BAUD = 921600
 
 #: Scoring rules changed after the first hardware run; scores are comparable
-#: only within a version. v1 required the set of non-zero subcarriers to equal
-#: the 52 used slots exactly, which fails on any active subcarrier whose int8
-#: I and Q both truncate to zero. v2 asserts the structural property instead:
-#: every required null slot is zero, and all 52 active slots carry energy at
-#: least once across the capture.
-SCORING_VERSION = 2
+#: only within a version.
+#:
+#: v1 required the set of non-zero subcarriers to equal the 52 used slots
+#: exactly, which fails on any active subcarrier whose int8 I and Q both
+#: truncate to zero. v2 asserts the structural property instead: every
+#: required null slot is zero, and all 52 active slots carry energy at least
+#: once across the capture.
+#:
+#: v3 separates three things that v2 counted as one. A CSI callback fires
+#: for EVERY frame the radio hears, including the empty ones a station
+#: sends to keep an association alive. v2 compared that total against the
+#: offered traffic rate, so a capture with 1757 null-data frames and 600
+#: real ones reported 394% continuity - a number that meant nothing. v3
+#: counts the frames that carried a payload, the ones that did not, and the
+#: callbacks themselves, and computes continuity from the payload frames
+#: alone. The device's own counters are compared against what the host
+#: received, so a transport loss shows up as a difference between two
+#: independent counts rather than as a silence.
+SCORING_VERSION = 3
 
 #: The null-carrier set of an 802.11n 20 MHz LLTF, measured on this board
 #: and confirmed against the ESP-IDF subcarrier table: 64 slots, 52 used.
@@ -63,6 +89,15 @@ NULL_CARRIERS = frozenset({0} | set(range(27, 38)))
 USED_CARRIERS = 64 - len(NULL_CARRIERS)
 ACTIVE_CARRIERS = frozenset(range(64)) - NULL_CARRIERS
 LLTF_SLOTS = 64
+
+#: A frame with no payload is exactly 28 bytes: a 24-byte MAC header plus
+#: the 4-byte frame check sequence. A frame that carries a payload is
+#: longer. The Wi-Fi driver does not expose the 802.11 frame type, so the
+#: signal length is the only discriminator available - which is why the
+#: counts are reported rather than trusted, and why the 29..32 band is
+#: counted separately instead of being guessed into either class.
+SIG_LEN_NULL_DATA_MAX = 28
+SIG_LEN_AMBIGUOUS_MAX = 32
 
 #: The thresholds. Every one of them is a decision, not a default, and each
 #: carries the reason it is where it is.
@@ -78,6 +113,13 @@ THRESHOLDS = {
     "min_null_zero_rate": 1.0,     # a null that carries energy is structural
     "min_frames_for_map": 20,      # below this the map cannot be verified
     "max_queue_drops": 0,          # the queue must be keeping up
+    "max_ambiguous_frames": 0,     # a frame we cannot classify is a hole in
+                                   # the accounting, not a detail
+    "expected_flash_kb": 16384,    # the board has 16 MB (verified with
+                                   # esptool); the runtime size comes from
+                                   # the BOOTLOADER's header, not the app's
+    "max_record_count_drift": 0.02,  # device and host must agree on how
+                                      # many records there were
 }
 
 
@@ -98,6 +140,16 @@ class Observation:
     null_ok: int = 0
     null_checked: int = 0
     active_seen: List[int] = field(default_factory=list)
+    # v3: the three counts that must not be added together. None of them
+    # has a default, because "not measured" and "measured as zero" are
+    # different facts, and a v1 or v2 capture must not be read as if it
+    # had measured them.
+    data_frames: Optional[int] = None
+    null_data_frames: Optional[int] = None
+    ambiguous_frames: Optional[int] = None
+    rescued_records: Optional[int] = None
+    spliced_lines: Optional[int] = None
+    sig_len_histogram: Optional[Dict[str, int]] = None
     # legacy v1 counters, kept only so that v1 observations still replay
     used_carrier_ok: int = 0
     used_carrier_checked: int = 0
@@ -137,6 +189,23 @@ def _analyse_subcarriers(iq: List[int]):
     return nulls_ok, active, slots
 
 
+def _classify_frame(sig_len: int) -> str:
+    """Classify one frame as ``data``, ``null`` or ``ambiguous``.
+
+    The driver does not tell us the 802.11 frame type, so the signal length
+    is the discriminator. A frame with no payload is 28 bytes; a frame that
+    carries one is longer. The 29..32 band is returned as ``ambiguous``
+    rather than being pushed into a class, because a short QoS null frame
+    would land there, and a wrong answer in that band would corrupt the
+    continuity figure rather than merely look untidy.
+    """
+    if sig_len <= SIG_LEN_NULL_DATA_MAX:
+        return "null"
+    if sig_len <= SIG_LEN_AMBIGUOUS_MAX:
+        return "ambiguous"
+    return "data"
+
+
 def evaluate(obs: Observation) -> List[Result]:
     """Score one capture. Pure, so it can be tested without a board."""
     results: List[Result] = []
@@ -165,16 +234,74 @@ def evaluate(obs: Observation) -> List[Result]:
             "> 0 (SoftAP probe)", "PASS" if delta > 0 else "FAIL"))
 
     # --- continuity -------------------------------------------------------
-    if obs.expected_rate_hz:
-        continuity = csi_rate / obs.expected_rate_hz
+    # Continuity is about the frames that carried a payload. A null-data
+    # frame is a station keeping an association alive; counting it as
+    # traffic is what made v2 report 394% continuity for a capture that
+    # actually received 600 packets against 596 expected.
+    data_rate = None
+    if obs.data_frames is not None and obs.seconds > 0:
+        data_rate = obs.data_frames / obs.seconds
+    if obs.expected_rate_hz and data_rate is not None:
+        continuity = data_rate / obs.expected_rate_hz
         results.append(Result(
             "packet continuity",
-            f"{continuity * 100:.1f}% of {obs.expected_rate_hz:.0f}/s",
+            f"{continuity * 100:.1f}% of {obs.expected_rate_hz:.0f}/s "
+            f"({obs.data_frames} data frames)",
             f">= {th['min_continuity'] * 100:.0f}%",
             "PASS" if continuity >= th["min_continuity"] else "FAIL"))
+    elif obs.expected_rate_hz:
+        results.append(Result(
+            "packet continuity", "v1/v2 capture",
+            "re-capture for v3 (data frames not counted)", "UNKNOWN"))
     else:
-        results.append(Result("packet continuity", f"{csi_rate:.1f}/s",
+        results.append(Result("packet continuity",
+                              f"{data_rate:.1f}/s" if data_rate is not None
+                              else "not measured",
                               "no expected rate given", "UNKNOWN"))
+
+    # --- the three counts, kept apart -------------------------------------
+    if obs.data_frames is not None:
+        results.append(Result(
+            "frame mix",
+            f"{obs.data_frames} data, {obs.null_data_frames} null, "
+            f"{obs.ambiguous_frames} ambiguous",
+            "data and null counted separately",
+            "PASS" if (obs.ambiguous_frames or 0) <= th["max_ambiguous_frames"]
+            else "FAIL"))
+        results.append(Result(
+            "data frame rate",
+            f"{data_rate:.1f}/s" if data_rate is not None else "n/a",
+            "reported, not a gate (an idle station sends no payload)",
+            "PASS" if (data_rate or 0) > 0 else "UNKNOWN"))
+    else:
+        results.append(Result("frame mix", "v1/v2 capture",
+                              "re-capture for v3", "UNKNOWN"))
+        results.append(Result("data frame rate", "v1/v2 capture",
+                              "re-capture for v3", "UNKNOWN"))
+
+    # The device counts what it saw; the host counts what it received. The
+    # two are independent, so their difference is transport loss, and it
+    # cannot hide inside an average.
+    device_records = _device_delta(obs, "printed")
+    if device_records is not None and obs.data_frames is not None:
+        host_records = obs.csi_count
+        if device_records > 0:
+            drift = abs(host_records - device_records) / device_records
+            results.append(Result(
+                "device vs host record count",
+                f"{host_records} host ({csi_rate:.1f}/s), "
+                f"{device_records} device ({device_records / obs.seconds:.1f}/s)"
+                f" ({drift * 100:.2f}% apart)",
+                f"<= {th['max_record_count_drift'] * 100:.0f}%",
+                "PASS" if drift <= th["max_record_count_drift"] else "FAIL"))
+        else:
+            results.append(Result("device vs host record count",
+                                  f"{host_records} host, 0 device",
+                                  "the device printed nothing", "FAIL"))
+    else:
+        results.append(Result("device vs host record count",
+                              "not reported by this firmware",
+                              "re-capture for v3", "UNKNOWN"))
 
     results.append(Result("longest inter-packet gap", f"{obs.max_gap_s:.3f}s",
                           f"<= {th['max_gap_s']:.1f}s",
@@ -182,6 +309,13 @@ def evaluate(obs: Observation) -> List[Result]:
     results.append(Result("malformed lines", str(obs.malformed),
                           f"<= {th['max_malformed']}",
                           "PASS" if obs.malformed <= th["max_malformed"] else "FAIL"))
+    if obs.rescued_records is not None:
+        results.append(Result(
+            "records rescued from a damaged line", str(obs.rescued_records),
+            "the stream continued after the damage", "PASS"))
+        results.append(Result(
+            "lines with a lost newline", str(obs.spliced_lines or 0),
+            "reported (no data lost, the records were recovered)", "PASS"))
     results.append(Result("sequence gaps", str(obs.seq_gaps), "0",
                           "PASS" if obs.seq_gaps == 0 else "FAIL"))
 
@@ -262,6 +396,28 @@ def evaluate(obs: Observation) -> List[Result]:
         results.append(Result("usb vs console byte drift", "console silent",
                               "<= 0.5%", "FAIL"))
 
+    # --- flash ------------------------------------------------------------
+    # The app image header says 16 MB, but the size the ROM gives the
+    # driver comes from the BOOTLOADER's header, and the bootloader in this
+    # device was built for 2 MB. The device reports what it actually has,
+    # so the mismatch is visible instead of being a warning in a log.
+    flash_kb = obs.last_status.get("flash_kb") if obs.last_status else None
+    phys_kb = (obs.last_status.get("flash_physical_kb")
+               if obs.last_status else None)
+    if flash_kb is None:
+        results.append(Result("flash size", "not reported by this firmware",
+                              f"{th['expected_flash_kb'] // 1024} MB",
+                              "UNKNOWN"))
+    else:
+        detail = f"{flash_kb // 1024} MB"
+        if phys_kb is not None:
+            detail += f" (chip has {phys_kb // 1024} MB)"
+        results.append(Result(
+            "flash size", detail,
+            f"{th['expected_flash_kb'] // 1024} MB "
+            "(set by the bootloader, not the app)",
+            "PASS" if flash_kb >= th["expected_flash_kb"] else "FAIL"))
+
     # --- telemetry --------------------------------------------------------
     results.append(Result(
         "supervisor telemetry", "not in this build",
@@ -276,6 +432,20 @@ def _drops(obs: Observation) -> int:
     b = obs.last_status
     return ((b.get("dropped_old", 0) - a.get("dropped_old", 0))
             + (b.get("dropped_new", 0) - a.get("dropped_new", 0)))
+
+
+def _device_delta(obs: Observation, key: str) -> Optional[int]:
+    """How much a device counter moved during the capture.
+
+    None when the firmware does not report that counter, so the caller can
+    say UNKNOWN instead of comparing against a zero that means "not
+    measured".
+    """
+    if not obs.first_status or not obs.last_status:
+        return None
+    if key not in obs.first_status or key not in obs.last_status:
+        return None
+    return (obs.last_status.get(key, 0) - obs.first_status.get(key, 0))
 
 
 def verdict(results: List[Result]) -> str:
@@ -317,8 +487,48 @@ def capture(seconds: float, csi_port: str, console_port: str,
     seqs: List[int] = []
     console_lines: List[str] = []
     seen_active = set()
+    # The three counts, kept apart from the first byte.
+    n_data = 0
+    n_null = 0
+    n_ambiguous = 0
+    n_rescued = 0
+    obs_spliced = 0
+    sig_hist: Dict[str, int] = {}
+
+    def _absorb(rec) -> None:
+        """Fold one parsed record into the observation."""
+        nonlocal n_data, n_null, n_ambiguous
+        now = time.monotonic()
+        nulls_ok, active, _slots = _analyse_subcarriers(rec.iq)
+        kind = _classify_frame(rec.sig_len)
+        with lock:
+            obs.csi_count += 1
+            obs.rssi.append(rec.rssi)
+            obs.noise_floor.append(rec.noise_floor)
+            obs.channels.append(rec.channel)
+            obs.rate_histogram[str(rec.rate)] = \
+                obs.rate_histogram.get(str(rec.rate), 0) + 1
+            obs.null_checked += 1
+            if nulls_ok:
+                obs.null_ok += 1
+            seen_active.update(active)
+            sig_hist[str(rec.sig_len)] = \
+                sig_hist.get(str(rec.sig_len), 0) + 1
+            if kind == "data":
+                n_data += 1
+            elif kind == "null":
+                n_null += 1
+            else:
+                n_ambiguous += 1
+            seqs.append(rec.seq)
+            if times:
+                gap = now - times[-1]
+                if gap > obs.max_gap_s:
+                    obs.max_gap_s = gap
+            times.append(now)
 
     def read_csi():
+        nonlocal n_data, n_null, n_ambiguous, n_rescued, obs_spliced
         try:
             ser = serial.Serial(csi_port, 115200, timeout=0.2)
         except Exception as exc:
@@ -326,49 +536,41 @@ def capture(seconds: float, csi_port: str, console_port: str,
             return
         buf = b""
         _drain(ser)
+        raw_f = open(raw_out + ".csi", "wb") if raw_out else None
         with ser:
-            while not stop.is_set():
-                chunk = ser.read(65536)
-                if not chunk:
-                    continue
-                with lock:
-                    obs.usb_bytes += len(chunk)
-                buf += chunk
-                while b"\n" in buf:
-                    raw, _, buf = buf.partition(b"\n")
-                    line = raw.decode("utf-8", "replace").strip()
-                    if not line:
+            try:
+                while not stop.is_set():
+                    chunk = ser.read(65536)
+                    if not chunk:
                         continue
-                    if line.startswith("CSI_DATA"):
-                        try:
-                            rec = parser.feed(line)
-                        except ValueError:
-                            # a spliced or truncated line is a transport fault,
-                            # not a reason to abandon the capture
-                            rec = None
-                        if rec is None:
+                    if raw_f:
+                        raw_f.write(chunk)
+                    with lock:
+                        obs.usb_bytes += len(chunk)
+                    buf += chunk
+                    while b"\n" in buf:
+                        raw, _, buf = buf.partition(b"\n")
+                        line = raw.decode("utf-8", "replace").strip()
+                        if not line:
+                            continue
+                        if not line.startswith("CSI_DATA"):
+                            continue
+                        # A damaged line must not end the capture: the records
+                        # after it are good, and the records inside the damage
+                        # are often recoverable. The damage is still counted.
+                        outcome = parser.feed_resilient(line)
+                        if outcome.malformed:
                             with lock:
                                 obs.malformed += 1
-                            continue
-                        now = time.monotonic()
-                        nulls_ok, active, _slots = _analyse_subcarriers(rec.iq)
-                        with lock:
-                            obs.csi_count += 1
-                            obs.rssi.append(rec.rssi)
-                            obs.noise_floor.append(rec.noise_floor)
-                            obs.channels.append(rec.channel)
-                            obs.rate_histogram[str(rec.rate)] = \
-                                obs.rate_histogram.get(str(rec.rate), 0) + 1
-                            obs.null_checked += 1
-                            if nulls_ok:
-                                obs.null_ok += 1
-                            seen_active.update(active)
-                            seqs.append(rec.seq)
-                            if times:
-                                gap = now - times[-1]
-                                if gap > obs.max_gap_s:
-                                    obs.max_gap_s = gap
-                            times.append(now)
+                                n_rescued += len(outcome.records)
+                        if outcome.spliced:
+                            with lock:
+                                obs.spliced_lines += 1
+                        for rec in outcome.records:
+                            _absorb(rec)
+            finally:
+                if raw_f:
+                    raw_f.close()
 
     def read_console():
         try:
@@ -427,6 +629,15 @@ def capture(seconds: float, csi_port: str, console_port: str,
     if len(seqs) > 1:
         obs.seq_gaps = sum(1 for a, b in zip(seqs, seqs[1:]) if b != a + 1)
     obs.active_seen = sorted(seen_active)
+    # The three counts, and the evidence for them: the signal-length
+    # histogram, so the classification can be audited instead of trusted.
+    obs.data_frames = n_data
+    obs.null_data_frames = n_null
+    obs.ambiguous_frames = n_ambiguous
+    obs.rescued_records = n_rescued
+    obs.spliced_lines = obs_spliced
+    obs.sig_len_histogram = dict(sorted(sig_hist.items(),
+                                        key=lambda kv: int(kv[0])))
     obs.console_text = "\n".join(console_lines[-40:])
     return obs
 

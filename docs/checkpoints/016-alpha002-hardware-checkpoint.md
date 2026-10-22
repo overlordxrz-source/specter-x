@@ -3,9 +3,10 @@
 **Date:** 2026-10-22
 **Branch:** `feature/alpha002-esp32-supervisor`
 **Verdict:** **The firmware is verified on hardware for everything it claims to
-do at this stage, and dense acquisition is demonstrated for 60 s with an awake
-station.** Unattended operation is not demonstrated: the station sleeps when it
-decides to. No flash, no reset, no merge, no change to host networking in this
+do at this stage, and dense acquisition is demonstrated for 60 s with a
+station that was kept talking.** Unattended operation is not demonstrated: the
+station goes quiet when it chooses to, and the two phone trials were
+confounded by using different traffic apps (checkpoint 017). No flash, no reset, no merge, no change to host networking in this
 checkpoint.
 
 Supersedes the subcarrier verdict in checkpoint 015. The v1 score there is
@@ -82,14 +83,14 @@ score *of that run* cannot be derived; that gap is why `--raw-out` now exists.
 ## 3a. Addendum — the same link, 60 s, fully passing
 
 Every earlier run failed on the same thing: the station slept. With the phone
-kept awake (auto-lock off, traffic app in the foreground), the same 10 Hz ping
+kept talking (the later traffic app, in the foreground), the same 10 Hz ping
 to `192.168.4.1`, on the same link, produced:
 
 | | |
 |---|---|
 | CSI frames | **2364** (39.0/s) |
 | data frames, 122 B | **600** → 10.07/s, i.e. the offered rate |
-| null-data frames, 28 B | 1757 (the station's power-save traffic) |
+| null-data frames, 28 B | 1757 (the station's association-keeping traffic) |
 | longest gap | **0.224 s** host-side, 79 ms device-side |
 | gaps > 0.5 s | **0** |
 | subcarrier nulls | 2364 / 2364 |
@@ -103,8 +104,10 @@ intervals are under 28.6 ms. So the stream is gap-free but **not** a steady
 35 Hz feed; a 35 FPS HUD cannot be assumed from this.
 
 What this changes: dense acquisition is demonstrated, not merely possible.
-What it does not change: the earlier failures were the station sleeping, which
-is a property of the phone, not of the firmware.
+What it does not change: the earlier failures were the station going quiet,
+which is a property of the phone and its traffic app, not of the firmware.
+Which of the candidate mechanisms was responsible was never separated
+(checkpoint 017).
 
 **Caveat on the continuity metric.** It compares *all* callbacks to the offered
 rate, so null-data frames inflate it (394% here). It passes, but it is not a
@@ -114,30 +117,39 @@ Splitting the metric by frame length is a follow-up.
 
 ## 4. Packet cadence: measured versus hypothesised
 
-**Measured, same link, same 10 Hz ping, two states of the phone:**
+**Measured, same link, same 10 Hz offered load, two trials of the phone:**
 
-| state | frames | data frames (122 B) | null-data (28 B) | longest gap |
+| trial | frames | data frames (122 B) | null-data (28 B) | longest gap |
 |---|---|---|---|---|
-| idle / screen off | 17 per 60 s | **1** | 16 | 35.1 s |
-| awake, app in foreground | 2364 per 60 s | 600 | 1757 | 0.079 s |
+| earlier trial, earlier traffic app | 17 per 60 s | **1** | 16 | 35.1 s |
+| later trial, different traffic app | 2364 per 60 s | 600 | 1757 | 0.079 s |
 
-**Not measured:** the precise mechanism. Two candidates remain and were not
-separated: 802.11 power save with a DTIM wake schedule, and iOS suspending a
-backgrounded app. No 802.11 frame capture was taken, the phone's power-save
-state was never read, and there was no control with power save known to be off.
-The 28-byte null-data frames are consistent with a station holding association
-in power save, but they are also present in the awake run, so they do not
+**Correction (checkpoint 017).** The two trials used **different traffic
+apps**, so they are confounded. The difference cannot be attributed to the
+phone's power saving alone: whether the app sends, at what rate, and whether
+the operating system suspends it all changed at the same time. The labels
+above therefore name the *trial*, not a measured phone state — "idle" was
+never measured, it was inferred.
+
+**What is established regardless of the confound:** the station put **one**
+payload frame on the link in 60 seconds in the failing trial and **600** in
+the succeeding one. The silence is **phone-side, not firmware-side**: the
+same association, the same AP, the same firmware and the same offered load
+yield either 39 frames/s or 0.3 frames/s, and the board's own counters never
+show loss (`drop_old=0`, `drop_new=0`, `q=0`) in any run.
+
+**Not measured:** which mechanism was responsible. At least three candidates
+were never separated: 802.11 power save with a DTIM wake schedule, the
+operating system suspending the traffic app, and the app simply not sending.
+No 802.11 frame capture was taken, the phone's power-save state was never
+read, and there was no control with power save known to be off. The 28-byte
+null-data frames are consistent with a station holding association in power
+save, but they are also present in the succeeding trial, so they do not
 identify the mechanism by themselves.
 
-What is now established is that the silence is **phone-side, not firmware-side**:
-the same association, the same AP, the same firmware and the same 10 Hz offered
-load yield either 39 frames/s or 0.3 frames/s depending only on the phone's
-state. The board's own counters never show loss (`drop_old=0`, `drop_new=0`,
-`q=0`) in any run.
-
-The consequence that survives either explanation: an unattended iOS station
+The consequence that survives every explanation: an unattended iOS station
 cannot be relied on for a continuous feed, so unattended operation needs a
-station whose sleep behaviour we control.
+station whose behaviour we control.
 
 ## 5. Verified on hardware
 
@@ -162,7 +174,7 @@ station whose sleep behaviour we control.
 |---|---|
 | Dense, gap-free acquisition | **demonstrated** for 60 s: 39/s, max gap 79 ms, zero gaps > 0.5 s |
 | Continuity against a known offered rate | **demonstrated**: 600 ping frames vs 596 expected, ≤ 0.7% loss |
-| Dense acquisition unattended | **no** — the station sleeps when it decides to |
+| Dense acquisition unattended | **no** — the station goes quiet when it chooses to; the cause was never separated |
 | Uniform 35 Hz cadence | **no** — median 26.9 ms, p95 61.8 ms, bimodal |
 | Motion or vital-sign detection | **nothing measured**; no human-subject run |
 | SoftAP under WPA2 | **no** — the AP is currently open |

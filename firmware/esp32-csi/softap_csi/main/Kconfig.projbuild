@@ -29,15 +29,19 @@ menu "SPECTER-X lab configuration"
             The station role joins this SSID. The SoftAP role publishes it.
             It MUST be a local network - never a campus network.
 
-    config SPECTER_LAB_PASSWORD
-        string "Lab network password (empty for an open network)"
-        default ""
-
     config SPECTER_LAB_CHANNEL
         int "Channel for the SoftAP role"
         depends on SPECTER_ROLE_SOFTAP
         default 6
         range 1 13
+
+    # The lab password is deliberately NOT a Kconfig option. A Kconfig
+    # value lives in sdkconfig.defaults, which is a TRACKED file, and a
+    # passphrase in a tracked file is a published passphrase. The
+    # credential comes from the build environment (or from the gitignored
+    # lab.env), and the build refuses to produce an open lab network
+    # unless that is asked for explicitly. See main/CMakeLists.txt and
+    # tools/lab_credentials.py.
 
     config SPECTER_CSI_QUEUE_DEPTH
         int "CSI record queue depth"

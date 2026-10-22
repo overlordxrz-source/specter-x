@@ -29,9 +29,13 @@ NULL_CARRIERS = preflight.NULL_CARRIERS
 
 
 def _healthy(**over):
-    st0 = {"csi_callbacks": 1000, "printed": 990, "dropped_old": 0,
+    st0 = {"csi_callbacks": 1000, "printed": 990, "rejected": 10,
+           "frames_data": 800, "frames_null": 190, "frames_ambiguous": 0,
+           "flash_kb": 16384, "dropped_old": 0,
            "dropped_new": 0, "channel": 6, "rssi": -55}
-    st1 = {"csi_callbacks": 2200, "printed": 2190, "dropped_old": 0,
+    st1 = {"csi_callbacks": 2200, "printed": 2190, "rejected": 10,
+           "frames_data": 2000, "frames_null": 190, "frames_ambiguous": 0,
+           "flash_kb": 16384, "dropped_old": 0,
            "dropped_new": 0, "channel": 6, "rssi": -56}
     obs = Observation(
         seconds=60.0, csi_count=1200, malformed=0, status_lines=60,
@@ -40,6 +44,8 @@ def _healthy(**over):
         channels=[6] * 1200, rate_histogram={"11": 1200},
         null_ok=1200, null_checked=1200,
         active_seen=sorted(ACTIVE_CARRIERS),
+        data_frames=1200, null_data_frames=0, ambiguous_frames=0,
+        rescued_records=0, sig_len_histogram={"122": 1200},
         max_gap_s=0.05, seq_gaps=0, usb_bytes=1_000_000,
         console_bytes=1_000_500, expected_rate_hz=20.0)
     for k, v in over.items():
@@ -70,7 +76,8 @@ def test_the_softap_question_fails_loudly_when_the_callback_never_fires():
 
 
 def test_a_usb_stall_fails_on_the_gap_not_on_silence():
-    results = evaluate(_healthy(max_gap_s=3.5, csi_count=600))
+    results = evaluate(_healthy(max_gap_s=3.5, csi_count=600,
+                                data_frames=600))
     by = {r.name: r for r in results}
     assert by["longest inter-packet gap"].status == "FAIL"
     assert by["packet continuity"].status == "FAIL"   # 10/s against 20/s
@@ -205,3 +212,104 @@ def test_synthetic_ht40_width_is_not_silently_scored_as_lltf():
     nulls_ok, _, slots = preflight._analyse_subcarriers([1, 1] * 128)
     assert slots == 128
     assert not nulls_ok
+
+
+# --- scoring v3: the three counts that must not be added together ------------
+
+
+def test_null_data_frames_do_not_inflate_continuity():
+    """The v2 defect, kept as a regression.
+
+    A capture with 1757 empty frames and 600 payload frames reported 394%
+    continuity against a 10/s offered rate, because the callback total was
+    compared with the traffic rate. Continuity is now the payload frames
+    alone.
+    """
+    obs = _healthy(csi_count=2357, data_frames=600, null_data_frames=1757,
+                   expected_rate_hz=10.0, seconds=60.0)
+    by = {r.name: r for r in evaluate(obs)}
+    assert "100.0%" in by["packet continuity"].value
+    assert "394" not in by["packet continuity"].value
+    assert by["packet continuity"].status == "PASS"
+    assert by["frame mix"].value == "600 data, 1757 null, 0 ambiguous"
+
+
+def test_continuity_fails_when_the_payload_frames_are_missing():
+    """The station is associated and silent: the link is fine, the traffic
+    is not, and the score has to say so."""
+    obs = _healthy(csi_count=1757, data_frames=1, null_data_frames=1756,
+                   expected_rate_hz=10.0, seconds=60.0)
+    by = {r.name: r for r in evaluate(obs)}
+    assert by["packet continuity"].status == "FAIL"
+    assert by["data frame rate"].value == "0.0/s"
+
+
+def test_a_frame_that_cannot_be_classified_is_a_failure_not_a_detail():
+    obs = _healthy(ambiguous_frames=3)
+    by = {r.name: r for r in evaluate(obs)}
+    assert by["frame mix"].status == "FAIL"
+
+
+def test_the_classification_boundary_is_explicit():
+    """28 bytes is an empty frame; more is a payload; 29..32 is not
+    classified either way."""
+    assert preflight._classify_frame(28) == "null"
+    assert preflight._classify_frame(27) == "null"
+    assert preflight._classify_frame(29) == "ambiguous"
+    assert preflight._classify_frame(32) == "ambiguous"
+    assert preflight._classify_frame(33) == "data"
+    assert preflight._classify_frame(122) == "data"
+
+
+def test_a_v2_observation_does_not_silently_inherit_a_v3_verdict():
+    """A v2 capture has no data-frame count, so the v3 questions have no
+    answer for it. The tool must say UNKNOWN, not guess."""
+    obs = _healthy(data_frames=None, null_data_frames=None,
+                   ambiguous_frames=None)
+    by = {r.name: r for r in evaluate(obs)}
+    assert by["frame mix"].status == "UNKNOWN"
+    assert by["data frame rate"].status == "UNKNOWN"
+    assert by["packet continuity"].status == "UNKNOWN"
+    assert by["device vs host record count"].status == "UNKNOWN"
+
+
+def test_the_device_and_the_host_must_agree_on_how_many_records_there_were():
+    """Two independent counts. A transport loss shows up as a difference
+    between them, not as a silence."""
+    by = {r.name: r for r in evaluate(_healthy())}
+    assert by["device vs host record count"].status == "PASS"
+    st1 = dict(_healthy().last_status)
+    st1["printed"] = st1["printed"] - 100        # the device lost 100 records
+    by = {r.name: r for r in evaluate(_healthy(last_status=st1))}
+    assert by["device vs host record count"].status == "FAIL"
+
+
+def test_the_flash_size_is_reported_and_the_shortfall_is_a_failure():
+    """The app image says 16 MB, but the bootloader sets the size the
+    runtime gets. Until the bootloader is rewritten the device has 2 MB, and
+    the preflight must say so rather than pass."""
+    st = dict(_healthy().last_status)
+    st["flash_kb"] = 2048
+    by = {r.name: r for r in evaluate(_healthy(last_status=st))}
+    assert by["flash size"].value == "2 MB"
+    assert by["flash size"].status == "FAIL"
+
+    st["flash_kb"] = 16384
+    by = {r.name: r for r in evaluate(_healthy(last_status=st))}
+    assert by["flash size"].status == "PASS"
+
+    # an old firmware that does not report it is UNKNOWN, not a pass
+    st.pop("flash_kb")
+    by = {r.name: r for r in evaluate(_healthy(last_status=st))}
+    assert by["flash size"].status == "UNKNOWN"
+
+
+def test_a_damaged_line_is_counted_and_the_stream_continues():
+    """The requirement from the captured evidence: a malformed record must
+    not end the acquisition."""
+    obs = _healthy(malformed=1, rescued_records=1, seq_gaps=1)
+    by = {r.name: r for r in evaluate(obs)}
+    assert by["malformed lines"].status == "FAIL"
+    assert by["records rescued from a damaged line"].value == "1"
+    assert by["records rescued from a damaged line"].status == "PASS"
+    assert by["sequence gaps"].status == "FAIL"

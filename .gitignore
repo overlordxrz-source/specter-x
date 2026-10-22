@@ -9,12 +9,19 @@ events/sessions/*.jsonl
 firmware/esp32-csi/build/
 firmware/esp32-csi/softap_csi/build/
 firmware/esp32-csi/softap_csi/build-softap/
+firmware/esp32-csi/softap_csi/build-station/
 firmware/esp32-csi/softap_csi/managed_components/
 firmware/esp32-csi/softap_csi/sdkconfig
 firmware/esp32-csi/softap_csi/sdkconfig.station
 firmware/esp32-csi/softap_csi/sdkconfig.softap
 firmware/esp32-csi/softap_csi/sdkconfig.old
 firmware/esp32-csi/softap_csi/dependencies.lock
+
+# The lab network's WPA2 passphrase. It lives in the tree so the build can
+# find it, and it is ignored so it can never be committed. The generated
+# credential header lands in the build directory, which is ignored too.
+firmware/esp32-csi/softap_csi/lab.env
+firmware/esp32-csi/softap_csi/main/lab_credentials.h
 
 # DI-188 acquisition artefacts
 runs/
