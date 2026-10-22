@@ -82,6 +82,7 @@ def _session(tmp_path, hand_sigma=0.30, stationary_sigma=0.02,
                 "spot_longitudinal_m": 0.0, "spot_lateral_m": 0.30,
                 "s_phone_horizontal_m": 0.808,
                 "s_esp32_horizontal_m": 0.808,
+                "accuracy": "measured", "method": "tape measure",
                 "phone_orientation": "screen facing the board",
                 "recorded_utc": "2026-10-22T00:00:00Z",
                 "confirmed_by": "operator",
@@ -270,3 +271,37 @@ def test_the_derived_geometry_reports_horizontal_and_slant(tmp_path):
     d = r["geometry_derived"]
     assert abs(d["s_phone_horizontal_m"] - 0.8078) < 0.001
     assert abs(d["s_phone_slant_3d_m"] - 1.1369) < 0.002
+
+
+def test_an_estimated_geometry_is_accepted_and_labelled(tmp_path):
+    s = _session(tmp_path)
+    s["geometry"].update({
+        "accuracy": "estimated", "method": "visual estimate",
+        "distance_m": 1.60, "spot_lateral_m": 0.40,
+        "s_phone_horizontal_m": 0.894, "s_esp32_horizontal_m": 0.894,
+    })
+    r = v2.analyse(s)
+    assert r["verdict"] in ("PASS", "FAIL"), r.get("reason")
+    assert r["geometry_accuracy"] == "estimated"
+
+
+def test_missing_accuracy_invalidates(tmp_path):
+    s = _session(tmp_path)
+    del s["geometry"]["accuracy"]
+    r = v2.analyse(s)
+    assert r["verdict"] == "INVALID"
+    assert any("accuracy" in p for p in r["geometry_problems"])
+
+
+def test_the_measured_class_is_stricter_than_estimated(tmp_path):
+    def run(accuracy):
+        s = _session(tmp_path)
+        s["geometry"].update({
+            "accuracy": accuracy, "method": "x", "distance_m": 1.60,
+            "spot_lateral_m": 0.40, "s_phone_horizontal_m": 0.894,
+            "s_esp32_horizontal_m": 0.894,
+        })
+        return v2.analyse(s)["verdict"]
+
+    assert run("measured") == "INVALID"
+    assert run("estimated") != "INVALID"

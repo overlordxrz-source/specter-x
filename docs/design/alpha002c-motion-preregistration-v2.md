@@ -48,6 +48,7 @@ before GO the operator re-measures them and they are written to
 {"distance_m": 1.50, "phone_height_m": 0.80, "esp32_height_m": 0.80,
  "spot_longitudinal_m": 0.00, "spot_lateral_m": 0.30,
  "s_phone_horizontal_m": 0.808, "s_esp32_horizontal_m": 0.808,
+ "accuracy": "measured", "method": "tape measure",
  "phone_orientation": "...", "recorded_utc": "...", "confirmed_by": "..."}
 ```
 
@@ -105,6 +106,22 @@ only those and records the slant separately as derived information.
 
 Nothing statistical changed: same hypothesis, direction, feature, test,
 thresholds, exclusions and session length.
+
+### Amendment 3 — declared-estimate geometry class (2026-10-22, before data)
+
+A tape may not be available. The operator may then record the geometry with
+`"accuracy": "estimated"` and a `"method"` ("visual", "paced", "phone
+measure app", ...). Accepted ranges widen to: distance **1.30–1.70 m**,
+heights **0.60–1.00 m**, longitudinal **±0.15 m**, lateral **0.18–0.42 m**;
+the consistency tolerance is **0.10 m** and the minimum S-to-antenna
+distance is **0.60 m**. The derived S distances may be computed from the
+estimated L and lateral offset rather than measured.
+
+The result echoes `"geometry_accuracy": "estimated"`, and every document
+describing the session must call the geometry **estimated**, never verified.
+This amendment changes geometry precision only: the hypothesis, direction,
+primary feature, exact test, thresholds, confound gates, exclusions and
+session length are unchanged.
 
 ## 2. Design
 

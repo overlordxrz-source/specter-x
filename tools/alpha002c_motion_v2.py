@@ -136,7 +136,20 @@ GEOMETRY_FIELDS = {
     "spot_longitudinal_m": (-0.05, 0.05),
     "spot_lateral_m": (0.25, 0.35),
 }
-GEOMETRY_TEXT = ("phone_orientation", "recorded_utc", "confirmed_by")
+GEOMETRY_TEXT = ("phone_orientation", "recorded_utc", "confirmed_by",
+                 "method")
+#: Amendment 3: a declared-estimate class, recorded as such. It widens the
+#: geometry tolerances only; no statistical rule changes.
+GEOMETRY_CLASSES = {
+    "measured": {"distance": (1.45, 1.55), "height": (0.75, 0.85),
+                 "long": (-0.05, 0.05), "lat": (0.25, 0.35),
+                 "radial": (0.25, 0.36), "min_dist": 0.70,
+                 "consistency": 0.03},
+    "estimated": {"distance": (1.30, 1.70), "height": (0.60, 1.00),
+                  "long": (-0.15, 0.15), "lat": (0.18, 0.42),
+                  "radial": (0.18, 0.42), "min_dist": 0.60,
+                  "consistency": 0.10},
+}
 #: HORIZONTAL (floor-plane) distances from the S mark to the floor
 #: projections of each antenna. Not the 3D slant: at 0.8 m height the slant
 #: is ~1.14 m and must never be entered here.
@@ -151,14 +164,27 @@ def validate_geometry(session):
     """
     geo = session.get("geometry")
     if not isinstance(geo, dict):
-        return ["geometry record missing (no measured session geometry)"]
+        return ["geometry record missing (no session geometry)"]
     problems = []
-    for k, (lo, hi) in GEOMETRY_FIELDS.items():
+    accuracy = geo.get("accuracy")
+    if accuracy not in GEOMETRY_CLASSES:
+        return [f"geometry accuracy must be one of "
+                f"{sorted(GEOMETRY_CLASSES)}, got {accuracy!r}"]
+    cls = GEOMETRY_CLASSES[accuracy]
+    ranges = {
+        "distance_m": cls["distance"],
+        "phone_height_m": cls["height"],
+        "esp32_height_m": cls["height"],
+        "spot_longitudinal_m": cls["long"],
+        "spot_lateral_m": cls["lat"],
+    }
+    for k, (lo, hi) in ranges.items():
         v = geo.get(k)
         if not _finite(v):
             problems.append(f"geometry {k} is not finite ({v!r})")
         elif not (lo <= float(v) <= hi):
-            problems.append(f"geometry {k}={v} outside [{lo}, {hi}]")
+            problems.append(f"geometry {k}={v} outside [{lo}, {hi}] "
+                            f"for the {accuracy} class")
     for k in GEOMETRY_TEXT:
         if not geo.get(k):
             problems.append(f"geometry {k} missing")
@@ -171,19 +197,21 @@ def validate_geometry(session):
         lon = float(geo["spot_longitudinal_m"])
         lat = float(geo["spot_lateral_m"])
         radial = math.hypot(lon, lat)
-        if not (0.25 <= radial <= 0.36):
+        rlo, rhi = cls["radial"]
+        if not (rlo <= radial <= rhi):
             problems.append(f"geometry radial offset {radial:.3f} m outside "
-                            "[0.25, 0.36]")
+                            f"[{rlo}, {rhi}]")
         d_phone = math.hypot(L / 2.0 + lon, lat)
         d_esp = math.hypot(L / 2.0 - lon, lat)
-        if min(d_phone, d_esp) < 0.70:
-            problems.append("geometry places S closer than 0.70 m to an "
-                            "antenna")
+        if min(d_phone, d_esp) < cls["min_dist"]:
+            problems.append(f"geometry places S closer than "
+                            f"{cls['min_dist']} m to an antenna")
         for k, d in (("s_phone_horizontal_m", d_phone),
                      ("s_esp32_horizontal_m", d_esp)):
-            if abs(float(geo[k]) - d) > 0.03:
+            if abs(float(geo[k]) - d) > cls["consistency"]:
                 problems.append(f"geometry {k}={geo[k]} disagrees with the "
-                                f"horizontal L/long/lat value ({d:.3f} m)")
+                                f"horizontal L/long/lat value ({d:.3f} m) "
+                                f"beyond the {accuracy} tolerance")
     return problems
 
 
@@ -390,6 +418,8 @@ def analyse(session):
         "design_problems": design,
         "geometry_problems": geometry,
         "geometry": session.get("geometry"),
+        "geometry_accuracy": (session.get("geometry") or {}).get("accuracy")
+        if isinstance(session.get("geometry"), dict) else None,
         "geometry_derived": _derived_geometry(session.get("geometry")),
         "trial_problems": trial_problems,
         "raw_problems": raw_problems,
@@ -472,6 +502,10 @@ def analyse(session):
 
 def show(result):
     print(f"verdict: {result['verdict']} - {result.get('reason','')}")
+    if result.get("geometry_accuracy"):
+        print(f"geometry: {result['geometry_accuracy']} "
+              "(estimated values are labelled and must not be read as "
+              "verified measurements)")
     for k in ("design_problems", "geometry_problems", "trial_problems",
               "raw_problems"):
         for p in result.get(k) or []:

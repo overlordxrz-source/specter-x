@@ -92,3 +92,16 @@ is never an input.
 * Any value outside tolerance, or no clear floor at S → **stop**. A
   documented amendment is proposed and reviewed before data; the hypothesis,
   features, test, direction, thresholds and exclusions never change.
+
+
+## If a tape is not available (Amendment 3)
+
+Record with `"accuracy": "estimated"` and a `"method"`. Wider ranges:
+distance 1.30–1.70 m, heights 0.60–1.00 m, longitudinal ±0.15 m, lateral
+0.18–0.42 m, consistency 0.10 m. The derived S distances may be computed
+from L and the lateral offset. The result is labelled **estimated** and must
+not be described as verified measurement.
+
+The iPhone Measure app is the quickest improvement over a visual estimate:
+it gives L, the two heights and the lateral offset in under two minutes,
+which satisfies the **measured** class without a tape.
