@@ -1,5 +1,13 @@
 # Checkpoint 019 — Alpha 002-C: real motion experiment, exploratory run
 
+> **RETRACTED AS A SENSING RESULT (checkpoint 020).** The independent audit
+> of `699d199` found that every trial in this session absorbed 43–55 s of
+> sensor history (acquisition paused during cues) and that the held-out
+> evaluation leaked. The arithmetic below reproduces, but it was computed on
+> invalid trial boundaries. This file is retained as **apparatus data**. It
+> establishes neither absence of motion nor a detection limit, and its
+> "FAIL" must not be read as a negative sensing result.
+
 **Date:** 2026-10-22
 **Branch:** `feature/alpha002-esp32-supervisor` (from `0565b76`)
 **Status:** **exploratory.** One real human-subject session was run on the

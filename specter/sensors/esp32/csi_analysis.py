@@ -58,16 +58,32 @@ NULL_CONFIRM_PACKETS = 5
 
 
 def complex_subcarriers(iq: Sequence[int]) -> np.ndarray:
-    """The complex subcarriers, as (I, Q) pairs.
+    """The subcarrier pairs, in the vendor's order: **(imag, real)**.
 
-    The upstream payload is a flat list of interleaved I/Q samples, so
-    subcarrier *n* is ``(iq[2n], iq[2n+1])``. A trailing odd sample has no
-    partner and is reported by the caller, not silently dropped.
+    Espressif's CSI payload stores each subcarrier as an imaginary part
+    followed by a real part (the ESP-IDF Wi-Fi guide, and the vendor excerpt
+    saved with the Alpha 002-C audit). This function used to document the
+    pair as (I, Q), which is wrong. Amplitudes are unaffected because
+    ``hypot`` is symmetric; **phase is not** - use
+    :func:`complex_subcarriers_c`, which builds ``real + 1j * imag``.
     """
     if not iq:
         return np.zeros((0, 2), np.float32)
     usable = len(iq) - (len(iq) % 2)
     return np.asarray(iq[:usable], dtype=np.float32).reshape(-1, 2)
+
+
+def complex_subcarriers_c(iq: Sequence[int]) -> np.ndarray:
+    """The subcarriers as complex numbers, ``real + 1j * imaginary``.
+
+    This is the form any phase-based measurement must start from. The
+    payload order is (imag, real), so the real part is the *second* value of
+    each pair.
+    """
+    c = complex_subcarriers(iq)
+    if c.size == 0:
+        return np.zeros(0, np.complex64)
+    return (c[:, 1] + 1j * c[:, 0]).astype(np.complex64)
 
 
 def subcarrier_amplitudes_np(iq: Sequence[int]) -> np.ndarray:

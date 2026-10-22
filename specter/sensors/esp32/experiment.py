@@ -593,11 +593,21 @@ def trials_from_json(data: Dict) -> List[Dict]:
             a = s.get("amplitudes") or []
             amps[i, :len(a)] = a
             rssi[i] = s.get("rssi") or 0.0
-        used = None
-        if amps.size:
-            used = amps.std(axis=0) > 0
+        # One canonical mask. The old code inferred it from the data
+        # (std > 0), which is both data-dependent and inconsistent with the
+        # 52-slot definition used elsewhere. The audit found the same
+        # quantity computed over 64 slots in one place and 52 in another.
+        from .csi_analysis import EXPECTED_NULL
+        used = np.ones(n_carriers, dtype=bool)
+        for i in EXPECTED_NULL:
+            if i < n_carriers:
+                used[i] = False
+        if any(bool(s.get("first_word_invalid")) for s in samples):
+            used[:2] = False
         out.append({
             "label": t.get("label", ""),
+            "block": t.get("block"),
+            "valid": t.get("valid", True),
             "amplitudes": amps,
             "rssi": rssi,
             "ids": np.asarray([s.get("id", 0) for s in samples], np.int64),

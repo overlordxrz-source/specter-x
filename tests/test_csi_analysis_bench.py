@@ -11,7 +11,9 @@ from specter.sensors.esp32.analysis import (FEATURE_NAMES, analyse_blinded,
                                             omnibus, partial_eta_squared,
                                             permutation_test,
                                             power_by_simulation, required_n)
-from specter.sensors.esp32.csi_analysis import CsiViewState
+from specter.sensors.esp32.csi_analysis import (CsiViewState,
+                                                complex_subcarriers,
+                                                complex_subcarriers_c)
 from specter.sensors.esp32.dispatcher import CsiParser
 from specter.sensors.esp32.synthetic_link import CARRIERS, NULL_CARRIERS, SyntheticLink
 
@@ -246,3 +248,14 @@ def test_the_rate_is_carried_on_the_record():
     rec = CsiParser().feed(_line())
     assert rec.rate_code == 9
     assert rec.sig_mode == 0
+
+
+def test_the_vendor_iq_order_is_imaginary_then_real():
+    """The audit found the docstring said (I, Q); the vendor packs (imag, real).
+    Amplitudes are invariant, phase is not."""
+    iq = [3, 4] * 64          # imag=3, real=4 for every subcarrier
+    c = complex_subcarriers(iq)
+    assert c[0, 0] == 3 and c[0, 1] == 4
+    z = complex_subcarriers_c(iq)
+    assert z[0] == complex(4, 3)
+    assert abs(z[0]) == 5

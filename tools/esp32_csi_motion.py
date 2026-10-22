@@ -278,6 +278,14 @@ def condition_comparison(stats: List[Dict]) -> Dict:
 
 
 def cmd_record(args) -> int:
+    """Record a session with continuous draining and sensor-time windows.
+
+    The Alpha 002-C audit found the old recorder stopped reading during cues
+    and lead-ins, so each trial absorbed a 43-55 s sensor backlog and was
+    labelled with one condition. This path uses
+    :class:`specter.sensors.esp32.acquisition.TrialRecorder`, which drains
+    continuously and cuts trials by the device's own acquisition clock.
+    """
     port = args.port
     if not port:
         nodes = find_usb_serial_ports(vid=ESP32_USB_VID, pid=ESP32_USB_PID)
@@ -291,55 +299,92 @@ def cmd_record(args) -> int:
         base_spec.append((label.strip(), float(secs or 30)))
     if not base_spec:
         raise SystemExit("at least one --trial LABEL:SECONDS is required")
-
-    # The session drifts (the access point's signal level moves by several
-    # dB over a few minutes), so the order of the conditions is randomised
-    # within each repetition. Otherwise a condition is correlated with the
-    # drift, and the drift is read as the condition.
-    import random
-    rng = random.Random(args.seed)
-    trials_spec = []
-    for rep in range(max(1, args.repeats)):
-        order = list(base_spec)
-        if args.shuffle:
-            rng.shuffle(order)
-        trials_spec.extend(order)
-    print(f"trial order: {[t[0] for t in trials_spec]}")
-
     if not args.consent:
         raise SystemExit(
             "this experiment records a person's movement - pass --consent with a\n"
             "note naming the subject and confirming they were informed and agreed")
 
+    import random
+    rng = random.Random(args.seed)
+    plan = []
+    for rep in range(max(1, args.repeats)):
+        order = list(base_spec)
+        if args.shuffle:
+            rng.shuffle(order)
+        for label, secs in order:
+            plan.append({"label": label, "seconds": secs, "block": rep})
+    print(f"trial order: {[p['label'] for p in plan]}")
+
+    import serial
+    from specter.sensors.esp32.acquisition import TrialRecorder, trial_to_json
+
+    ser = serial.Serial(port, baudrate=115200, timeout=0.05)
+    raw_path = args.raw_out or (args.out + ".raw")
+    rec = TrialRecorder(ser, raw_out=raw_path, guard_s=args.guard,
+                        max_gap_s=args.max_gap)
+    rec.start_background()
+    trials = []
+
+    def cue(ev: str) -> None:
+        if not args.cue:
+            return
+        if ev == "go":
+            subprocess.Popen(["say", "go"])
+        elif ev == "stop":
+            subprocess.Popen(["say", "stop. relax."])
+
+    try:
+        for i, p in enumerate(plan, start=1):
+            if args.cue:
+                text = (f"Trial {i} of {len(plan)}. "
+                        f"{TRIAL_INSTRUCTIONS.get(p['label'], p['label'])} "
+                        f"Starting in {int(args.lead_in)} seconds.")
+                subprocess.Popen(["say", text])
+            else:
+                print(f"\n>>> trial {i}/{len(plan)} '{p['label']}' "
+                      f"for {p['seconds']:.0f}s", flush=True)
+            t = rec.run_trial(p["label"], p["seconds"], p["block"], i,
+                              lead_in_s=args.lead_in, on_cue=cue)
+            trials.append(trial_to_json(t, requested_s=p["seconds"]))
+            print(f"    {t.payload_frames} payload, {t.null_frames} null, "
+                  f"active {t.active_s:.2f}s, sensor span "
+                  f"{t.sensor_span_s:.2f}s, pre {t.excluded_pre} "
+                  f"post {t.excluded_post} guard {t.excluded_guard}, "
+                  f"max gap {t.max_sensor_gap_s:.3f}s, "
+                  f"valid {t.valid}"
+                  + (f" ({t.invalid_reason})" if not t.valid else ""),
+                  flush=True)
+    finally:
+        rec.stop_background()
+        try:
+            ser.close()
+        except Exception:
+            pass
+
     out = {
         "recorded_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "port": port,
         "consent": args.consent,
-        "method": ("ESP32-S3 downlink CSI of the AP it is already associated with; "
-                   "no scanning, no probing of other devices, all data local"),
-        "trials": [],
+        "method": ("ESP32-S3 SoftAP uplink CSI; one continuously drained "
+                   "stream; trials cut by the device acquisition clock"),
+        "design": {
+            "seed": args.seed, "repeats": args.repeats,
+            "shuffle": bool(args.shuffle), "lead_in_s": args.lead_in,
+            "guard_s": args.guard, "max_gap_s": args.max_gap,
+            "payload_min_sig_len": rec.payload_min_sig_len,
+            "trial_order": [p["label"] for p in plan],
+            "blocks": [p["block"] for p in plan],
+        },
+        "raw": raw_path,
+        "malformed": rec.malformed,
+        "trials": trials,
     }
-
-    for trial in record_trials(trials_spec, port, args.prompt,
-                               args.announce, args.lead_in, args.cue):
-        out["trials"].append(trial)
-        st = trial_stats(trial)
-        print(f"    {trial['packets']} packets, "
-              f"total amplitude mean {st['total_amplitude']['mean']} "
-              f"std {st['total_amplitude']['std']}, "
-              f"rssi {st['rssi']['mean']} dBm +/- {st['rssi']['std']}")
-
-    out["stats"] = [trial_stats(t) for t in out["trials"]]
-    offline = analyse_offline(out)
-    out["separability"] = offline["screen"]
-    out["condition_test"] = offline["test"]
-    out["verdict"] = offline["verdict"]
     os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
     with open(args.out, "w", encoding="utf-8") as fh:
-        json.dump(out, fh, indent=2)
-    print(f"\nrecording -> {args.out}")
-    print(f"separability: {out['separability'].get('verdict')} "
-          f"(max F {out['separability'].get('max_f')})")
+        json.dump(out, fh, indent=1)
+    valid = sum(1 for t in trials if t["valid"])
+    print(f"\nrecording -> {args.out}   raw -> {raw_path}")
+    print(f"trials {len(trials)}, valid {valid}, malformed {rec.malformed}")
     return 0
 
 
@@ -551,6 +596,15 @@ def main(argv=None) -> int:
                         "the drift of the session")
     r.add_argument("--seed", type=int, default=1,
                    help="seed for --shuffle")
+    r.add_argument("--raw-out", default=None,
+                   help="write every raw serial line here (default: OUT.raw); "
+                        "IQ, PHY metadata and validity flags are preserved")
+    r.add_argument("--guard", type=float, default=0.10,
+                   help="seconds excluded at each window boundary, because the "
+                        "sensor marker at a cue is up to one frame old")
+    r.add_argument("--max-gap", type=float, default=1.0,
+                   help="a trial whose largest sensor gap exceeds this is "
+                        "marked invalid rather than silently analysed")
     r.add_argument("-o", "--out", default="runs/motion.json")
     r.set_defaults(func=cmd_record)
 

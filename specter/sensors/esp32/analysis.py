@@ -34,6 +34,8 @@ from typing import Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 
+from .csi_analysis import EXPECTED_NULL, EXPECTED_SUBCARRIERS
+
 #: The pre-registered feature set. Changing this is a new pre-registration.
 FEATURE_NAMES = (
     "roughness_used",   # temporal change of the normalised multipath profile
@@ -78,86 +80,135 @@ def _as_array(value) -> np.ndarray:
     return np.asarray(value, dtype=np.float64)
 
 
-def _features_for_trial(trial: Dict) -> Dict[str, float]:
+#: The LLTF null slots, from the one canonical definition in csi_analysis.
+LLTF_NULL_CARRIERS = frozenset(EXPECTED_NULL)
+
+
+def lltf_used_mask(n_carriers: int = EXPECTED_SUBCARRIERS,
+                   first_word_invalid: bool = False) -> np.ndarray:
+    """The carriers a feature may use.
+
+    One definition, used everywhere. The Alpha 002-C audit found the Phase 0
+    null computed over all 64 slots while the pipeline used 52, so the same
+    quantity had two values. The null slots are structural and the first two
+    carriers are dropped when the hardware flags the first word invalid.
+    """
+    mask = np.ones(int(n_carriers), dtype=bool)
+    for i in LLTF_NULL_CARRIERS:
+        if i < mask.size:
+            mask[i] = False
+    if first_word_invalid:
+        mask[:2] = False
+    return mask
+
+
+def _trial_parts(trial: Dict) -> Optional[Dict]:
+    """The pieces every feature is built from, computed once per trial.
+
+    Keeping them separate is what makes leakage-free cross-fitting and a
+    whole-pipeline permutation test affordable: only ``change_rate`` depends
+    on labels, and only through the floor fitted on training trials.
+    """
     amps = _as_array(trial.get("amplitudes"))
     if amps.ndim != 2 or amps.shape[0] < 4:
-        return {k: float("nan") for k in FEATURE_NAMES}
+        return None
     used = trial.get("used")
-    used = (np.asarray(used, bool) if used is not None
-            else np.ones(amps.shape[1], bool))
+    if used is None:
+        used = lltf_used_mask(amps.shape[1])
+    else:
+        used = np.asarray(used, bool)
+        if used.size < amps.shape[1]:
+            pad = np.zeros(amps.shape[1], bool)
+            pad[:used.size] = used
+            used = pad
     totals = amps.sum(axis=1)
     safe = np.where(totals > 0, totals, 1.0)
     norm = amps / safe[:, None]
     u = norm[:, used] if used.any() else norm
     rough = float(np.abs(np.diff(u, axis=0)).mean()) if u.shape[0] > 1 else 0.0
     amp_diff = np.abs(np.diff(totals))
-    vol = float(amp_diff.mean() / (float(totals.mean()) or 1.0)) \
-        if amp_diff.size else 0.0
-    return {
-        "roughness_used": rough,
-        "amp_volatility": vol,
-        "shape_shift": float("nan"),   # filled in across trials
-        "change_rate": float("nan"),   # filled in across trials
-    }
+    vol = (float(amp_diff.mean() / (float(totals.mean()) or 1.0))
+           if amp_diff.size else 0.0)
+    return {"rough": rough, "vol": vol,
+            "m": u.mean(axis=0),
+            "d": (np.abs(np.diff(u, axis=0)).mean(axis=1)
+                  if u.shape[0] > 1 else np.zeros(0))}
+
+
+def _shape_reference(parts: Sequence[Optional[Dict]],
+                     fit_idx: Sequence[int]) -> Optional[np.ndarray]:
+    ms = [parts[i]["m"] for i in fit_idx if parts[i] is not None]
+    if not ms:
+        return None
+    k = min(len(x) for x in ms)
+    pooled = np.mean([x[:k] for x in ms], axis=0)
+    return pooled / (pooled.sum() or 1.0)
+
+
+def _change_floor(parts, labels, fit_idx, stationary_label: str):
+    ds = [parts[i]["d"] for i in fit_idx
+          if parts[i] is not None and labels[i] == stationary_label]
+    if not ds:
+        return None
+    all_d = np.concatenate([x for x in ds if x.size]) if ds else np.zeros(0)
+    return float(np.percentile(all_d, 99.0)) if all_d.size else None
 
 
 def extract_features(trials: Sequence[Dict],
-                     stationary_label: str = "stationary") -> List[Dict]:
+                     stationary_label: str = "stationary",
+                     fit_idx: Optional[Sequence[int]] = None,
+                     parts: Optional[Sequence[Optional[Dict]]] = None,
+                     ) -> List[Dict]:
     """The frozen features, one dict per trial.
 
-    Two of the features are defined *across* trials (how far a trial's
-    profile sits from the pooled one, and how often a packet exceeds the
-    stationary noise floor), so they are filled in after the per-trial
-    features are computed.
+    ``fit_idx`` selects the trials whose statistics may be *learned from* -
+    the pooled reference for ``shape_shift`` and the stationary noise floor
+    for ``change_rate``. It defaults to all trials, which is correct for a
+    descriptive report and **wrong for any held-out claim**: pass the
+    training indices when evaluating a fold. The Alpha 002-C audit found both
+    quantities fitted on the trials they were later used to score.
     """
-    feats = [_features_for_trial(t) for t in trials]
-    amps = [_as_array(t.get("amplitudes")) for t in trials]
-    valid = [a for a in amps if a.ndim == 2 and a.shape[0] >= 2]
-    if not valid:
-        return feats
-    n_carriers = min(a.shape[1] for a in valid)
-    pooled = np.mean([a[:, :n_carriers].mean(axis=0) for a in valid], axis=0)
-    for f, t, a in zip(feats, trials, amps):
-        if a.ndim != 2 or a.shape[0] < 2:
-            continue
-        m = a[:, :n_carriers].mean(axis=0)
-        total = a.sum(axis=1)
-        safe = np.where(total > 0, total, 1.0)
-        n = a[:, :n_carriers] / safe[:, None]
-        base = pooled / (pooled.sum() or 1.0)
-        f["shape_shift"] = float(np.abs(n.mean(axis=0) - base).mean())
+    if parts is None:
+        parts = [_trial_parts(t) for t in trials]
+    n = len(trials)
+    fit = list(range(n)) if fit_idx is None else list(fit_idx)
+    base = _shape_reference(parts, fit)
+    labels = [t.get("label", "") for t in trials]
+    thr = _change_floor(parts, labels, fit, stationary_label)
+    out: List[Dict] = []
+    for i, p in enumerate(parts):
+        f = {name: float("nan") for name in FEATURE_NAMES}
+        if p is not None:
+            f["roughness_used"] = p["rough"]
+            f["amp_volatility"] = p["vol"]
+            if base is not None:
+                k = min(len(base), len(p["m"]))
+                f["shape_shift"] = float(np.abs(p["m"][:k] - base[:k]).mean())
+            if thr is not None and p["d"].size:
+                f["change_rate"] = float((p["d"] > thr).mean())
+        out.append(f)
+    return out
 
-    # the noise floor of the change metric, from the stationary trials
-    floor = None
-    for f, t in zip(feats, trials):
-        if t.get("label") != stationary_label:
-            continue
-        a = _as_array(t.get("amplitudes"))
-        if a.ndim != 2 or a.shape[0] < 4:
-            continue
-        used = t.get("used")
-        used = (np.asarray(used, bool) if used is not None
-                else np.ones(a.shape[1], bool))
-        total = a.sum(axis=1)
-        n = a / np.where(total > 0, total, 1.0)[:, None]
-        u = n[:, used] if used.any() else n
-        d = np.abs(np.diff(u, axis=0)).mean(axis=1)
-        floor = d if floor is None else np.concatenate([floor, d])
-    if floor is not None and floor.size:
-        thr = float(np.percentile(floor, 99.0))
-        for f, t in zip(feats, trials):
-            a = _as_array(t.get("amplitudes"))
-            if a.ndim != 2 or a.shape[0] < 4:
-                continue
-            used = t.get("used")
-            used = (np.asarray(used, bool) if used is not None
-                    else np.ones(a.shape[1], bool))
-            total = a.sum(axis=1)
-            n = a / np.where(total > 0, total, 1.0)[:, None]
-            u = n[:, used] if used.any() else n
-            d = np.abs(np.diff(u, axis=0)).mean(axis=1)
-            f["change_rate"] = float((d > thr).mean())
-    return feats
+
+def crossfit_features(trials: Sequence[Dict],
+                      stationary_label: str = "stationary",
+                      ) -> List[Dict]:
+    """Each trial's features with every learned statistic fitted on *others*.
+
+    This is the leakage-free feature vector. Trial ``i`` never contributes to
+    the reference or the floor used to describe it, so no trial can help
+    predict itself. It is O(n^2) in the number of trials, which is nothing
+    for a session of this size.
+    """
+    parts = [_trial_parts(t) for t in trials]
+    labels = [t.get("label", "") for t in trials]
+    n = len(trials)
+    out = []
+    for i in range(n):
+        fit = [j for j in range(n) if j != i]
+        out.append(extract_features(trials, stationary_label, fit_idx=fit,
+                                    parts=parts)[i])
+    return out
 
 
 # --- blinding and randomisation -------------------------------------------
@@ -183,7 +234,10 @@ def cohens_d(a: Sequence[float], b: Sequence[float]) -> float:
     sp = math.sqrt(((na - 1) * a.var(ddof=1) + (nb - 1) * b.var(ddof=1))
                    / (na + nb - 2))
     if sp == 0:
-        return 0.0
+        # a zero pooled spread with different means is infinite separation,
+        # not "no effect" - the audit found the old 0.0 inverted the meaning
+        diff = float(a.mean() - b.mean())
+        return 0.0 if diff == 0 else math.copysign(float("inf"), diff)
     return float((a.mean() - b.mean()) / sp)
 
 
@@ -293,7 +347,8 @@ def _f_statistic(groups: Dict[str, List[float]]) -> float:
                                 np.mean([v for v in g if v == v])) ** 2))
                  for g in groups.values())
     if within <= 0:
-        return 0.0
+        # perfectly separated constant groups: the ratio is unbounded
+        return float("inf") if between > 0 else 0.0
     df1 = len(groups) - 1
     df2 = len(grand) - len(groups)
     return float((between / df1) / (within / df2))
@@ -410,41 +465,64 @@ def _zscore(matrix: np.ndarray) -> np.ndarray:
 
 
 def _auc(scores: np.ndarray, positive: np.ndarray) -> float:
-    """The rank-based AUC (Mann-Whitney)."""
+    """The rank-based AUC (Mann-Whitney), with tied scores counted as half.
+
+    The old implementation assigned distinct ranks to ties in argument
+    order, so two tied groups came out as AUC = 1.0 instead of 0.5. The
+    audit found exactly that; the correct tie handling is average ranks.
+    """
     pos = scores[positive]
     neg = scores[~positive]
     if pos.size == 0 or neg.size == 0:
         return float("nan")
     order = np.argsort(scores, kind="mergesort")
+    ordered = scores[order]
     ranks = np.empty(scores.size, dtype=np.float64)
-    ranks[order] = np.arange(1, scores.size + 1)
+    i = 0
+    while i < scores.size:
+        j = i
+        while j + 1 < scores.size and ordered[j + 1] == ordered[i]:
+            j += 1
+        ranks[order[i:j + 1]] = (i + j) / 2.0 + 1.0
+        i = j + 1
     return float((ranks[positive].sum() - pos.size * (pos.size + 1) / 2)
                  / (pos.size * neg.size))
 
 
 def cross_validate(feats: List[Dict], labels: Sequence[str],
                    feature: str = "roughness_used",
-                   folds: Optional[Sequence[Sequence[int]]] = None) -> Dict:
-    """Leave-one-repetition-out evaluation.
+                   folds: Optional[Sequence[Sequence[int]]] = None,
+                   blocks: Optional[Sequence] = None,
+                   positive: Optional[str] = None) -> Dict:
+    """Leave-one-block-out evaluation with train-only scaling.
 
-    For each fold, the classifier (a nearest centroid on z-scored
-    features) is built on the *other* folds and scored on this one. The
-    score is therefore out of sample, which is the whole point.
+    Two defects the audit verified are fixed here: the scaler is fitted on
+    the training fold and applied to the test fold (the test observations
+    never contribute to their own normalisation), and folds respect the
+    acquisition block when block ids are given, so the recording's
+    randomisation is not silently destroyed by the analyser's own shuffle.
     """
     labels = list(labels)
+    if folds is None and blocks is not None:
+        by_block: Dict = {}
+        for i, b in enumerate(blocks):
+            by_block.setdefault(b, []).append(i)
+        folds = [by_block[b] for b in sorted(by_block, key=str)]
     if folds is None:
-        # one fold per distinct label repetition: group by the order the
-        # labels appear, so fold i holds the i-th trial of each condition
         by_label: Dict[str, List[int]] = {}
         for i, lab in enumerate(labels):
             by_label.setdefault(lab, []).append(i)
         reps = min(len(v) for v in by_label.values()) if by_label else 0
-        folds = []
-        for r in range(reps):
-            folds.append([by_label[lab][r] for lab in by_label])
+        folds = [[by_label[lab][r] for lab in by_label] for r in range(reps)]
+
+    classes = sorted(set(labels))
+    if positive is None:
+        positive = classes[-1] if classes else None
     results = []
     correct = 0
     total = 0
+    oof = []
+    predictions = []
     for f_i, fold in enumerate(folds):
         test = set(fold)
         train = [i for i in range(len(labels)) if i not in test]
@@ -454,30 +532,46 @@ def cross_validate(feats: List[Dict], labels: Sequence[str],
         Xte = np.asarray([[feats[i].get(feature, np.nan)] for i in fold], float)
         if np.isnan(Xtr).any() or np.isnan(Xte).any():
             continue
-        Ztr = _zscore(Xtr)
-        Zte = _zscore(Xte)
+        mu = Xtr.mean(axis=0)
+        sd = Xtr.std(axis=0)
+        sd = np.where(sd == 0, 1.0, sd)
+        Ztr = (Xtr - mu) / sd
+        Zte = (Xte - mu) / sd           # train-only transform
         cents = {}
         for lab in set(labels[i] for i in train):
             cents[lab] = Ztr[[labels[i] == lab for i in train]].mean(axis=0)
         hit = 0
-        scores = []
-        truth = []
         for row, idx in zip(Zte, fold):
-            best = min(cents, key=lambda k: float(np.linalg.norm(row - cents[k])))
+            dist = {k: float(np.linalg.norm(row - cents[k])) for k in cents}
+            best = min(dist, key=dist.get)
             hit += int(best == labels[idx])
-            truth.append(labels[idx])
-            scores.append(float(-min(float(np.linalg.norm(row - cents[k]))
-                                     for k in cents)))
+            predictions.append({"index": int(idx), "label": labels[idx],
+                                "predicted": best,
+                                "score": round(float(
+                                    -min(dist.values())), 6)})
+            if len(classes) == 2 and positive in dist and classes[0] in dist:
+                other = classes[0] if classes[0] != positive else classes[1]
+                oof.append((dist[other] - dist[positive],
+                            labels[idx] == positive))
         results.append({"fold": f_i, "n_test": len(fold),
                         "accuracy": round(hit / len(fold), 4)})
         correct += hit
         total += len(fold)
+    auc = None
+    if oof and len(classes) == 2:
+        auc = _auc(np.asarray([x[0] for x in oof], float),
+                   np.asarray([x[1] for x in oof], bool))
     return {
         "feature": feature,
         "folds": results,
         "held_out_accuracy": round(correct / total, 4) if total else None,
+        "held_out_auc": (round(auc, 4) if auc is not None and auc == auc
+                         else None),
+        "positive_class": positive,
         "n_scored": total,
-        "note": "the classifier never sees the fold it is scored on",
+        "fold_indices": [list(f) for f in folds],
+        "predictions": predictions,
+        "note": "train-only scaling; folds follow the acquisition blocks",
     }
 
 
@@ -554,35 +648,224 @@ def required_n(d: float, k: int = 2, target_power: float = 0.8,
 # --- the whole thing -------------------------------------------------------
 
 
-def analyse_blinded(trials: Sequence[Dict], seed: int = 0,
-                    n_perm: int = 1000, alpha: float = 0.05) -> Dict:
-    """The full blinded analysis of a recorded set of trials.
+# --- whole-pipeline permutation, block preserving -------------------------
 
-    ``trials`` are dicts with ``label`` and ``amplitudes``; the labels are
-    shuffled by the recorded seed before anything is computed, and the
-    permutation test is run on the shuffled labels.
+
+def _groups(values: Sequence[float], labels: Sequence[str]) -> Dict[str, List[float]]:
+    groups: Dict[str, List[float]] = {}
+    for v, lab in zip(values, labels):
+        groups.setdefault(lab, []).append(v)
+    return groups
+
+
+def _critical_f(df1: int, df2: int, alpha: float = 0.05) -> float:
+    from .experiment import f_sf
+    lo, hi = 0.5, 50.0
+    for _ in range(60):
+        mid = (lo + hi) / 2
+        if f_sf(mid, df1, df2) > alpha:
+            lo = mid
+        else:
+            hi = mid
+    return (lo + hi) / 2
+
+
+def _permute_within_blocks(labels: Sequence[str], blocks, rng) -> List[str]:
+    """Permute labels only inside their acquisition block.
+
+    The design randomises within blocks; an unrestricted permutation would
+    be a different, easier test than the one the experiment ran. The audit
+    found the old procedure used unrestricted shuffles.
+    """
+    out = list(labels)
+    if blocks is None:
+        rng.shuffle(out)
+        return out
+    by: Dict[str, List[int]] = {}
+    for i, b in enumerate(blocks):
+        by.setdefault(str(b), []).append(i)
+    for idx in by.values():
+        vals = [labels[i] for i in idx]
+        rng.shuffle(vals)
+        for i, v in zip(idx, vals):
+            out[i] = v
+    return out
+
+
+def _within_block_assignments(labels: Sequence[str], blocks) -> Optional[int]:
+    """How many distinct within-block label assignments exist."""
+    if blocks is None:
+        return None
+    import math as _math
+    by: Dict[str, List[int]] = {}
+    for i, b in enumerate(blocks):
+        by.setdefault(str(b), []).append(i)
+    total = 1
+    for idx in by.values():
+        counts: Dict[str, int] = {}
+        for i in idx:
+            counts[labels[i]] = counts.get(labels[i], 0) + 1
+        m = len(idx)
+        denom = 1
+        for c in counts.values():
+            denom *= _math.factorial(c)
+        total *= _math.factorial(m) // denom
+    return total
+
+
+def _invariant_features(parts) -> Dict[str, List[float]]:
+    """Features that do not depend on labels, cross-fitted leave-one-out."""
+    n = len(parts)
+    rough = [float("nan")] * n
+    vol = [float("nan")] * n
+    shape = [float("nan")] * n
+    for i, p in enumerate(parts):
+        if p is None:
+            continue
+        rough[i] = p["rough"]
+        vol[i] = p["vol"]
+        base = _shape_reference(parts, [j for j in range(n) if j != i])
+        if base is not None:
+            k = min(len(base), len(p["m"]))
+            shape[i] = float(np.abs(p["m"][:k] - base[:k]).mean())
+    return {"roughness_used": rough, "amp_volatility": vol,
+            "shape_shift": shape}
+
+
+def _change_rate_crossfit(parts, labels: Sequence[str],
+                          stationary_label: str = "stationary") -> List[float]:
+    """``change_rate`` with the floor fitted on the *other* trials.
+
+    This is the feature the audit found most leaky: its threshold used the
+    true stationary labels of every fold, including the fold being scored.
+    Here trial ``i``'s floor comes only from trials ``j != i``, and under a
+    permutation it is rebuilt from the *permuted* labels.
+    """
+    n = len(parts)
+    out = [float("nan")] * n
+    for i in range(n):
+        if parts[i] is None:
+            continue
+        ds = [parts[j]["d"] for j in range(n)
+              if j != i and parts[j] is not None
+              and labels[j] == stationary_label and parts[j]["d"].size]
+        if not ds:
+            continue
+        all_d = np.concatenate(ds)
+        if not all_d.size:
+            continue
+        thr = float(np.percentile(all_d, 99.0))
+        d = parts[i]["d"]
+        if d.size:
+            out[i] = float((d > thr).mean())
+    return out
+
+
+def _feature_values(inv, parts, labels, feature: str) -> List[float]:
+    if feature == "change_rate":
+        return _change_rate_crossfit(parts, labels)
+    return inv[feature]
+
+
+def permutation_test_crossfit(parts, labels: Sequence[str], blocks,
+                              feature: str = "roughness_used",
+                              n_perm: int = 1000, seed: int = 0,
+                              alpha: float = 0.05) -> Dict:
+    """Label permutation of the *whole* pipeline, block preserving.
+
+    For every permutation the supervised feature is rebuilt with the
+    permuted labels - so the test measures the procedure, not a feature
+    that was allowed to peek at the labels. Permutations stay inside the
+    acquisition blocks, and the smallest attainable p is reported: with a
+    few blocks it is well above zero, and a p at that floor means "as
+    extreme as this design can produce", not "significant".
+    """
+    inv = _invariant_features(parts)
+    labels = list(labels)
+    observed = _feature_values(inv, parts, labels, feature)
+    f_obs = _f_statistic(_groups(observed, labels))
+    classes = sorted(set(labels))
+    df1 = len(classes) - 1
+    df2 = sum(1 for v in observed if v == v) - len(classes)
+    critical = _critical_f(df1, df2, alpha)
+    rng = random.Random(seed)
+    hits_critical = hits_observed = usable = 0
+    for _ in range(n_perm):
+        pl = _permute_within_blocks(labels, blocks, rng)
+        vals = _feature_values(inv, parts, pl, feature)
+        f2 = _f_statistic(_groups(vals, pl))
+        if f2 != f2:
+            continue
+        usable += 1
+        if f2 >= critical:
+            hits_critical += 1
+        if f2 >= f_obs:
+            hits_observed += 1
+    n_assign = _within_block_assignments(labels, blocks)
+    min_p = (1.0 / n_assign) if n_assign else (1.0 / (usable + 1) if usable else None)
+    return {
+        "feature": feature,
+        "observed_f": round(f_obs, 4) if f_obs == f_obs else None,
+        "critical_f": round(critical, 4),
+        "n_permutations": n_perm,
+        "permutations_above_critical": hits_critical,
+        "permutations_as_extreme_as_data": hits_observed,
+        "empirical_p": round((hits_observed + 1) / (usable + 1), 6) if usable else None,
+        "false_positive_rate": round(hits_critical / usable, 6) if usable else None,
+        "min_attainable_p": round(min_p, 6) if min_p else None,
+        "at_floor": (min_p is not None and usable > 0
+                     and (hits_observed + 1) / (usable + 1) <= min_p + 1e-12),
+        "block_preserving": blocks is not None,
+        "n_distinct_assignments": n_assign,
+        "note": ("features are rebuilt under every permutation; labels are "
+                 "permuted only within acquisition blocks"),
+    }
+
+
+def analyse_blinded(trials: Sequence[Dict], seed: int = 0,
+                    n_perm: int = 1000, alpha: float = 0.05,
+                    blocks: Optional[Sequence] = None) -> Dict:
+    """The full blinded analysis, leakage-free.
+
+    Differences from the version the audit examined: the features are
+    cross-fitted (no trial contributes to its own reference or floor), the
+    permutation rebuilds the supervised feature under the permuted labels
+    and stays inside the acquisition blocks, the held-out score uses
+    train-only scaling, follows the blocks, and reports AUC as the protocol
+    declared. It is still not a substitute for valid acquisition: a
+    contaminated window is contaminated before any of this runs.
     """
     n = len(trials)
     order = blinded_order(n, seed)
     shuffled = [trials[i] for i in order]
     labels = [t.get("label", "") for t in shuffled]
-    feats = extract_features(shuffled)
+    if blocks is None:
+        cand = [t.get("block") for t in shuffled]
+        blocks = cand if cand and all(b is not None for b in cand) else None
+    else:
+        blocks = list(blocks)
+    parts = [_trial_parts(t) for t in shuffled]
+    feats = crossfit_features(shuffled)
     out = {
         "preregistration": PREREGISTRATION,
         "seed": seed,
         "n_trials": n,
         "order": order,
         "labels_in_analysis_order": labels,
+        "blocks": blocks,
         "features": feats,
         "omnibus": {},
         "permutation": {},
         "effects": {},
         "held_out": {},
+        "leakage_free": True,
     }
+    positive = "hand" if "hand" in labels else None
     for name in FEATURE_NAMES:
         out["omnibus"][name] = omnibus(feats, labels, name)
-        out["permutation"][name] = permutation_test(feats, labels, name,
-                                                    n_perm=n_perm, seed=seed)
+        out["permutation"][name] = permutation_test_crossfit(
+            parts, labels, blocks, name, n_perm=n_perm, seed=seed, alpha=alpha)
         out["effects"][name] = effect_sizes(feats, labels, name)
-        out["held_out"][name] = cross_validate(feats, labels, name)
+        out["held_out"][name] = cross_validate(
+            feats, labels, name, blocks=blocks, positive=positive)
     return out
