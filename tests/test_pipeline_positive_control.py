@@ -118,7 +118,7 @@ def _run(moving: bool):
     clock = FakeClock()
     rec = TrialRecorder(FakeSource(clock, schedule), clock=clock,
                         wall=clock.wall, sleep=clock.sleep,
-                        guard_s=0.02, max_gap_s=1.0)
+                        guard_s=0.02, max_gap_s=1.0, min_startup_frames=1)
     trials = []
     for label, block in plan:
         rec.pump_for(LEAD_IN)

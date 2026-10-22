@@ -61,6 +61,30 @@ MUTATIONS = [
                 "::test_change_rate_never_uses_its_own_trial",
     },
     {
+        "name": "preregistration p gate relaxed",
+        "file": "tools/alpha002c_motion_v2.py",
+        "old": "P_GATE = 0.01",
+        "new": "P_GATE = 0.5",
+        "test": "tests/test_motion_v2_prereg.py"
+                "::test_the_preregistered_constants_are_frozen",
+    },
+    {
+        "name": "preregistration confound gate removed",
+        "file": "tools/alpha002c_motion_v2.py",
+        "old": '    if not (out["confounds"]["rate_ok"] and out["confounds"]["phy_ok"]):',
+        "new": "    if False:",
+        "test": "tests/test_motion_v2_prereg.py"
+                "::test_a_payload_rate_confound_is_inconclusive",
+    },
+    {
+        "name": "preregistration validity rules skipped",
+        "file": "tools/alpha002c_motion_v2.py",
+        "old": "def validate_trials(trials, guard_s=0.10):\n    problems = []",
+        "new": "def validate_trials(trials, guard_s=0.10):\n    return []",
+        "test": "tests/test_motion_v2_prereg.py"
+                "::test_one_invalid_trial_invalidates_the_session",
+    },
+    {
         "name": "boundary-uncertainty check removed",
         "file": "specter/sensors/esp32/acquisition.py",
         "old": "        elif unc > self.guard_s:",

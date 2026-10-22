@@ -119,7 +119,8 @@ class TrialRecorder:
                  payload_min_sig_len: int = 33,
                  raw_out: Optional[str] = None,
                  span_tolerance_s: float = 0.5,
-                 startup_timeout_s: float = 3.0):
+                 startup_timeout_s: float = 3.0,
+                 min_startup_frames: int = 10):
         self.source = source
         self.parser = parser or CsiParser()
         self.clock = clock
@@ -130,6 +131,7 @@ class TrialRecorder:
         self.payload_min_sig_len = int(payload_min_sig_len)
         self.span_tolerance_s = float(span_tolerance_s)
         self.startup_timeout_s = float(startup_timeout_s)
+        self.min_startup_frames = int(min_startup_frames)
         self.raw_out = raw_out
 
         self.frames: List[Frame] = []
@@ -328,7 +330,8 @@ class TrialRecorder:
         # taken before the first frame exists and the trial would have no
         # sensor marker at all. Wait a bounded time for the stream to start.
         deadline = self.clock() + self.startup_timeout_s
-        while not self.frames and self.clock() < deadline:
+        while (len(self.frames) < self.min_startup_frames
+               and self.clock() < deadline):
             if self._thread is None:
                 self.pump_once()
             self.sleep(0.01)

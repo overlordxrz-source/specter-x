@@ -84,7 +84,7 @@ def test_frames_inside_the_window_are_kept_by_sensor_time():
     # acquired at sensor 1.00..1.09 but delivered 0.2 s late
     sched += [(1.2 + i * 0.001, _line(100 + i, int((1.0 + i * 0.01) * 1e6)))
               for i in range(10)]
-    rec = _recorder(clock, FakeSource(clock, sched), guard_s=0.30)
+    rec = _recorder(clock, FakeSource(clock, sched), guard_s=0.30, min_startup_frames=1)
     rec.pump_for(0.05)
     t = rec.run_trial("stationary", 1.5, block=0, index=0, lead_in_s=0.05)
     assert t.payload_frames == 10, (t.payload_frames, t.excluded_guard,
@@ -99,7 +99,7 @@ def test_post_stop_frames_are_excluded():
         sched.append((5.4 + i * 0.01, _line(10 + i, int((5.4 + i * 0.01) * 1e6))))
     for i in range(3):                               # after the window
         sched.append((9.0 + i * 0.1, _line(50 + i, int((9.0 + i * 0.1) * 1e6))))
-    rec = _recorder(clock, FakeSource(clock, sched))
+    rec = _recorder(clock, FakeSource(clock, sched), min_startup_frames=1)
     rec.pump_for(5.0)
     t = rec.run_trial("stationary", 1.0, block=0, index=0, lead_in_s=0.15)
     assert {s["id"] for s in t.samples} == set(range(10, 20)), [s["id"] for s in t.samples]
@@ -128,7 +128,7 @@ def test_a_sensor_gap_invalidates_the_trial():
     sched = [(0.0, _line(0, 0))]                     # prime offset = 0
     for i, ts in enumerate((1.2, 1.21, 4.2, 4.21)):
         sched.append((ts, _line(10 + i, int(ts * 1e6))))
-    rec = _recorder(clock, FakeSource(clock, sched), max_gap_s=1.0)
+    rec = _recorder(clock, FakeSource(clock, sched), max_gap_s=1.0, min_startup_frames=1)
     rec.pump_for(0.5)
     t = rec.run_trial("hand", 4.0, block=0, index=0, lead_in_s=0.6)
     assert t.max_sensor_gap_s > 1.0, t.max_sensor_gap_s

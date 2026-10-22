@@ -141,7 +141,7 @@ def test_late_in_window_frames_are_counted_by_settle():
     # later frames of the SAME window arrive only after the drain
     for i in range(5):
         sched.append((7.5 + i * 0.01, _line(80 + i, int((5.45 + i * 0.01) * 1e6))))
-    rec = _rec(clock, sched, guard_s=0.02)
+    rec = _rec(clock, sched, guard_s=0.02, min_startup_frames=1)
     rec.pump_for(5.0)
     t = rec.run_trial("stationary", 1.0, block=0, index=1, lead_in_s=0.15)
     assert t.payload_frames == 5
@@ -348,7 +348,7 @@ def test_one_late_frame_does_not_reset_the_clock_and_is_kept():
     sched += [(2.0, _line(10, 2_000_000)), (2.1, _line(11, 2_100_000))]
     sched += [(2.15, _line(99, 500_000))]      # 1.6 s behind: a straggler
     sched += [(2.2, _line(12, 2_200_000)), (2.3, _line(13, 2_300_000))]
-    rec = _rec(clock, sched, guard_s=0.02)
+    rec = _rec(clock, sched, guard_s=0.02, min_startup_frames=1)
     rec.pump_for(0.05)
     t = rec.run_trial("hand", 3.0, block=0, index=0, lead_in_s=0.0)
     assert rec.clock_resets == 0
@@ -427,7 +427,7 @@ def test_a_trial_with_zero_lead_in_waits_for_the_first_frame():
     clock = FakeClock()
     sched = [(0.30 + i * 0.05, _line(i, int((0.30 + i * 0.05) * 1e6)))
              for i in range(12)]
-    rec = _rec(clock, sched, guard_s=0.01)
+    rec = _rec(clock, sched, guard_s=0.01, min_startup_frames=1)
     # synchronous path: the warm-up loop is what must wait for a frame
     t = rec.run_trial("bench", 0.6, block=0, index=0, lead_in_s=0.0)
     assert t.valid is True, t.invalid_reason
@@ -444,3 +444,15 @@ def test_a_torn_first_line_is_counted_and_does_not_poison_the_next():
     rec.pump_for(0.1)
     assert rec.malformed == 1
     assert [f.seq for f in rec.frames] == [3], [f.seq for f in rec.frames]
+
+
+def test_go_waits_for_the_startup_frame_floor():
+    """The offset estimate needs several frames, not just one."""
+    clock = FakeClock()
+    sched = [(0.02 * i, _line(i, int(0.02 * i * 1e6))) for i in range(30)]
+    rec = _rec(clock, sched, guard_s=0.01, min_startup_frames=10)
+    t = rec.run_trial("bench", 0.5, block=0, index=0, lead_in_s=0.0)
+    # GO is taken only once ten frames exist, so none of them are guessed
+    assert rec.cues[-2].sensor_t is not None
+    assert rec.cues[-2].sensor_t >= 0.18 - 0.02
+    assert t.valid is True
