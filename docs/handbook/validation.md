@@ -49,7 +49,7 @@ When implementing gates, include an executable negative control (for example `te
 
 ## Simulation scope and replay
 
-Existing [synthetic CSI link](../../specter/sensors/esp32/synthetic_link.py), sensor simulators and [team demo](../../specter/sim/team.py) support known-ground-truth pipeline checks. Sweep independent seeds and model variants; train/tune on one set and evaluate another. Report sensitivity and null results with counts and intervals. A finite simulator sweep cannot establish real RF sensitivity, universality or a true zero FPR.
+Existing [synthetic CSI link](https://github.com/overlordxrz-source/specter-x/blob/933e856fa578a1f923d53016a3aa942cc20ecbab/specter/sensors/esp32/synthetic_link.py), sensor simulators and [team demo](../../specter/sim/team.py) support known-ground-truth pipeline checks. Sweep independent seeds and model variants; train/tune on one set and evaluate another. Report sensitivity and null results with counts and intervals. A finite simulator sweep cannot establish real RF sensitivity, universality or a true zero FPR.
 
 Use replay to isolate software changes on fixed inputs. Log original acquisition time, receive time and replay time separately. Freeze configuration, calibration, model and raw hashes. Match supported outputs within declared tolerance and explain nondeterminism. Replaying labels or ground-truth synthetic joints through the UI is a display test, not pose-estimation accuracy.
 

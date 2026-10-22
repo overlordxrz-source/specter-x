@@ -2,6 +2,13 @@
 
 [Hub](../README.md) · [Canonical charter](north-star.md) · **Read-only source review, 22 October 2026.**
 
+> **Status: a dated record, superseded on hardware status only.** This review
+> describes the tree at `95eae17`, where the firmware had not been flashed. At
+> `933e856` it was written to a real board and the acquisition preflight passed.
+> See the [verification baseline](verification-baseline.md) for the current
+> state. Nothing below is retroactively edited: the claims are correct *for
+> `95eae17`*, and the two records are meant to be read together.
+
 ## Snapshot and scope
 
 Reviewed local Git commit **`95eae1787bfa5a3f09d46bd19ad917874cb80029`** on `feature/alpha002-esp32-supervisor`. It changes 19 files relative to `77abdd0`, including controlled-link firmware, synthetic sweep evidence, a console tool and firmware contract tests. The source checkout was clean at inspection. The separate docs branch remains based on `77abdd0`; no code, test, firmware or Alpha history was copied or merged into it.

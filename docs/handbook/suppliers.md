@@ -10,7 +10,7 @@ The owner-mentioned parts-status CSV may resolve these questions; it was not ava
 
 ## Accessible lead source
 
-Imported into this Markdown register from `/Users/overlord/Downloads/SPECTER-X_outreach_targets.csv`: **79 rows**, SHA-256 `b40345d3fbe62382698ada6382ad48e4bc1d8cbaf3ce67ad685403cf88319e45`. The source CSV itself is not copied into the repository. Original row numbers are preserved. Proof links and suggested channels below are **unverified leads carried from that CSV**; their current validity and program eligibility were not checked individually. Source assertions about program benefits, deadlines and response times have not been promoted into current facts.
+Imported into this Markdown register from a private local prospect list — the source CSV is **not** copied into this repository and its path is deliberately not published: **79 rows**, SHA-256 `b40345d3fbe62382698ada6382ad48e4bc1d8cbaf3ce67ad685403cf88319e45`. Original row numbers are preserved. Proof links and suggested channels below are **unverified leads carried from that CSV**; their current validity and program eligibility were not checked individually. Source assertions about program benefits, deadlines and response times have not been promoted into current facts.
 
 ## Routing and follow-up strategy
 

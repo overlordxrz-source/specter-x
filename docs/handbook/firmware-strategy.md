@@ -2,11 +2,15 @@
 
 [Hub](../README.md) · **Strategy plus reviewed Alpha candidate; no hardware execution in this handoff.**
 
-> **Edition 2 reconciliation:** Project intent follows the [canonical charter](north-star.md). Local code links below still target `77abdd0`; newer Alpha `95eae17` source/build/simulation status is recorded in the [separate review](alpha-95eae17-review.md), without a merge. Reported builds and 261 tests do not establish flashed or hardware-validated firmware.
+> **Edition 3 reconciliation:** Project intent follows the [canonical charter](north-star.md). Code links below target the Alpha snapshot `933e856`; the `95eae17` [review](alpha-95eae17-review.md) remains the dated record of that earlier state. The Alpha firmware has since been flashed to real hardware and passed a CSI acquisition preflight — see the [verification baseline](verification-baseline.md). *Hardware-validated* there means the acquisition preflight passed. It does not establish motion sensing, sustained unattended reliability, or performance superiority over any alternative.
 
-## Newer candidate status
+## Candidate status
 
-Alpha `95eae17` implements a controlled-link candidate and reports station/SoftAP builds, not a flashed system. It uses a separate `SPECTER_STAT` diagnostic tag and has no legacy supervisor HELLO/STAT/HB telemetry. The [review](alpha-95eae17-review.md) identifies exact source, static-test scope and remaining output/dependency/hardware gates. The component table and migration requirements below remain acceptance requirements, not declarations that candidate firmware already satisfies them.
+Alpha `95eae17` implemented a controlled-link candidate and reported station/SoftAP builds, not a flashed system. It uses a separate `SPECTER_STAT` diagnostic tag and has no legacy supervisor HELLO/STAT/HB telemetry. The [review](alpha-95eae17-review.md) identifies exact source, static-test scope and remaining output/dependency gates at that commit.
+
+**That hardware gate is now partly closed.** At `933e856` the SoftAP image was written to a real board at `0x10000` (app partition only, with independent read-back verification), booted, brought up its own DHCP, and passed a 60-second CSI acquisition preflight: 2364 frames, 39.0/s, longest gap 79 ms, subcarrier nulls clean in every frame, zero malformed lines, zero sequence gaps, zero queue drops. The CSI callback firing **in SoftAP mode** — the specific open question at `95eae17` — is now established for this configuration. See the [verification baseline](verification-baseline.md).
+
+What that does **not** close: sustained unattended reliability (the station sleeps when it chooses to), the legacy supervisor telemetry the candidate does not emit, the output-atomicity and dependency-pinning gates, WPA2, the flash-size declaration, and every sensing question. The component table and migration requirements below remain acceptance requirements, not declarations that the candidate already satisfies them.
 
 ## Recommendation
 
@@ -28,7 +32,7 @@ Own a small modular SPECTER device application on ESP-IDF, starting with the kno
 | diagnostics | Reset reason, callback age, heap trend, drop counters | Attributable faults in hostile-host tests |
 | update/recovery | Reproducible builds and reviewed recovery path | Build hashes, approved bench acceptance and later rollback validation |
 
-The [earlier firmware proposal](../design/esp32-firmware-integration.md) contains contradictory overflow priorities and a `STAT` shape beyond the current parser. Resolve those before implementing against it. A task calling a print function once per second is not sufficient assurance against interleaving or blocking.
+The [earlier firmware proposal](https://github.com/overlordxrz-source/specter-x/blob/933e856fa578a1f923d53016a3aa942cc20ecbab/docs/design/esp32-firmware-integration.md) contains contradictory overflow priorities and a `STAT` shape beyond the current parser. Resolve those before implementing against it. A task calling a print function once per second is not sufficient assurance against interleaving or blocking.
 
 ## Build versus reuse
 
@@ -40,9 +44,9 @@ Reuse ESP-IDF/FreeRTOS, supported USB/UART APIs, vendor drivers and maintained s
 2. Create a reproducible source/build manifest: target, IDF and compiler versions, dependency lock, configuration hash, partition layout and component licenses. Start compatibility work against v5.2.2; evaluate upgrades separately.
 3. Freeze the legacy wire fixtures and [ICD](interfaces.md); decide additive versus new-version telemetry explicitly.
 4. Build and inspect a candidate in the coding agent's engineering branch. A successful build only proves compilation.
-5. Separately review source and authorize a hardware-write session. This docs task performs no flash or deployment.
-6. After an authorized installation, compare capture and integrated workload before/after, including hostile-host tests, radio outages, resets and timing wrap.
-7. Roll out to additional units only after repeatable device-specific acceptance and recovery evidence.
+5. Separately review source and authorize a hardware-write session. This docs task performs no flash or deployment. **Done for one image:** the app-only write at `0x10000`, the boot and the 60-second acquisition preflight at `933e856`. The rollback path was verified before the write and never exercised.
+6. After an authorized installation, compare capture and integrated workload before/after, including hostile-host tests, radio outages, resets and timing wrap. **Partly done:** capture is measured on an owned controlled link with a passing preflight; the hostile-host, radio-outage, reset and wrap cases remain open.
+7. Roll out to additional units only after repeatable device-specific acceptance and recovery evidence. **Not done:** one board, one image, one session.
 
 ## Performance targets are conditional
 

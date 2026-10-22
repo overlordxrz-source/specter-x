@@ -2,7 +2,7 @@
 
 [Hub](../README.md) · **Baseline compatibility plus proposed requirements.**
 
-> **Edition 2 reconciliation:** Project intent follows the [canonical charter](north-star.md). Local code links below still target `77abdd0`; newer Alpha `95eae17` source/build/simulation status is recorded in the [separate review](alpha-95eae17-review.md), without a merge. Reported builds and 261 tests do not establish flashed or hardware-validated firmware.
+> **Edition 3 reconciliation:** Project intent follows the [canonical charter](north-star.md). Code links below target the Alpha snapshot `933e856`; the `95eae17` [review](alpha-95eae17-review.md) remains the dated record of that earlier state. The Alpha firmware has since been flashed to real hardware and passed a CSI acquisition preflight — see the [verification baseline](verification-baseline.md). *Hardware-validated* there means the acquisition preflight passed. It does not establish motion sensing, sustained unattended reliability, or performance superiority over any alternative.
 
 Interface owner roles are recommendations; individual owners are unassigned. A proposed field or acceptance condition does not modify executable behavior. Use one implementation review to ratify each version.
 
@@ -14,7 +14,7 @@ Proposed vNext adds explicit units, origin, time uncertainty and calibration IDs
 
 ## ICD-02: ESP32 USB data and control
 
-**Owner:** device firmware/host integration. One host reader owns each physical port. Current [dispatcher](../../specter/sensors/esp32/dispatcher.py) separates CSI, supervisor and other lines. The [current supervisor parser](../../specter/sensors/esp32/protocol.py) accepts these exact record shapes:
+**Owner:** device firmware/host integration. One host reader owns each physical port. Current [dispatcher](https://github.com/overlordxrz-source/specter-x/blob/933e856fa578a1f923d53016a3aa942cc20ecbab/specter/sensors/esp32/dispatcher.py) separates CSI, supervisor and other lines. The [current supervisor parser](https://github.com/overlordxrz-source/specter-x/blob/933e856fa578a1f923d53016a3aa942cc20ecbab/specter/sensors/esp32/protocol.py) accepts these exact record shapes:
 
 ```text
 HELLO,<proto>,<board>,<chip>,<mac>,<fw_version>,<fw_build>

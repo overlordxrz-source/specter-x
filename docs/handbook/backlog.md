@@ -2,16 +2,19 @@
 
 [Hub](../README.md) · **Proposed work orders; no engineering changes authorized by this document.**
 
-> **Edition 2 reconciliation:** Project intent follows the [canonical charter](north-star.md). Local code links below still target `77abdd0`; newer Alpha `95eae17` source/build/simulation status is recorded in the [separate review](alpha-95eae17-review.md), without a merge. Reported builds and 261 tests do not establish flashed or hardware-validated firmware.
+> **Edition 3 reconciliation:** Project intent follows the [canonical charter](north-star.md). Code links below target the Alpha snapshot `933e856`; the `95eae17` [review](alpha-95eae17-review.md) remains the dated record of that earlier state. The Alpha firmware has since been flashed to real hardware and passed a CSI acquisition preflight — see the [verification baseline](verification-baseline.md). *Hardware-validated* there means the acquisition preflight passed. It does not establish motion sensing, sustained unattended reliability, or performance superiority over any alternative.
 
 Priority 0 blocks an honest next measurement; priority 1 enables integration; priority 2 expands scope. Owners are roles to assign, not promises that another agent is doing the work.
 
 | ID / priority | Work / owner role | Dependency | Concrete acceptance / evidence |
 |---|---|---|---|
 | DOC-01 / P0 | Reconcile original parts-status CSV / owner | Missing upload | Exact source hash, dated logistics per row; sponsors and receipt proof separate |
-| ENG-01 / P0 | Complete candidate runtime/source acceptance review after the docs reconciliation / reviewer | Alpha `95eae17` reviewed read-only | Obtain reproducible build/test evidence; resolve framing/output/counter gates; no automatic merge |
+| ENG-01 / P0 | Complete candidate runtime/source acceptance review / reviewer | Alpha `95eae17` reviewed read-only; hardware preflight passed at `933e856` | Obtain reproducible build/test evidence; resolve framing/output/counter gates. **Remaining:** build manifest, dependency pinning, output atomicity; no automatic merge |
 | SCI-01 / P0 | Freeze synthetic sweep and null protocol / experiment lead | Baseline analysis inspection | Seeded effect curve, null trial denominator and interval, positive control, held-out seeds, finite checks |
-| CSI-01 / P0 | Verify owned controlled-link feasibility / RF engineer | Controllable peer; SoftAP CSI support question | Pin device/IDF/mode; record received qualifying frames and fixed geometry; source/traffic known |
+| CSI-01 / P0 | Controlled-link feasibility / RF engineer | Controllable peer | **Done:** owned SoftAP link with a phone as the station; device/IDF/mode pinned, qualifying frames recorded, source/traffic known. **Remaining:** fixed and marked geometry |
+| STA-01 / P0 | A station that does not sleep mid-experiment / RF engineer | Second ESP32, or a host with power save known to be off | Same offered load at two station states, measured cadence for both, and an explicit control condition for the power-save hypothesis |
+| REL-01 / P0 | Sustained unattended soak / integration | STA-01 | Hours-long capture with no operator present; loss and gap accounting against the device counters rather than a 60-second window |
+| SEC-01 / P1 | WPA2 on the lab SoftAP / firmware | `CONFIG_SPECTER_LAB_PASSWORD` is empty | Encrypted association succeeds, a wrong key is refused, and the acquisition preflight still passes with encryption enabled |
 | DAQ-01 / P0 | Inspect analog board and obtain safe reference equipment / instrumentation | Leads, DMM/reference, grounding | Board photos/identity, common-mode review, first known voltage with reference reading |
 | ICD-01 / P0 | Ratify SPECTER_STAT consumption, output atomicity and drop semantics / firmware+host | Alpha separate tag vs older STAT proposal | Preserve legacy parser; one agreed diagnostics/version/priority policy with runtime evidence |
 | FW-01 / P1 | Reproducible ESP-IDF candidate and provenance manifest / firmware | Agent work review, dependency locks | Clean target build, licenses, configuration and artifact hashes; candidate only until reviewed |
@@ -31,6 +34,6 @@ Priority 0 blocks an honest next measurement; priority 1 enables integration; pr
 
 ## First useful sequence
 
-Review the concurrent agent's completed artifacts without modifying them. Reconcile the inventory when its source is available. Run the frozen offline null/sensitivity analysis before recruiting participants. In parallel, prepare safe analog reference equipment and verify controlled-link feasibility. Resolve the interface mismatch before any firmware acceptance session. Then perform calibration and controlled sensing, retaining failures.
+Review the concurrent agent's completed artifacts without modifying them. The Alpha firmware has since been flashed and has passed a 60-second acquisition preflight on an owned controlled link; that closes the feasibility question, not the sensing question. Reconcile the inventory when its source is available. Run the frozen offline null/sensitivity analysis before recruiting participants. In parallel, prepare safe analog reference equipment and obtain a station whose sleep behaviour is controlled, without which unattended acquisition cannot be characterised. Resolve the interface mismatch before any further firmware acceptance session. Then perform calibration and controlled sensing, retaining failures.
 
 Do not schedule a broad fusion demonstration until time, transforms and at least two physical modalities are validated. Do not expand to cardiac or through-obstruction claims because a software metric moved. The [validation plan](validation.md) supplies concrete controls and stopping rules.

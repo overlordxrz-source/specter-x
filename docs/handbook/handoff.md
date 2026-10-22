@@ -2,6 +2,36 @@
 
 [Documentation hub](../README.md)
 
+## Edition 3 — public main synchronization
+
+The owner asked for a documentation-only synchronization of `main`, with the
+Alpha 002 hardware checkpoint preserved and firmware development paused. This
+edition was produced on a clean branch `docs/main-handbook-sync` created from
+the latest `origin/main` (`b5e1875`).
+
+**What was brought over.** Only the two documentation commits from the separate
+docs worktree, `10cdbeb` and `9ba0b28`, cherry-picked as-is. Both touch
+`docs/` exclusively; no firmware, host software, test or tool file was
+carried. The Alpha 002 work stays on `feature/alpha002-esp32-supervisor` and
+was **not** merged.
+
+**What was changed here.** The handbook's live status claims were updated to
+the state at `933e856`, where the firmware was flashed to a real board and
+passed a 60-second CSI acquisition preflight; the root `README.md` was
+rewritten around the charter, the ecosystem, the architecture, the verified
+achievements and the handbook links; absolute local paths were removed; links
+to Alpha-only artifacts were rewritten as immutable permalinks pinned to
+`933e856`; and a claim audit was run for private information, credentials,
+supplier correspondence and unsupported assertions.
+
+**What was deliberately not done.** No firmware, host software, test or tool
+file entered `main`. No checkpoint was rewritten to sound better than it is:
+the `95eae17` review keeps its original wording and carries a header saying
+what supersedes it. The one substantive measurement defect found in this
+period — a subcarrier check in the preflight tool that failed healthy links —
+is recorded in the [verification baseline](verification-baseline.md) with the
+failed v1 score preserved, rather than quietly replaced.
+
 ## Edition 2 — canonical charter and Alpha reconciliation
 
 The owner adopted the [North Star charter](north-star.md) on 22 October 2026. It governs identity and doctrine; detailed chapters and dated evidence have separate roles. The handbook now explicitly includes SPECTER-OS, WORLD, AIR/GROUND/ORBIT and BIO, the multispectral wearable/skeletal/AR ambition, per-value epistemic states and a five-plus-year horizon.
@@ -16,8 +46,8 @@ The docs branch still inherits code at `77abdd0`; Alpha is reconciled in prose w
 
 ### Produced repository state
 
-- Existing source repository: `/Users/overlord/sideprojects/specter-x`.
-- Isolated linked worktree: `/Users/overlord/sideprojects/specter-x-docs-20261022`.
+- Existing source repository: the local SPECTER-X checkout (absolute path deliberately not published).
+- Isolated linked worktree: a separate linked worktree of that repository.
 - Documentation branch: `docs/specter-x-handbook-20261022`.
 - Parent/source snapshot: `77abdd0` (full SHA available from this branch's parent commit).
 - Scope: 18 new Markdown documents, all under `docs/`; no existing files modified.

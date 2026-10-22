@@ -1,8 +1,8 @@
 # Hardware inventory and readiness
 
-[Hub](../README.md) · **As-of: repository `77abdd0`, 22 October 2026.**
+[Hub](../README.md) · **As-of: Alpha snapshot `933e856`, 22 October 2026.**
 
-> **Edition 2 reconciliation:** Project intent follows the [canonical charter](north-star.md). Local code links below still target `77abdd0`; newer Alpha `95eae17` source/build/simulation status is recorded in the [separate review](alpha-95eae17-review.md), without a merge. Reported builds and 261 tests do not establish flashed or hardware-validated firmware.
+> **Edition 3 reconciliation:** Project intent follows the [canonical charter](north-star.md). Code links below target the Alpha snapshot `933e856`; the `95eae17` [review](alpha-95eae17-review.md) remains the dated record of that earlier state. The Alpha firmware has since been flashed to real hardware and passed a CSI acquisition preflight — see the [verification baseline](verification-baseline.md). *Hardware-validated* there means the acquisition preflight passed. It does not establish motion sensing, sustained unattended reliability, or performance superiority over any alternative.
 
 ## Status vocabulary and missing source
 
@@ -15,10 +15,10 @@ Use two independent axes: **logistics** (have / shipped / confirmed-trackable / 
 | Item | Logistics evidence | Readiness | Next evidence needed |
 |---|---|---|---|
 | DI-188-protocol DAQ, connected via Seeed XIAO M0 CDC interface | **Have**, checkpoints [001](../checkpoints/001-hardware-di188.md) and [002](../checkpoints/002-alpha001-daq-end-to-end.md) | Identified and streaming; analog inputs floating, nominal conversion only | Inspect PCB/terminal block; connect safe reference and ground; independent meter readings; residual calibration errors |
-| ESP32-S3 board: 16 MB flash / 8 MB PSRAM per recorded identification | **Have**, checkpoint [004](../checkpoints/004-esp32s3-hardware-identification.md) | Original CSI image identified; real CSI host path; supervisor firmware not established at baseline | Controlled radio link, source/build manifest, approved firmware validation later |
-| Native USB and CH343/UART paths for that board | **Have**, checkpoints [004](../checkpoints/004-esp32s3-hardware-identification.md), [011](../checkpoints/011-csi-scientific-validation.md) | Both captured in recorded dual-channel run; UART console at 921600 | Stable device identifiers, cable/port mapping, explicit port ownership |
+| ESP32-S3 board: 16 MB flash / 8 MB PSRAM per recorded identification | **Have**, checkpoint [004](https://github.com/overlordxrz-source/specter-x/blob/933e856fa578a1f923d53016a3aa942cc20ecbab/docs/checkpoints/004-esp32s3-hardware-identification.md) | Original CSI image identified; real CSI host path; **now** the SoftAP image is written to the board and passes a 60-second acquisition preflight at `933e856`; supervisor firmware still not established | Remaining: reproducible source/build manifest, WPA2 on the lab AP, the 16 MB flash-size declaration, a second unit, a long soak |
+| Native USB and CH343/UART paths for that board | **Have**, checkpoints [004](https://github.com/overlordxrz-source/specter-x/blob/933e856fa578a1f923d53016a3aa942cc20ecbab/docs/checkpoints/004-esp32s3-hardware-identification.md), [011](https://github.com/overlordxrz-source/specter-x/blob/933e856fa578a1f923d53016a3aa942cc20ecbab/docs/checkpoints/011-csi-scientific-validation.md) | Both captured in recorded dual-channel run; UART console at 921600 | Stable device identifiers, cable/port mapping, explicit port ownership |
 | Mac development host | **Have**, repository and recorded macOS runs | Host application and bench tools exist | Document reproducible dependency environment and storage budget |
-| Two USB Ethernet adapters | **Reported have**, [controlled-link design](../design/controlled-csi-link.md) | Not validated in this task; unnecessary for offline synthetic bench | Physical identity if chosen for a controlled AP setup |
+| Two USB Ethernet adapters | **Reported have**, [controlled-link design](https://github.com/overlordxrz-source/specter-x/blob/933e856fa578a1f923d53016a3aa942cc20ecbab/docs/design/controlled-csi-link.md) | Not validated in this task; unnecessary for offline synthetic bench | Physical identity if chosen for a controlled AP setup |
 
 The DAQ speaks DATAQ's protocol; USB enumeration alone does not establish that the complete analog front end is a factory DI-188. The physical PCB question remains open in checkpoint 001. Sponsor/donor identity is unverified for all items above.
 

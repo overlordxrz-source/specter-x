@@ -1,12 +1,12 @@
 # SPECTER-X documentation hub
 
-**Edition 2 · 22 October 2026 · local code base `77abdd0` · Alpha `95eae17` reviewed separately.**
+**Edition 3 · 22 October 2026 · Alpha snapshot `933e856` · hardware preflight passed.**
 
-**Start with the [Canonical Vision and Long-Term Project Charter](handbook/north-star.md).** It is the authoritative North Star for identity, goals and engineering doctrine; this hub and the detailed chapters support it. Read the [Alpha reconciliation](handbook/alpha-95eae17-review.md) for newer engineering status without merging branches.
+**Start with the [Canonical Vision and Long-Term Project Charter](handbook/north-star.md).** It is the authoritative North Star for identity, goals and engineering doctrine; this hub and the detailed chapters support it. Read the [Alpha reconciliation](handbook/alpha-95eae17-review.md) for the `95eae17` engineering status, and the [verification baseline](handbook/verification-baseline.md) for what has since been measured on real hardware.
 
 SPECTER-X is the first wearable/AR interface to a vertically integrated, multimodal spatial-intelligence ecosystem: SPECTER-OS, persistent SPECTER-WORLD, future AIR / GROUND / ORBIT integration and experimental SPECTER-BIO. The “God’s Eye” aspiration means combining complementary observations while showing blind spots, uncertainty and age. It does not mean universal visibility, identification through walls, medical diagnosis or certified rescue capability.
 
-**What exists:** a Python application, provenance-bearing measurements, HUD and simulated team pipeline; recorded DI-188 streaming and real ESP32-S3 CSI host integration. **What remains unverified:** calibrated analog signals, integrated field hardware, reliable controlled CSI human detection, through-obstruction inference and vital signs. Alpha `95eae17` adds controlled-link firmware source and synthetic sweep evidence. Station/SoftAP builds and 261 passing tests are reported; the firmware is not flashed or hardware-validated. Code presence, reported builds/tests, simulated output and a physical measurement are separate milestones.
+**What exists:** a Python application, provenance-bearing measurements, HUD and simulated team pipeline; recorded DI-188 streaming and real ESP32-S3 CSI host integration. **What has been measured on hardware:** the ESP32-S3 CSI firmware was written to a real board and passed a 60-second acquisition preflight — 2364 frames, 39.0/s, longest gap 79 ms, subcarrier nulls clean in 2364/2364 frames, zero malformed lines, zero sequence gaps, zero queue drops. **What remains unverified:** calibrated analog signals, integrated field hardware, motion or vital-sign detection, sustained unattended reliability, and any claim of performance superiority. Code presence, a passing preflight, simulated output and a physical measurement remain separate milestones, and a passing preflight is an acquisition result — not a sensing result.
 
 ## Start here
 
@@ -14,6 +14,7 @@ SPECTER-X is the first wearable/AR interface to a vertically integrated, multimo
 |---|---|
 | Canonical identity, doctrine and five-plus-year ambition | [North Star charter](handbook/north-star.md) |
 | What changed in Alpha `95eae17`? | [Evidence and compatibility reconciliation](handbook/alpha-95eae17-review.md) |
+| What has been measured on real hardware? | [Verification baseline — Alpha 002 through `933e856`](handbook/verification-baseline.md) |
 | What are we building and why? | [Vision, scope and principles](handbook/vision.md) |
 | What hardware do we actually have? | [Inventory and readiness ledger](handbook/hardware-inventory.md) |
 | Who might supply equipment? What was sponsored? | [Supplier leads and sponsorship evidence](handbook/suppliers.md) |
@@ -46,7 +47,7 @@ Measured, inferred, predicted, simulated and unknown describe what a value repre
 - **SPECULATIVE:** a research direction without demonstrated SPECTER-X capability.
 - **UNKNOWN / BLOCKED:** source, physical access or evidence is missing. Unknown is never silently converted to “shipped” or “working.”
 
-The charter governs project intent; dated evidence governs capability claims. The handbook is the reconciled entry point. Existing [checkpoint records](handbook/verification-baseline.md) and [earlier design notes](design/esp32-firmware-integration.md) remain historical evidence; disagreements and overstated claims are called out rather than erased. The repository root README is older and contains capability language that should be read with these qualifications.
+The charter governs project intent; dated evidence governs capability claims. The handbook is the reconciled entry point. Existing [checkpoint records](handbook/verification-baseline.md) and [earlier design notes](https://github.com/overlordxrz-source/specter-x/blob/933e856fa578a1f923d53016a3aa942cc20ecbab/docs/design/esp32-firmware-integration.md) remain historical evidence; disagreements and overstated claims are called out rather than erased. The repository root README is older and contains capability language that should be read with these qualifications.
 
 ## Working rules
 
