@@ -79,8 +79,8 @@ MUTATIONS = [
     {
         "name": "preregistration validity rules skipped",
         "file": "tools/alpha002c_motion_v2.py",
-        "old": "def validate_trials(trials, guard_s=0.10):\n    problems = []",
-        "new": "def validate_trials(trials, guard_s=0.10):\n    return []",
+        "old": "def validate_trials(trials):\n    problems = []",
+        "new": "def validate_trials(trials):\n    return []",
         "test": "tests/test_motion_v2_prereg.py"
                 "::test_one_invalid_trial_invalidates_the_session",
     },

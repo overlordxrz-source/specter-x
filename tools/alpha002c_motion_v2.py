@@ -2,26 +2,25 @@
 """Alpha 002-C motion preregistration v2 — the frozen analysis.
 
 One command, written before the data. It either reports a verdict under the
-pre-registered rules or refuses with a reason. It has no options that change
-the statistics.
+pre-registered rules or refuses with a reason. No option changes the
+statistics.
 
 Design: 10 randomised blocks, each with one ``stationary`` and one ``hand``
-trial. The primary test is an **exact within-block sign-flip** on the paired
-differences: 2^10 = 1 024 assignments, so the two-sided floor is 0.00195,
-below the 0.01 gate. The previous six-block design could not reach 0.01
-(floor 0.03125), which is why the design changed.
+trial. The primary test is an **exact one-sided within-block sign-flip** on
+the paired differences, in the pre-registered direction (hand rougher than
+stationary): 2^10 = 1 024 assignments, floor 1/1 024 = 0.00098, so the 0.01
+gate is attainable. The six-block design could not reach 0.01 (floor
+0.03125 two-sided).
 
-Primary feature: ``roughness_used``, trial-local (no reference fitted on
-other trials). Secondary features are reported with Bonferroni alpha = 0.01
-and are never substituted for the primary.
+Power, stated honestly: with 10 pairs and alpha = 0.01 the exact test has
+about 29 % power at d_z = 0.8, 46 % at 1.0, 65 % at 1.2 and 80 % at 1.4.
+This design is powered for a large paired effect; it is not powered to rule
+out a moderate one, and a FAIL is reported as such.
 
-Fail-closed rules:
-  * any invalid trial, wrong design, short trial or malformed record after
-    the first valid one -> INVALID session, no analysis;
-  * a payload-rate difference above 10 %, or a different dominant PHY rate,
-    -> INCONCLUSIVE;
-  * otherwise PASS only if exact p <= 0.01 and |d_z| >= 0.8 with the
-    bootstrap interval excluding zero.
+Fail-closed: any invalid or malformed field, wrong design, short or overly
+long trial, non-finite statistic, queue/clock/late anomaly, empty raw, or a
+malformed CSI record after the first valid one -> INVALID, no verdict.
+Rate/PHY differences -> INCONCLUSIVE.
 
     python3 tools/alpha002c_motion_v2.py runs/.../session.json
 """
@@ -29,8 +28,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
-import re
 import sys
 
 import numpy as np
@@ -41,51 +40,72 @@ if REPO not in sys.path:
 
 from specter.sensors.esp32.analysis import (crossfit_features,   # noqa: E402
                                             extract_features)
-from specter.sensors.esp32.experiment import trials_from_json    # noqa: E402
+from specter.sensors.esp32.dispatcher import CsiParser             # noqa: E402
+from specter.sensors.esp32.experiment import trials_from_json      # noqa: E402
 
 BLOCKS = 10
 TRIALS_PER_BLOCK = 2
 TRIAL_S = 25.0
-MIN_PAYLOAD = 150
-RATE_MIN, RATE_MAX = 9.0, 11.0
+TRIAL_TOLERANCE_S = 0.5
+MIN_PAYLOAD = 225                  # 9/s over 25 s
+RATE_MIN, RATE_MAX = 8.5, 11.5
 RATE_TOLERANCE = 0.10
 P_GATE = 0.01
 D_GATE = 0.8
 PRIMARY = "roughness_used"
-SECONDARY = ("amp_volatility", "shape_shift", "change_rate",
-             "mean_amplitude", "rssi")
+SECONDARY = ("amp_volatility", "shape_shift", "mean_amplitude", "rssi")
+DESCRIPTIVE = ("change_rate",)     # label-fitted floor; no p-value
 BONFERRONI = 0.05 / len(SECONDARY)
+
+
+def _finite(x) -> bool:
+    try:
+        return math.isfinite(float(x))
+    except (TypeError, ValueError):
+        return False
 
 
 # --- statistics ------------------------------------------------------------
 
 def signflip_p(diffs):
-    """Exact two-sided sign-flip p for paired differences."""
+    """Exact ONE-SIDED sign-flip p in the pre-registered direction.
+
+    The statistic is the mean paired difference; the alternative is
+    ``hand > stationary``. Enumerating all 2^n assignments makes the floor
+    1/2^n, not an approximation.
+    """
     d = np.asarray(diffs, dtype=float)
-    if d.size == 0:
+    if d.size == 0 or not np.all(np.isfinite(d)):
         return float("nan"), 0, 0
-    obs = abs(float(d.mean()))
+    obs = float(d.mean())
     total = 1 << d.size
     hits = 0
     for bits in range(total):
         signs = np.array([1.0 if (bits >> i) & 1 else -1.0
                           for i in range(d.size)])
-        if abs(float((signs * d).mean())) >= obs - 1e-12:
+        if float((signs * d).mean()) >= obs - 1e-12:
             hits += 1
     return hits / total, hits, total
 
 
 def paired_dz(diffs, n_boot=2000, seed=0):
+    """Paired Cohen's d_z, with infinities for zero-variance separation."""
     d = np.asarray(diffs, dtype=float)
-    if d.size < 2:
+    if d.size < 2 or not np.all(np.isfinite(d)):
         return float("nan"), (float("nan"), float("nan"))
+    mean = float(d.mean())
     sd = float(d.std(ddof=1))
-    dz = float(d.mean() / sd) if sd > 0 else float("nan")
+    if sd == 0:
+        if mean > 0:
+            return float("inf"), (float("inf"), float("inf"))
+        if mean < 0:
+            return float("-inf"), (float("-inf"), float("-inf"))
+        return float("nan"), (float("nan"), float("nan"))
+    dz = mean / sd
     rng = np.random.default_rng(seed)
     out = []
     for _ in range(n_boot):
-        idx = rng.integers(0, d.size, d.size)
-        s = d[idx]
+        s = d[rng.integers(0, d.size, d.size)]
         sd_b = float(s.std(ddof=1))
         if sd_b > 0:
             out.append(float(s.mean() / sd_b))
@@ -101,95 +121,156 @@ def payload_only(trials, min_sig_len=33):
     out = []
     for t in trials:
         s = t.get("samples") or []
-        keep = [x for x in s if int(x.get("sig_len", 0)) >= min_sig_len]
         nt = dict(t)
-        nt["samples"] = keep
+        nt["samples"] = [x for x in s
+                         if int(x.get("sig_len", 0)) >= min_sig_len]
         out.append(nt)
     return out
 
 
-def validate_design(trials):
+def validate_design(trials, session):
     problems = []
     if len(trials) != BLOCKS * TRIALS_PER_BLOCK:
         problems.append(f"{len(trials)} trials, expected "
                         f"{BLOCKS * TRIALS_PER_BLOCK}")
-    by_block = {}
+    blocks = []
+    by = {}
     for t in trials:
-        by_block.setdefault(t.get("block"), []).append(t.get("label"))
-    if sorted(by_block) != list(range(BLOCKS)):
-        problems.append(f"blocks {sorted(by_block)}, expected 0..{BLOCKS-1}")
-    for b, labels in by_block.items():
-        if sorted(labels) != ["hand", "stationary"]:
+        b = t.get("block")
+        if not isinstance(b, int) or isinstance(b, bool):
+            problems.append(f"block is not an int: {b!r}")
+            continue
+        blocks.append(b)
+        by.setdefault(b, []).append((t.get("label"), t.get("index")))
+    if sorted(set(blocks)) != list(range(BLOCKS)):
+        problems.append(f"blocks {sorted(set(blocks))}, expected 0..{BLOCKS-1}")
+    stationary_first = 0
+    for b, items in by.items():
+        labels = sorted(x[0] for x in items)
+        if labels != ["hand", "stationary"]:
             problems.append(f"block {b} labels {labels}")
+            continue
+        first = min(items, key=lambda x: (x[1] is None, x[1]))
+        stationary_first += int(first[0] == "stationary")
+    # a fixed within-block order is a drift confound; both orders must occur
+    if by and not (2 <= stationary_first <= len(by) - 2):
+        problems.append(f"within-block order degenerate: {stationary_first}"
+                        f"/{len(by)} blocks stationary-first")
+    design = session.get("design") or {}
+    if "seed" not in design:
+        problems.append("design metadata has no seed")
     return problems
 
 
-def validate_trials(trials, guard_s=0.10):
+def validate_trials(trials):
     problems = []
     for i, t in enumerate(trials, 1):
-        if not t.get("valid", False):
-            problems.append(f"trial {i}: invalid ({t.get('invalid_reason')})")
-        n = len(t.get("samples") or [])
+        if t.get("valid") is not True:
+            problems.append(f"trial {i}: valid is not True "
+                            f"({t.get('valid')!r})")
+        s = t.get("samples") or []
+        n = len(s)
         if n < MIN_PAYLOAD:
             problems.append(f"trial {i}: {n} payload frames < {MIN_PAYLOAD}")
-        span = float(t.get("sensor_span_s") or 0.0)
-        active = float(t.get("active_s") or 0.0)
-        if abs(span - active) > 0.5:
-            problems.append(f"trial {i}: span {span:.3f} vs active {active:.3f}")
-        if float(t.get("max_sensor_gap_s") or 0.0) > 0.5:
-            problems.append(f"trial {i}: sensor gap "
-                            f"{t.get('max_sensor_gap_s')}")
-        if float(t.get("boundary_uncertainty_s") or 0.0) > guard_s:
+        active = t.get("active_s")
+        span = t.get("sensor_span_s")
+        sample_span = t.get("sample_span_s")
+        for name, v in (("active_s", active), ("sensor_span_s", span),
+                        ("sample_span_s", sample_span),
+                        ("max_sensor_gap_s", t.get("max_sensor_gap_s")),
+                        ("boundary_uncertainty_s",
+                         t.get("boundary_uncertainty_s"))):
+            if not _finite(v):
+                problems.append(f"trial {i}: {name} is not finite ({v!r})")
+        if _finite(active) and abs(float(active) - TRIAL_S) > TRIAL_TOLERANCE_S:
+            problems.append(f"trial {i}: active {active} != {TRIAL_S}±"
+                            f"{TRIAL_TOLERANCE_S}")
+        if _finite(span) and abs(float(span) - TRIAL_S) > TRIAL_TOLERANCE_S:
+            problems.append(f"trial {i}: sensor span {span} != {TRIAL_S}±"
+                            f"{TRIAL_TOLERANCE_S}")
+        if _finite(active) and _finite(span) and \
+                abs(float(span) - float(active)) > TRIAL_TOLERANCE_S:
+            problems.append(f"trial {i}: span {span} vs active {active}")
+        if _finite(active) and _finite(sample_span) and \
+                abs(float(sample_span) - float(active)) > TRIAL_TOLERANCE_S:
+            problems.append(f"trial {i}: sample span {sample_span} vs active "
+                            f"{active}")
+        if _finite(sample_span) and float(sample_span) > 0:
+            rate = n / float(sample_span)
+            if not (RATE_MIN <= rate <= RATE_MAX):
+                problems.append(f"trial {i}: payload rate {rate:.2f}/s")
+        if _finite(t.get("max_sensor_gap_s")) and \
+                float(t["max_sensor_gap_s"]) > 0.5:
+            problems.append(f"trial {i}: sensor gap {t['max_sensor_gap_s']}")
+        if _finite(t.get("boundary_uncertainty_s")) and \
+                float(t["boundary_uncertainty_s"]) > 0.10:
             problems.append(f"trial {i}: uncertainty "
-                            f"{t.get('boundary_uncertainty_s')}")
-        rate = n / span if span > 0 else 0.0
-        if not (RATE_MIN <= rate <= RATE_MAX):
-            problems.append(f"trial {i}: payload rate {rate:.2f}/s")
+                            f"{t['boundary_uncertainty_s']}")
+        if t.get("clock_resets") not in (0, None):
+            problems.append(f"trial {i}: clock resets {t.get('clock_resets')}")
+        if t.get("late_frames") not in (0, None):
+            problems.append(f"trial {i}: late frames {t.get('late_frames')}")
     return problems
 
 
-def validate_raw(path):
-    """Allow the torn first line at attach; nothing after it."""
+def validate_raw(session, trials):
+    path = session.get("raw")
     if not path or not os.path.exists(path):
         return [f"raw stream missing: {path}"]
+    if os.path.getsize(path) == 0:
+        return [f"raw stream is empty: {path}"]
     lines = open(path, "rb").read().decode("utf-8", "replace").splitlines()
+    parser = CsiParser()
     seen_valid = False
+    csi_lines = 0
     problems = []
     for i, l in enumerate(lines):
         if not l.startswith("CSI_DATA"):
             continue
-        ok = l.endswith('"') and ',"[' in l
-        if ok and not seen_valid:
+        outcome = parser.feed_resilient(l)
+        if outcome.records:
+            csi_lines += sum(1 for _ in outcome.records)
             seen_valid = True
-            continue
-        if not ok and seen_valid:
+        if outcome.malformed and seen_valid:
             problems.append(f"malformed CSI line {i} after the first record")
+    if session.get("malformed") not in (0, 1, None):
+        problems.append(f"recorder counted {session.get('malformed')} "
+                        "malformed lines")
+    if session.get("clock_resets") not in (0, None):
+        problems.append("recorder counted a clock reset")
+    late = session.get("late_frames") or {}
+    if isinstance(late, dict) and any(v for v in late.values()):
+        problems.append(f"late in-window frames: {late}")
+    payload = sum(len(t.get("samples") or []) for t in trials)
+    if csi_lines < payload:
+        problems.append(f"raw has {csi_lines} CSI records for {payload} "
+                        "selected frames")
     return problems
 
 
 # --- features --------------------------------------------------------------
 
 def trial_features(trials):
-    """Primary trial-local; secondaries cross-fitted (and labelled as such)."""
     base = trials_from_json({"trials": trials})
     local = extract_features(base)
     cross = crossfit_features(base)
     rows = []
     for i, t in enumerate(trials):
-        samples = t["samples"]
-        amps = [sum(x.get("amplitudes") or []) for x in samples]
-        rssi = [x.get("rssi") for x in samples if x.get("rssi") is not None]
+        s = t["samples"]
+        amps = [sum(x.get("amplitudes") or []) for x in s]
+        rssi = [x.get("rssi") for x in s if x.get("rssi") is not None]
+        span = float(t.get("sample_span_s") or 0.0)
         rows.append({
             "label": t.get("label"), "block": t.get("block"),
-            "id": t.get("index"),
+            "index": t.get("index"),
             PRIMARY: local[i].get(PRIMARY),
             "amp_volatility": local[i].get("amp_volatility"),
             "shape_shift": cross[i].get("shape_shift"),
             "change_rate": cross[i].get("change_rate"),
             "mean_amplitude": float(np.mean(amps)) if amps else float("nan"),
             "rssi": float(np.mean(rssi)) if rssi else float("nan"),
-            "payload_frames": len(samples),
-            "payload_rate": (len(samples) / float(t.get("sensor_span_s") or 1)),
+            "payload_frames": len(s),
+            "payload_rate": (len(s) / span) if span > 0 else float("nan"),
         })
     return rows
 
@@ -198,91 +279,106 @@ def paired(rows, feature):
     by = {}
     for r in rows:
         by.setdefault(r["block"], {})[r["label"]] = r[feature]
-    diffs = []
-    for b in sorted(by):
-        if "hand" in by[b] and "stationary" in by[b]:
-            diffs.append(by[b]["hand"] - by[b]["stationary"])
-    return diffs
+    return [by[b]["hand"] - by[b]["stationary"] for b in sorted(by)
+            if "hand" in by[b] and "stationary" in by[b]]
 
 
 # --- main ------------------------------------------------------------------
 
 def analyse(session):
     trials = payload_only(session.get("trials", []))
-    design = validate_design(trials)
+    design = validate_design(trials, session)
     trial_problems = validate_trials(trials)
-    raw_problems = validate_raw(session.get("raw") or
-                                (session.get("path", "") + ".raw"))
-    rows = trial_features(trials) if not (design or trial_problems) else []
+    raw_problems = validate_raw(session, trials)
+    base_problems = design or trial_problems or raw_problems
 
     out = {
         "preregistration": {
             "blocks": BLOCKS, "trial_s": TRIAL_S, "primary": PRIMARY,
-            "test": "exact within-block sign-flip, two-sided",
-            "assignments": 1 << BLOCKS, "p_gate": P_GATE,
-            "d_gate": D_GATE, "bonferroni_secondary": BONFERRONI,
+            "test": "exact one-sided within-block sign-flip (hand > stationary)",
+            "assignments": 1 << BLOCKS, "floor": 1 / (1 << BLOCKS),
+            "p_gate": P_GATE, "d_gate": D_GATE,
+            "bonferroni_secondary": BONFERRONI,
+            "power_note": ("~29% at d_z=0.8, 46% at 1.0, 65% at 1.2, "
+                           "80% at 1.4"),
         },
         "design_problems": design,
         "trial_problems": trial_problems,
         "raw_problems": raw_problems,
     }
-    if design or trial_problems or raw_problems:
+    if base_problems:
         out["verdict"] = "INVALID"
         out["reason"] = "session failed a pre-registered validity rule"
         return out
 
-    rates = {"stationary": [], "hand": []}
-    dominant = {"stationary": [], "hand": []}
-    for t in trials:
-        n = len(t["samples"])
-        rates[t["label"]].append(n / float(t["sensor_span_s"]))
-        c = {}
-        for x in t["samples"]:
-            c[x.get("rate")] = c.get(x.get("rate"), 0) + 1
-        dominant[t["label"]].append(max(c, key=c.get) if c else None)
-    rate_s = float(np.median(rates["stationary"]))
-    rate_h = float(np.median(rates["hand"]))
-    rate_diff = abs(rate_h - rate_s) / rate_s if rate_s else float("inf")
-    dom_ok = set(dominant["stationary"]) == set(dominant["hand"])
+    rows = trial_features(trials)
+    out["trials"] = rows
 
+    # confounds, computed over payload frames
+    rate = {"stationary": [], "hand": []}
+    phy = {"stationary": {}, "hand": {}}
+    for t in trials:
+        rate[t["label"]].append(len(t["samples"]) /
+                                float(t["sample_span_s"]))
+        for x in t["samples"]:
+            r = x.get("rate")
+            if r is None:
+                out["verdict"] = "INVALID"
+                out["reason"] = "payload frame without a PHY rate"
+                return out
+            phy[t["label"]][r] = phy[t["label"]].get(r, 0) + 1
+    rate_s = float(np.median(rate["stationary"]))
+    rate_h = float(np.median(rate["hand"]))
+    rate_diff = abs(rate_h - rate_s) / rate_s if rate_s else float("inf")
+    modal = {}
+    conc = {}
+    for lab in ("stationary", "hand"):
+        total = sum(phy[lab].values())
+        modal[lab] = max(phy[lab], key=phy[lab].get) if total else None
+        conc[lab] = (phy[lab].get(modal[lab], 0) / total) if total else 0.0
+    phy_ok = (modal["stationary"] == modal["hand"]
+              and conc["stationary"] >= 0.9 and conc["hand"] >= 0.9)
     out["confounds"] = {
         "payload_rate_stationary": rate_s,
         "payload_rate_hand": rate_h,
         "payload_rate_rel_diff": rate_diff,
-        "dominant_phy_stationary": sorted(set(dominant["stationary"])),
-        "dominant_phy_hand": sorted(set(dominant["hand"])),
-        "rate_ok": rate_diff <= RATE_TOLERANCE,
-        "phy_ok": dom_ok,
+        "modal_phy": modal, "modal_concentration": conc,
+        "rate_ok": rate_diff <= RATE_TOLERANCE, "phy_ok": phy_ok,
     }
 
     def test(feature):
         d = paired(rows, feature)
+        if not d or not all(_finite(x) for x in d):
+            return {"p": None, "diffs": d, "dz": None,
+                    "ci95": [None, None], "mean_diff": None}
         p, hits, total = signflip_p(d)
         dz, ci = paired_dz(d)
-        return {"diffs": [round(x, 6) for x in d], "p": p,
-                "hits": hits, "assignments": total, "dz": dz,
-                "ci95": list(ci), "mean_diff": float(np.mean(d))}
+        return {"diffs": [round(x, 6) for x in d], "p": p, "hits": hits,
+                "assignments": total, "dz": dz, "ci95": list(ci),
+                "mean_diff": float(np.mean(d))}
 
     out["primary"] = test(PRIMARY)
     out["secondary"] = {f: test(f) for f in SECONDARY}
+    out["descriptive"] = {f: test(f) for f in DESCRIPTIVE}
 
     if not (out["confounds"]["rate_ok"] and out["confounds"]["phy_ok"]):
         out["verdict"] = "INCONCLUSIVE"
-        out["reason"] = ("payload rate or PHY rate differs between "
+        out["reason"] = ("payload-rate or PHY-rate difference between "
                          "conditions; a sampling artifact cannot be excluded")
         return out
-    p = out["primary"]["p"]
-    dz = out["primary"]["dz"]
-    lo = out["primary"]["ci95"][0]
-    if p <= P_GATE and abs(dz) >= D_GATE and lo > 0:
+    pr = out["primary"]
+    if pr["p"] is None or not _finite(pr["dz"]):
+        out["verdict"] = "INVALID"
+        out["reason"] = "primary statistic is not finite"
+        return out
+    if pr["p"] <= P_GATE and pr["dz"] >= D_GATE and pr["ci95"][0] > 0:
         out["verdict"] = "PASS"
-        out["reason"] = (f"exact p={p:.5f} <= {P_GATE}, d_z={dz:.2f}, "
-                         f"bootstrap lower bound {lo:.2f} > 0")
+        out["reason"] = (f"one-sided p={pr['p']:.5f} <= {P_GATE}, "
+                         f"d_z={pr['dz']:.2f}, CI lower {pr['ci95'][0]:.2f}")
     else:
         out["verdict"] = "FAIL"
-        out["reason"] = (f"p={p:.5f}, d_z={dz:.2f}, CI lower {lo:.2f}; "
-                         "the pre-registered criteria were not met")
-    out["rows"] = rows
+        out["reason"] = (f"p={pr['p']:.5f}, d_z={pr['dz']:.2f}, "
+                         f"CI lower {pr['ci95'][0]:.2f}; criteria not met")
     return out
 
 
@@ -293,24 +389,29 @@ def show(result):
             print(f"  {k}: {p}")
     if "confounds" in result:
         c = result["confounds"]
-        print(f"\nconfounds: rate stationary {c['payload_rate_stationary']:.2f}/s"
-              f"  hand {c['payload_rate_hand']:.2f}/s"
-              f"  ({c['payload_rate_rel_diff']*100:.1f}% apart, "
+        print(f"\nconfounds: rate {c['payload_rate_stationary']:.2f} vs "
+              f"{c['payload_rate_hand']:.2f}/s "
+              f"({c['payload_rate_rel_diff']*100:.1f}%, "
               f"{'ok' if c['rate_ok'] else 'FAIL'})")
-        print(f"           dominant PHY stationary {c['dominant_phy_stationary']}"
-              f"  hand {c['dominant_phy_hand']}"
-              f"  ({'ok' if c['phy_ok'] else 'FAIL'})")
+        print(f"           modal PHY {c['modal_phy']} "
+              f"concentration {c['modal_concentration']} "
+              f"({'ok' if c['phy_ok'] else 'FAIL'})")
     if "primary" in result:
         p = result["primary"]
-        print(f"\nprimary {PRIMARY}: p={p['p']:.5f} "
-              f"({p['hits']}/{p['assignments']})  d_z={p['dz']:.2f} "
-              f"CI [{p['ci95'][0]:.2f}, {p['ci95'][1]:.2f}]  "
-              f"mean diff {p['mean_diff']:+.5f}")
+        print(f"\nprimary {PRIMARY}: p={p['p']} ({p['hits']}/{p['assignments']})"
+              f"  d_z={p['dz']}  CI {p['ci95']}  mean {p['mean_diff']}")
         print("  paired differences:", p["diffs"])
         print(f"\nsecondary (Bonferroni alpha={BONFERRONI:.4f}):")
         for f, r in result["secondary"].items():
-            print(f"  {f:16s} p={r['p']:.5f}  d_z={r['dz']:+.2f}  "
-                  f"CI [{r['ci95'][0]:+.2f}, {r['ci95'][1]:+.2f}]")
+            print(f"  {f:16s} p={r['p']}  d_z={r['dz']}")
+        print("\ndescriptive (no p; label-fitted secondary):")
+        for f, r in result["descriptive"].items():
+            print(f"  {f:16s} diffs={r['diffs']}")
+        print("\nper-trial:")
+        for r in result["trials"]:
+            print(f"  b{r['block']:>2} {r['label']:>10} "
+                  f"frames {r['payload_frames']:>4} rate {r['payload_rate']:5.2f}"
+                  f" rough {r[PRIMARY]:.5f}")
 
 
 def main(argv=None) -> int:
@@ -320,7 +421,6 @@ def main(argv=None) -> int:
     args = ap.parse_args(argv)
     with open(args.session, encoding="utf-8") as fh:
         session = json.load(fh)
-    session["path"] = args.session
     result = analyse(session)
     show(result)
     if args.out:

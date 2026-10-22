@@ -40,7 +40,7 @@ instead of *motion*.
 | scheduled time | 20 × 25 s + 20 × 8 s = **660 s ≈ 11 min** |
 | blocks | 10 |
 | within-block assignments | **2¹⁰ = 1 024** |
-| two-sided exact floor | **2/1 024 = 0.00195** |
+| one-sided exact floor | **1/1 024 = 0.00098** |
 
 The seed, the realised order and the block ids are written into the session
 JSON by the recorder; they are not reconstructed afterwards.
@@ -48,13 +48,16 @@ JSON by the recorder; they are not reconstructed afterwards.
 ## 3. Ping budget and traffic
 
 * The app is **restarted immediately before the session** so its counter
-  starts near zero. Twenty-five seconds × 20 trials × 10/s = **5 000 pings**,
-  half the 9 999 limit.
+  starts near zero. The app runs through the washouts too, so the budget is
+  the whole 660 s: **≈ 6 600 pings**, leaving ~3 400 of the 9 999 limit in
+  reserve for setup and restarts.
 * The operator records the app's displayed count at the start; the analysis
   checks that the payload count is consistent with the elapsed sensor time.
-* **Fail closed:** if any trial has fewer than 150 payload frames, a payload
-  rate outside **9–11/s**, or a sensor gap above 0.5 s, the session is
-  INVALID. There is no partial analysis.
+* **Fail closed:** if any trial has fewer than **225** payload frames
+  (9/s × 25 s), a payload rate outside **8.5–11.5/s** measured on the
+  *sample* span, a boundary uncertainty or sensor gap that is not finite, a
+  clock reset or a late frame, or a trial length outside 25 ± 0.5 s, the
+  session is INVALID. There is no partial analysis.
 
 ## 4. Acquisition rules (already implemented and bench-validated)
 
@@ -83,8 +86,13 @@ reference fitted on other trials, so it cannot leak across blocks.
 
 **Test:** for each block `b`, `d_b = roughness(hand_b) − roughness(stationary_b)`.
 Statistic = mean of `d_b`. The null is the exact set of **2¹⁰ sign flips**;
-the p-value is the fraction of assignments whose |mean| is at least the
-observed. Two-sided, exact, no normal approximation.
+the p-value is the fraction of assignments whose mean is **at least** the
+observed, i.e. **one-sided in the pre-registered direction** (hand rougher
+than stationary). Exact, no normal approximation, floor 1/1 024.
+
+The direction is fixed *because* motion is expected to increase the
+roughness of the normalised spectrum. A negative effect is reported, not
+counted as a PASS.
 
 **Effect size:** paired Cohen's `d_z` with a 2 000-sample bootstrap 95 % CI
 over blocks.
@@ -94,10 +102,14 @@ over blocks.
 1. All 20 trials valid; no malformed CSI line after the first valid record;
    every trial 150+ payload frames, rate 9–11/s, span within 0.5 s of active,
    gap ≤ 0.5 s, boundary uncertainty ≤ 0.10 s.
-2. Exact two-sided **p ≤ 0.01**.
-3. **|d_z| ≥ 0.8** and the bootstrap CI lower bound **> 0**.
-4. Confound gate: median payload rate differs by **≤ 10 %**, and the dominant
-   PHY rate is the same in both conditions.
+2. Exact one-sided **p ≤ 0.01**.
+3. **d_z ≥ 0.8** (positive direction) and the bootstrap CI lower bound
+   **> 0**. A zero-variance separation (all ten differences equal) gives
+   `d_z = +inf` and is a PASS; a non-finite *input* is INVALID.
+4. Confound gate: median payload rate differs by **≤ 10 %**; the **modal PHY
+   rate over frames** is identical in both conditions and each condition has
+   **≥ 90 %** of its frames at that mode; every payload frame carries a rate.
+   A missing rate is INVALID, a modal difference INCONCLUSIVE.
 5. The sign of `d_b` is reported for all ten blocks (descriptive, not a
    second gate).
 
@@ -107,9 +119,14 @@ A session that meets 1–4 is **PASS**. Meeting 1 but failing 2 or 3 is
 
 ## 8. Secondary analyses (reported, never substituted)
 
-`amp_volatility`, `shape_shift`, `change_rate`, mean total amplitude, mean
-RSSI. Each gets the same exact paired test, with **Bonferroni α = 0.01**
-(0.05/5). They cannot turn a primary FAIL into a PASS.
+`amp_volatility`, `shape_shift`, mean total amplitude, mean RSSI. Each gets
+the same exact paired test, with **Bonferroni α = 0.0125** (0.05/4). They
+cannot turn a primary FAIL into a PASS.
+
+`change_rate` is reported **descriptively only**: its noise floor is fitted
+on the true labels of the other trials, so a label-free p-value cannot be
+computed for it without rebuilding the feature under every sign flip. It is
+shown for completeness and carries no gate.
 
 ## 9. Motion-induced level changes vs artifacts
 
@@ -172,9 +189,13 @@ confound is INCONCLUSIVE, and a malformed post-start line INVALIDates.
 ## 14. What a FAIL means
 
 A FAIL does **not** mean "CSI cannot sense motion". It means: on this link,
-geometry and session, with a design powered for a large paired effect
-(|d_z| ≥ 0.8), no such effect was found. The detectable effect can be bounded
-from the observed CI and reported as such.
+geometry and session, no effect large enough for this design was found.
+
+**Power, stated honestly.** With 10 pairs and α = 0.01 the exact test has
+about **29 % power at d_z = 0.8**, 46 % at 1.0, 65 % at 1.2 and **80 % at
+d_z ≈ 1.4**. The design is powered for a large paired effect. A FAIL
+therefore does not rule out a moderate one; the observed CI is the bound to
+report, and a larger design is a separate preregistration.
 
 ## 15. Physical instructions for the operator
 

@@ -370,8 +370,8 @@ def cmd_record(args) -> int:
     late = rec.settle()
     for d in trials:
         n = late.get(d["index"], 0)
+        d["late_frames"] = int(n)
         if n:
-            d["late_frames"] = n
             d["valid"] = False
             d["invalid_reason"] = ((d.get("invalid_reason") or "")
                                    + f"; {n} late in-window frames").strip("; ")
