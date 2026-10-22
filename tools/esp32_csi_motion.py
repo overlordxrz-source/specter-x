@@ -52,14 +52,72 @@ def _now() -> float:
     return time.time()
 
 
+def _cue(text: str) -> None:
+    """Speak a trial cue on the host's speaker.
+
+    The operator is also the subject, so a terminal prompt is useless: they
+    are standing at the marked spot, not at the keyboard. The cue is spoken
+    from this machine, which is already in the room and already part of the
+    rig. It is a convenience, not part of the measurement - no radio
+    parameter depends on it.
+    """
+    try:
+        subprocess.run(["say", text], check=False, timeout=20)
+    except Exception:
+        pass
+
+
 # Spoken instructions for a human subject. The board hears the access point's
 # downlink CSI, so the subject perturbs the radio path by moving near the
 # board and the AP.
 TRIAL_INSTRUCTIONS = {
     "stationary": "Stand still and do not move.",
-    "hand": "Wave one hand up and down, in place.",
+    "still": "Stand at the marked spot, arms down, and do not move.",
+    "hand": "Stay at the marked spot and move one hand across the path, "
+            "about once a second. Feet and torso still.",
     "walking": "Walk a few steps back and forth, at normal speed.",
+    "empty": "Leave the room and stay out until the trial ends.",
 }
+
+#: A frame with no payload is exactly 28 bytes (24-byte MAC header + 4-byte
+#: FCS). Everything longer carried a payload. The receiver hears both on this
+#: link, at different PHY rates, and checkpoint 011 established that the
+#: amplitude scale follows the rate - so mixing them would put a
+#: rate-dependent amplitude difference into the features. The motion
+#: features are therefore computed on payload frames only, and the null
+#: frames are kept and counted as a data-quality indicator.
+PAYLOAD_MIN_SIG_LEN = 33
+
+
+def payload_only(trials: List[Dict],
+                 min_sig_len: int = PAYLOAD_MIN_SIG_LEN
+                 ) -> Tuple[List[Dict], Dict]:
+    """Return the trials restricted to frames that carried a payload.
+
+    The null-data frames are **kept in the recording** and only filtered
+    here, so the decision is auditable and reversible. A recording made
+    before this change carries no ``sig_len``; it is passed through
+    unchanged and reported as such rather than silently emptied.
+    """
+    out: List[Dict] = []
+    kept = dropped = unknown_trials = 0
+    for t in trials:
+        samples = t.get("samples") or []
+        if samples and not any("sig_len" in s for s in samples):
+            unknown_trials += 1
+            out.append(t)
+            continue
+        keep = [s for s in samples if int(s.get("sig_len", 0)) >= min_sig_len]
+        kept += len(keep)
+        dropped += len(samples) - len(keep)
+        nt = dict(t)
+        nt["samples"] = keep
+        nt["frames_total"] = len(samples)
+        nt["payload_frames"] = len(keep)
+        nt["packets"] = len(keep)
+        out.append(nt)
+    return out, {"payload": kept, "null": dropped,
+                 "trials_without_sig_len": unknown_trials}
 
 
 def announce(label: str, index: int, total: int) -> None:
@@ -74,7 +132,7 @@ def announce(label: str, index: int, total: int) -> None:
 
 def record_trials(trials_spec, port: str, prompt: bool = False,
                   announce_cues: bool = False,
-                  lead_in: float = 0.0) -> List[Dict]:
+                  lead_in: float = 0.0, cue: bool = False) -> List[Dict]:
     """Record every trial inside **one** port session.
 
     Opening and closing the CDC port repeatedly is itself a trigger for the
@@ -92,10 +150,16 @@ def record_trials(trials_spec, port: str, prompt: bool = False,
             if announce_cues:
                 announce(label, index, len(trials_spec))
                 print(f"    {TRIAL_INSTRUCTIONS.get(label, '')}", flush=True)
+            if cue:
+                _cue(f"Trial {index} of {len(trials_spec)}. "
+                     f"{TRIAL_INSTRUCTIONS.get(label, label)} "
+                     f"Starting in {int(lead_in)} seconds.")
             if prompt:
                 input("    press Enter to start this trial... ")
             if lead_in:
                 time.sleep(lead_in)
+            if cue:
+                _cue("go")
             before = dispatcher.snapshot()
             samples: List[Dict] = []
             t0 = _now()
@@ -112,9 +176,16 @@ def record_trials(trials_spec, port: str, prompt: bool = False,
                         "rssi": rec.rssi,
                         "channel": rec.channel,
                         "local_timestamp": rec.local_timestamp,
+                        #: the received frame's signal length. 28 B means the
+                        #: frame carried no payload (association upkeep); a
+                        #: payload frame is longer. Recorded for every frame so
+                        #: the payload selection is auditable after the fact.
+                        "sig_len": rec.sig_len,
                         "amplitudes": [round(a, 2) for a in amps],
                     })
                 time.sleep(0.005)
+            if cue:
+                _cue("stop. relax.")
             after = dispatcher.snapshot()
             out.append({
                 "label": label,
@@ -250,7 +321,7 @@ def cmd_record(args) -> int:
     }
 
     for trial in record_trials(trials_spec, port, args.prompt,
-                               args.announce, args.lead_in):
+                               args.announce, args.lead_in, args.cue):
         out["trials"].append(trial)
         st = trial_stats(trial)
         print(f"    {trial['packets']} packets, "
@@ -337,6 +408,21 @@ def cmd_analyse(args) -> int:
     # Recomputed from the trials, so the features are always the current
     # ones rather than whatever was stored when the recording was made.
     trials = data.get("trials", [])
+    if getattr(args, "all_frames", False):
+        split = {"payload": sum(len(t.get("samples") or []) for t in trials),
+                 "null": 0, "trials_without_sig_len": 0}
+        print("\n--- frame selection ---")
+        print("  --all-frames: payload and null-data frames are NOT separated")
+    else:
+        trials, split = payload_only(trials)
+        data["trials"] = trials
+        print("\n--- frame selection (payload frames only) ---")
+        print(f"  payload frames kept {split['payload']}   "
+              f"null-data frames dropped {split['null']}   "
+              f"trials without sig_len {split['trials_without_sig_len']}")
+        if split["trials_without_sig_len"]:
+            print("  WARNING: a trial without sig_len was kept unchanged; "
+                  "it mixes frame populations and is not comparable")
     stats = [trial_stats(t) for t in trials] if trials else (data.get("stats") or [])
     for s in stats:
         print(f"\n--- {s['label']} ---")
@@ -449,6 +535,9 @@ def main(argv=None) -> int:
     r.add_argument("--port", default=None)
     r.add_argument("--prompt", action="store_true",
                    help="wait for Enter before each trial")
+    r.add_argument("--cue", action="store_true",
+                   help="speak each trial cue on the host speaker, for an "
+                        "operator who is also the subject")
     r.add_argument("--announce", action="store_true",
                    help="say each phase out loud (macOS) so the subject can "
                         "follow the run without watching a screen")
@@ -469,6 +558,10 @@ def main(argv=None) -> int:
     a.add_argument("path")
     a.add_argument("--figure", default=None,
                    help="also write a per-carrier reference profile PNG")
+    a.add_argument("--all-frames", action="store_true",
+                   help="do not separate payload from null-data frames "
+                        "(diagnostic only; the two populations have different "
+                        "PHY rates and their amplitudes are not comparable)")
     a.set_defaults(func=cmd_analyse)
 
     args = ap.parse_args(argv)
