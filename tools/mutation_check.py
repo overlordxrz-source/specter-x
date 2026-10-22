@@ -61,6 +61,38 @@ MUTATIONS = [
                 "::test_change_rate_never_uses_its_own_trial",
     },
     {
+        "name": "boundary-uncertainty check removed",
+        "file": "specter/sensors/esp32/acquisition.py",
+        "old": "        elif unc > self.guard_s:",
+        "new": "        elif False:",
+        "test": "tests/test_adversarial_gates.py"
+                "::test_high_boundary_uncertainty_invalidates_the_trial",
+    },
+    {
+        "name": "sample-span check removed",
+        "file": "specter/sensors/esp32/acquisition.py",
+        "old": "        elif abs(sample_span - active) > self.span_tolerance_s:",
+        "new": "        elif False:",
+        "test": "tests/test_adversarial_gates.py"
+                "::test_an_incomplete_window_invalidates_the_trial",
+    },
+    {
+        "name": "uncertainty always reported as zero",
+        "file": "specter/sensors/esp32/acquisition.py",
+        "old": "        return lo, max(0.0, med - lo)",
+        "new": "        return lo, 0.0",
+        "test": "tests/test_adversarial_gates.py"
+                "::test_offset_uses_the_minimum_delay_and_reports_the_spread",
+    },
+    {
+        "name": "offset from the 10th percentile instead of the minimum",
+        "file": "specter/sensors/esp32/acquisition.py",
+        "old": "        lo = float(min(deltas))",
+        "new": "        lo = float(np.percentile(deltas, 10))",
+        "test": "tests/test_adversarial_gates.py"
+                "::test_offset_uses_the_minimum_delay_and_reports_the_spread",
+    },
+    {
         "name": "block list not shuffled with the trials",
         "file": "specter/sensors/esp32/analysis.py",
         "old": "        blocks = [blocks[i] for i in order]",
@@ -79,7 +111,7 @@ MUTATIONS = [
     {
         "name": "device reset treated as ordinary jitter",
         "file": "specter/sensors/esp32/acquisition.py",
-        "old": "                elif prev - raw_ts > RESET_THRESHOLD_US:",
+        "old": "                elif back > RESET_THRESHOLD_US:",
         "new": "                elif False:",
         "test": "tests/test_adversarial_gates.py"
                 "::test_a_device_clock_reset_invalidates_the_trial",

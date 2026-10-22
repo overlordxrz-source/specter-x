@@ -47,8 +47,12 @@ from .dispatcher import CsiParser
 
 SENSOR_WRAP = 1 << 32
 SENSOR_WRAP_HALF = 1 << 31
-#: a backwards jump larger than this (in microseconds) is a reset, not jitter
+#: a backwards jump larger than this (in microseconds) may be a reset
 RESET_THRESHOLD_US = 1_000_000
+#: a reset must be confirmed by the next frame inside the new epoch
+RESET_CONFIRM_US = 1_000_000
+#: a genuine uint32 wrap starts this close to 2^32
+WRAP_GUARD_US = 2_000_000
 #: how far back the clock offset is estimated
 OFFSET_WINDOW_S = 60.0
 
@@ -88,6 +92,7 @@ class TrialResult:
     index: int
     active_s: float
     sensor_span_s: float
+    sample_span_s: float
     delivery_span_s: float
     payload_frames: int
     null_frames: int
@@ -135,6 +140,7 @@ class TrialRecorder:
         self._buf = b""
         self._last_raw_ts: Optional[int] = None
         self._wrap_offset = 0
+        self._pending_reset: Optional[tuple] = None
         self._cursor = 0
         self._raw_fh = open(raw_out, "wb") if raw_out else None
         self._lock = threading.Lock()
@@ -143,37 +149,70 @@ class TrialRecorder:
 
     # --- reading ---------------------------------------------------------
 
-    def _append(self, rec, host_t: float) -> bool:
-        raw_ts = int(rec.local_timestamp)
-        if self._last_raw_ts is not None:
-            prev = self._last_raw_ts
-            if raw_ts < prev:
-                if (prev > SENSOR_WRAP_HALF and raw_ts < SENSOR_WRAP_HALF
-                        and prev - raw_ts > SENSOR_WRAP_HALF):
-                    self._wrap_offset += SENSOR_WRAP          # genuine wrap
-                elif prev - raw_ts > RESET_THRESHOLD_US:
-                    self._wrap_offset = 0                     # device reset
-                    self.clock_resets += 1
-                else:
-                    self.out_of_order += 1
-                    return False        # drop, never move the clock backwards
-        self._last_raw_ts = raw_ts
-        sensor_t = (raw_ts + self._wrap_offset) / 1e6
+    def _emit(self, rec, host_t: float, sensor_t: float) -> bool:
         f = Frame(host_t=host_t, wall_t=self.wall(), sensor_t=sensor_t,
                   seq=rec.seq, rssi=rec.rssi, channel=rec.channel,
                   rate=rec.rate, mcs=int(getattr(rec, "mcs", 0) or 0),
                   sig_mode=int(getattr(rec, "sig_mode", 0) or 0),
-                  noise_floor=rec.noise_floor, local_timestamp=raw_ts,
+                  noise_floor=rec.noise_floor,
+                  local_timestamp=int(rec.local_timestamp),
                   sig_len=rec.sig_len,
                   first_word_invalid=bool(rec.first_word_invalid),
                   amplitudes=subcarrier_amplitudes(rec.iq), record=rec)
         with self._lock:
             self.frames.append(f)
-            # late frames: acquired inside a window that was already assigned
             for w in self.windows:
-                if w["go_s"] < sensor_t <= w["stop_s"]:
+                if w["go_s"] <= sensor_t <= w["stop_s"]:
                     w["late"] += 1
         return True
+
+    def _append(self, rec, host_t: float) -> bool:
+        """Accept a frame, or settle a clock event.
+
+        A straggler is **kept**: it is appended with its own sensor time and
+        sorted into the window later, so a frame that arrives behind newer
+        frames is not silently lost. A large backwards jump is held as a
+        *candidate* reset and decided by the next frame; one late frame can
+        never move the clock epoch. A genuine uint32 wrap must start within
+        ``WRAP_GUARD_US`` of 2^32, otherwise a reset is the correct reading.
+        """
+        raw = int(rec.local_timestamp)
+        if self._pending_reset is not None:
+            prec, phost, pbase = self._pending_reset
+            self._pending_reset = None
+            if raw >= pbase and raw - pbase < RESET_CONFIRM_US:
+                self._wrap_offset = 0
+                self.clock_resets += 1
+                self.out_of_order += 1        # the pre-reset frame is dropped
+                self._last_raw_ts = raw
+                return self._emit(rec, host_t, raw / 1e6)
+            # not a reset: the held frame was a straggler, keep it
+            self.out_of_order += 1
+            self._emit(prec, phost, (pbase + self._wrap_offset) / 1e6)
+
+        if self._last_raw_ts is not None:
+            prev = self._last_raw_ts
+            if raw < prev:
+                back = prev - raw
+                if (back > SENSOR_WRAP_HALF and raw < SENSOR_WRAP_HALF
+                        and prev > SENSOR_WRAP - WRAP_GUARD_US):
+                    self._wrap_offset += SENSOR_WRAP
+                elif back > RESET_THRESHOLD_US:
+                    self._pending_reset = (rec, host_t, raw)
+                    return False
+                else:
+                    self.out_of_order += 1
+                    return self._emit(rec, host_t,
+                                      (raw + self._wrap_offset) / 1e6)
+            elif (self._wrap_offset > 0 and raw > SENSOR_WRAP_HALF
+                  and prev < SENSOR_WRAP_HALF
+                  and raw - prev > RESET_THRESHOLD_US):
+                # a frame from just before the wrap, delivered after it
+                self.out_of_order += 1
+                return self._emit(rec, host_t,
+                                  (raw + self._wrap_offset - SENSOR_WRAP) / 1e6)
+        self._last_raw_ts = raw
+        return self._emit(rec, host_t, (raw + self._wrap_offset) / 1e6)
 
     def _consume(self, chunk: bytes) -> None:
         if not chunk:
@@ -326,6 +365,7 @@ class TrialRecorder:
         unc = max(go.uncertainty_s or 0.0, stop.uncertainty_s or 0.0)
         active = stop.host_t - go.host_t
         span = stop_s - go_s
+        sample_span = (sel[-1].sensor_t - sel[0].sensor_t) if sel else 0.0
 
         valid, reason = True, None
         if not payload:
@@ -336,10 +376,12 @@ class TrialRecorder:
             valid, reason = False, f"sensor gap {max_gap:.3f}s > {self.max_gap_s}s"
         elif unc > self.guard_s:
             valid, reason = False, f"boundary uncertainty {unc:.3f}s > guard"
-        elif abs(span - active) > self.span_tolerance_s:
+        elif abs(sample_span - active) > self.span_tolerance_s:
+            # the selected frames must actually cover the active window; a
+            # clock jump inside it shows up here and nowhere else
             valid, reason = (False,
-                             f"sensor span {span:.3f}s deviates from active "
-                             f"{active:.3f}s")
+                             f"sample span {sample_span:.3f}s deviates from "
+                             f"active {active:.3f}s")
 
         window = {"index": index, "go_s": go_s, "stop_s": stop_s, "late": 0}
         with self._lock:
@@ -364,10 +406,11 @@ class TrialRecorder:
         return TrialResult(
             label=label, block=block, index=index,
             active_s=round(active, 4), sensor_span_s=round(span, 6),
+            sample_span_s=round(sample_span, 6),
             delivery_span_s=round(sel[-1].host_t - sel[0].host_t, 4) if sel else 0.0,
             payload_frames=len(payload), null_frames=null,
             excluded_pre=pre, excluded_post=post, excluded_guard=guard,
-            late_frames=0, max_sensor_gap_s=round(max_gap, 6),
+            late_frames=None, max_sensor_gap_s=round(max_gap, 6),
             boundary_uncertainty_s=round(unc, 6),
             clock_resets=self.clock_resets - resets_before,
             valid=valid, invalid_reason=reason,
@@ -387,6 +430,13 @@ class TrialRecorder:
         absorb it.
         """
         with self._lock:
+            pending = self._pending_reset
+        if pending is not None:
+            prec, phost, pbase = pending
+            self.out_of_order += 1
+            self._emit(prec, phost, (pbase + self._wrap_offset) / 1e6)
+            self._pending_reset = None
+        with self._lock:
             return {w["index"]: w["late"] for w in self.windows if w["late"]}
 
 
@@ -395,6 +445,7 @@ def trial_to_json(t: TrialResult, **meta) -> Dict:
         "label": t.label, "block": t.block, "index": t.index,
         "requested_s": meta.get("requested_s"),
         "active_s": t.active_s, "sensor_span_s": t.sensor_span_s,
+        "sample_span_s": t.sample_span_s,
         "delivery_span_s": t.delivery_span_s,
         "payload_frames": t.payload_frames, "null_frames": t.null_frames,
         "excluded_pre_go": t.excluded_pre, "excluded_post_stop": t.excluded_post,

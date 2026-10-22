@@ -297,3 +297,118 @@ def test_raw_stream_is_readable_before_close(tmp_path):
     on_disk = open(path, "rb").read()
     assert b"CSI_DATA" in on_disk
     rec.stop_background()
+
+
+# --- T2: the offset probe used the wrong reference ------------------------
+
+def test_a_constant_delivery_lag_maps_to_the_cue_acquisition_time():
+    """A constant lag is not a defect: it is the clock offset.
+
+    The critic measured 'pre-GO' against host time. The cue's *acquisition*
+    time is host - lag, and that is what the window must start at.
+    """
+    clock = FakeClock()
+    sched = []
+    acq = {}
+    for k in range(400):
+        t = k * 0.1
+        sched.append((t + 2.0, _line(k, int(round(t * 1e6)))))
+        acq[k] = t
+    rec = _rec(clock, sched, guard_s=0.1)
+    rec.pump_for(10.0)
+    t = rec.run_trial("hand", 20.0, block=0, index=0, lead_in_s=0.0)
+    go_s = rec.cues[-2].sensor_t
+    assert abs(go_s - 8.0) < 0.15, go_s          # host 10, lag 2 -> acq 8
+    assert t.samples
+    assert all(acq[s["id"]] >= go_s - 0.02 for s in t.samples)
+
+
+# --- T3: reset after half an hour is not a wrap ---------------------------
+
+def test_a_reset_after_half_an_hour_is_not_mistaken_for_a_wrap():
+    clock = FakeClock()
+    base = 2_160_000_000                       # 36 minutes of uptime
+    sched = []
+    for i in range(20):
+        sched.append((i * 0.1, _line(i, base + int(i * 0.1 * 1e6))))
+    for i in range(20):                        # device resets to zero
+        sched.append((2.0 + i * 0.1, _line(100 + i, int(i * 0.1 * 1e6))))
+    rec = _rec(clock, sched, guard_s=0.01)
+    rec.pump_for(0.05)
+    t = rec.run_trial("hand", 4.0, block=0, index=0, lead_in_s=0.0)
+    assert rec.clock_resets >= 1
+    assert t.clock_resets >= 1
+    assert t.valid is False
+    assert "reset" in (t.invalid_reason or "")
+
+
+def test_one_late_frame_does_not_reset_the_clock_and_is_kept():
+    clock = FakeClock()
+    sched = [(0.0, _line(0, 0))]
+    sched += [(2.0, _line(10, 2_000_000)), (2.1, _line(11, 2_100_000))]
+    sched += [(2.15, _line(99, 500_000))]      # 1.6 s behind: a straggler
+    sched += [(2.2, _line(12, 2_200_000)), (2.3, _line(13, 2_300_000))]
+    rec = _rec(clock, sched, guard_s=0.02)
+    rec.pump_for(0.05)
+    t = rec.run_trial("hand", 3.0, block=0, index=0, lead_in_s=0.0)
+    assert rec.clock_resets == 0
+    assert rec.out_of_order >= 1
+    assert 99 in {s["id"] for s in t.samples}, "the straggler must be kept"
+
+
+def test_a_pre_wrap_straggler_does_not_double_the_offset():
+    clock = FakeClock()
+    base = (1 << 32) - 300_000
+    sched = []
+    for i in range(5):
+        sched.append((i * 0.1, _line(i, (base + i * 50_000) % (1 << 32))))
+    for i in range(5):                         # after the wrap
+        sched.append((0.5 + i * 0.1,
+                      _line(10 + i, (base + 300_000 + i * 50_000) % (1 << 32))))
+    # a frame from before the wrap, delivered last
+    sched.append((1.1, _line(99, (base + 100_000) % (1 << 32))))
+    rec = _rec(clock, sched, guard_s=0.02)
+    rec.pump_for(2.0)
+    spans = [f.sensor_t for f in rec.frames]
+    assert max(spans) - min(spans) < 1.5
+    assert rec.out_of_order >= 1
+
+
+# --- T6 gaps: the two validity checks need tests of their own -------------
+
+def test_high_boundary_uncertainty_invalidates_the_trial():
+    clock = FakeClock()
+    sched = [(k * 0.1, _line(k, int(k * 0.1 * 1e6))) for k in range(40)]
+    rec = _rec(clock, sched, guard_s=0.10)
+    rec._offset = lambda: (0.0, 0.20)         # uncertainty above the guard
+    rec.pump_for(0.2)
+    t = rec.run_trial("hand", 1.0, block=0, index=0, lead_in_s=0.0)
+    assert t.valid is False
+    assert "uncertainty" in (t.invalid_reason or "")
+
+
+def test_an_incomplete_window_invalidates_the_trial():
+    clock = FakeClock()
+    sched = [(0.0, _line(0, 0))]
+    # nothing acquired for the first 2 s of a 4 s window
+    for i in range(20):
+        ts = 2.1 + i * 0.1
+        sched.append((ts, _line(10 + i, int(round(ts * 1e6)))))
+    rec = _rec(clock, sched, guard_s=0.02)
+    rec.pump_for(0.05)
+    t = rec.run_trial("hand", 4.0, block=0, index=0, lead_in_s=0.0)
+    assert t.valid is False
+    assert "sample span" in (t.invalid_reason or "")
+
+
+def test_offset_uses_the_minimum_delay_and_reports_the_spread():
+    clock = FakeClock()
+    sched = [(0.0, _line(0, 0))]               # one fast frame
+    for k in range(49):                        # many frames delayed 0.2 s
+        sensor = 0.1 + k * 0.1
+        sched.append((sensor + 0.2, _line(1 + k, int(round(sensor * 1e6)))))
+    rec = _rec(clock, sched)
+    rec.pump_for(6.0)
+    off, unc = rec._offset()
+    assert off < 0.05, off                      # min, not the 10th percentile
+    assert unc > 0.1, unc
