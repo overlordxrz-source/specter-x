@@ -37,6 +37,7 @@ if REPO not in sys.path:
     sys.path.insert(0, REPO)
 
 from specter.sensors.esp32.dispatcher import SerialDispatcher
+from specter.sensors.esp32.analysis import FEATURE_NAMES, analyse_blinded
 from specter.sensors.esp32.experiment import (analyse_offline,
                                                per_carrier_screen,
                                                trials_from_json)
@@ -390,6 +391,45 @@ def cmd_analyse(args) -> int:
     print("\n--- verdict ---")
     print(f"  {v['claim']}")
     print(f"  {v['detail']}")
+
+    # the blinded analysis: frozen features, permutation test, effect sizes,
+    # held-out score and the procedure's own measured false-positive rate.
+    trials = trials_from_json(data)
+    blinded = analyse_blinded(trials, seed=7, n_perm=500)
+    print("\n--- blinded analysis (frozen features) ---")
+    print(f"  {'feature':>18s}{'F':>10s}{'p':>10s}{'perm p':>10s}"
+          f"{'FPR':>8s}{'held-out':>11s}")
+    for name in FEATURE_NAMES:
+        om = blinded["omnibus"][name]
+        pe = blinded["permutation"][name]
+        ho = blinded["held_out"][name]
+        pp = f"{pe['empirical_p']:.4f}" if pe["empirical_p"] == pe["empirical_p"] else "n/a"
+        fp = f"{pe['false_positive_rate']:.3f}" if pe["false_positive_rate"] is not None else "n/a"
+        print(f"  {name:>18s}{om['f']:>10.3f}{om['p']:>10.4f}{pp:>10s}"
+              f"{fp:>8s}{ho['held_out_accuracy']:>11.3f}")
+    print("\n--- effect sizes (Cohen's d, bootstrap 95% CI) ---")
+    for name in FEATURE_NAMES:
+        eff = blinded["effects"][name]
+        for pair, d in eff["pairs"].items():
+            ci = f"CI {d['ci95']}" if d.get("ci95") else \
+                f"CI not estimable (n = {d.get('n_per_group')} per group)"
+            print(f"  {name:>18s}  {pair:<28s} d = {d['cohens_d']:>7}  {ci}")
+    print("\n--- how many trials would have been needed? ---")
+    from specter.sensors.esp32.analysis import required_n
+    for name in ("roughness_used",):
+        eff = blinded["effects"][name]
+        best = max((abs(v["cohens_d"]) for v in eff["pairs"].values()
+                    if v["cohens_d"] is not None), default=0.0)
+        r = required_n(best, k=len(set(blinded["labels_in_analysis_order"])),
+                        target_power=0.8)
+        print(f"  the largest measured d is {best:.2f}; at that effect size, "
+              f"{r['n_per_group_needed']} trials per condition "
+              f"({r['total_trials_needed']} in total) reach 80% power")
+        perms = blinded["permutation"][name]
+        print(f"  the permutation test's smallest attainable p with "
+              f"{len(blinded['labels_in_analysis_order'])} trials is "
+              f"{perms['min_attainable_p']} - a p at that floor means 'as "
+              f"extreme as this design can produce', not 'not significant'")
     if args.figure:
         path = _figure(stats, args.figure, data.get("consent", "")[:60])
         print(f"\nreference profile -> {path}")

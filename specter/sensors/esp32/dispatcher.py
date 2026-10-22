@@ -95,6 +95,19 @@ class CsiRecord:
     fields: Dict[str, object] = field(default_factory=dict)
     iq: List[int] = field(default_factory=list)
     received_at: float = 0.0
+    #: The ESP-IDF header says of ``wifi_csi_info_t.first_word_invalid``:
+    #: "first four bytes of the CSI data is invalid or not, true indicates
+    #: the first four bytes is invalid due to hardware limitation". The
+    #: bytes are still printed, so they must be *marked*, not silently
+    #: dropped - dropping them would shift every subcarrier index.
+    first_word_invalid: bool = False
+    #: how many subcarriers the flag invalidates (4 bytes = 2 carriers)
+    invalid_subcarriers: int = 0
+    #: the received frame's PHY rate code. The CSI is measured on the
+    #: preamble of a frame received at this rate, and the amplitude scale
+    #: follows the rate, so this is a confound and not a detail.
+    rate_code: int = 0
+    sig_mode: int = 0
 
     @property
     def has_iq(self) -> bool:
@@ -152,8 +165,21 @@ class CsiParser:
             rate = int(parts[4])
             noise_floor = int(parts[14])
             channel = int(parts[16])
-            local_ts = int(parts[18])
+            # The IDF declares `unsigned timestamp:32` in microseconds, but
+            # the example prints it with %d, so a counter that has passed
+            # 2^31 arrives as a NEGATIVE number. Masking to 32 bits
+            # recovers the true counter - which still wraps every 71.6
+            # minutes, and any analysis that differences it must account
+            # for that.
+            local_ts = int(parts[18]) & 0xFFFFFFFF
             sig_len = int(parts[20])
+            # Index 21 is sig_mode printed a second time (the upstream
+            # header calls it "rx_format"), index 22 is info->len - the
+            # valid CSI length in BYTES - and index 23 is
+            # first_word_invalid, a flag, not a value.
+            sig_mode = int(parts[21]) if len(parts) > 21 else 0
+            csi_len = int(parts[22]) if len(parts) > 22 else 0
+            first_word_invalid = bool(int(parts[23])) if len(parts) > 23 else False
         except (ValueError, IndexError) as exc:
             raise ValueError(f"CSI field parse failed: {exc}") from exc
 
@@ -169,6 +195,13 @@ class CsiParser:
                     iq.append(int(tok))
                 except ValueError:
                     raise ValueError("IQ blob is not numeric") from None
+
+        # The tail holds exactly ``info->len`` values: one per BYTE of the
+        # CSI buffer. A mismatch means the line was cut or the format
+        # changed, and the packet must not be used for a spectrum.
+        if csi_len and len(iq) != csi_len:
+            raise ValueError(
+                f"CSI tail has {len(iq)} values but len says {csi_len}")
 
         if self.first_seq is None:
             self.first_seq = seq
@@ -187,7 +220,10 @@ class CsiParser:
         return CsiRecord(seq=seq, mac=mac, rssi=rssi, rate=rate,
                          noise_floor=noise_floor, channel=channel,
                          local_timestamp=local_ts, sig_len=sig_len,
-                         fields=fields, iq=iq, received_at=time.time())
+                         fields=fields, iq=iq, received_at=time.time(),
+                         first_word_invalid=first_word_invalid,
+                         invalid_subcarriers=2 if first_word_invalid else 0,
+                         rate_code=rate, sig_mode=sig_mode)
 
 
 class SerialDispatcher:

@@ -118,6 +118,8 @@ class CsiViewState:
         self._zero_run = np.zeros(self.carriers, np.int32)
         self._null = np.zeros(self.carriers, bool)
         self._null_seen = 0
+        #: carriers the hardware flagged as invalid in the last packet
+        self._invalid = np.zeros(self.carriers, bool)
 
         self._last_amps = np.zeros(self.carriers, np.float32)
         self._last_iq_count = 0
@@ -136,6 +138,10 @@ class CsiViewState:
         self._change = 0.0
         self._change_max = 0.0
         self._change_ema = 0.0
+        self._rate = 0
+        self._sig_mode = 0
+        #: the rate codes seen, and how many packets carried each
+        self._rate_hist: Dict[int, int] = {}
 
     # -- feeding ------------------------------------------------------------
 
@@ -144,14 +150,23 @@ class CsiViewState:
         amps = subcarrier_amplitudes_np(record.iq)
         if amps.size == 0:
             return
+        self._invalid[:] = False
+        n_invalid = int(getattr(record, "invalid_subcarriers", 0) or 0)
+        if n_invalid:
+            # The bytes are still present, but the hardware says they are
+            # invalid. They are masked, not dropped, so the subcarrier
+            # indices stay aligned.
+            self._invalid[:n_invalid] = True
         self.push_amplitudes(
             amps, rssi=record.rssi, noise_floor=record.noise_floor,
             local_timestamp=record.local_timestamp, source_mac=record.mac,
-            source_channel=record.channel)
+            source_channel=record.channel, rate=getattr(record, "rate_code", 0),
+            sig_mode=getattr(record, "sig_mode", 0))
 
     def push_amplitudes(self, amps: np.ndarray, rssi: int = 0,
                         noise_floor: int = 0, local_timestamp: int = 0,
-                        source_mac: str = "", source_channel=None) -> None:
+                        source_mac: str = "", source_channel=None,
+                        rate: int = 0, sig_mode: int = 0) -> None:
         """Fold one packet's subcarrier amplitudes into the state.
 
         Split out from :meth:`push` so a **recorded** session can be replayed
@@ -221,6 +236,13 @@ class CsiViewState:
         self._local_timestamp = local_timestamp
         self._packets += 1
 
+        # The received frame's PHY rate. The CSI is measured on the preamble
+        # of a frame received at this rate and the amplitude scale follows
+        # it, so this is a confound the analysis has to be able to see.
+        self._rate = int(rate or 0)
+        self._sig_mode = int(sig_mode or 0)
+        self._rate_hist[self._rate] = self._rate_hist.get(self._rate, 0) + 1
+
         # The CSI source is the transmitter of the frame the board heard. It
         # is not necessarily the AP the board is associated with: a guest
         # network has several, and the board roams between them. A change is
@@ -261,7 +283,8 @@ class CsiViewState:
         return np.roll(self._trace, -self._trace_head)
 
     def used_mask(self) -> np.ndarray:
-        return ~self._null
+        """The carriers that carry information: not null, not flagged invalid."""
+        return (~self._null) & (~self._invalid)
 
     def null_indices(self) -> List[int]:
         return [int(i) for i in np.flatnonzero(self._null)]
@@ -290,6 +313,10 @@ class CsiViewState:
             "rssi": self._rssi,
             "noise_floor": self._noise_floor,
             "local_timestamp": self._local_timestamp,
+            "rate": self._rate,
+            "sig_mode": self._sig_mode,
+            "rate_histogram": dict(sorted(self._rate_hist.items())),
+            "invalid_subcarriers": int(self._invalid.sum()),
             "packets_seen": self._packets,
             "change": round(self._change, 6),
             "change_ema": round(self._change_ema, 6),

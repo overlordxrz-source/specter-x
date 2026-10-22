@@ -55,6 +55,16 @@ def csi_packet_value(record: CsiRecord) -> Dict:
         "subcarriers": len(amps),
         "amplitudes": [round(a, 1) for a in amps],
         "odd_trailing_sample": bool(record.iq) and len(record.iq) % 2 == 1,
+        # the received frame's PHY rate and mode. The CSI is measured on
+        # the preamble of a frame received at this rate and the amplitude
+        # scale follows it, so an analysis that ignores it is measuring the
+        # radio, not the room.
+        "rate": getattr(record, "rate_code", record.rate),
+        "sig_mode": getattr(record, "sig_mode", 0),
+        # the ESP-IDF flag: the first four bytes of the CSI buffer are
+        # invalid when it is set, and they are masked, not dropped.
+        "first_word_invalid": bool(getattr(record, "first_word_invalid", False)),
+        "invalid_subcarriers": int(getattr(record, "invalid_subcarriers", 0)),
     }
 
 

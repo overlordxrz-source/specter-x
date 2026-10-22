@@ -13,14 +13,30 @@ from specter.sensors.esp32.dispatcher import (CSI_FIELD_NAMES, BoundedQueue,
 
 #: The upstream packet is 24 fields plus a quoted data blob; the names are the
 #: ones the upstream example prints in its CSV header.
-def csi_line(seq=1, mac="b8:62:1f:e5:ac:62", rssi=-60, iq="0,0,-3,-5"):
+def csi_line(seq=1, mac="b8:62:1f:e5:ac:62", rssi=-60, iq=None, n_bytes=128):
+    """A realistic CSI line.
+
+    The upstream prints exactly ``info->len`` values - one per BYTE of the
+    CSI buffer - so the tail length has to match the ``len`` field, and the
+    parser checks it. The default is the board's real 128-byte HT20 LLTF
+    buffer: 64 complex subcarriers, with subcarrier 0 (DC) and 27..37 (the
+    guard band) unpopulated.
+    """
+    if iq is None:
+        iq = [0] * n_bytes
+        for n in range(1, 27):
+            iq[2 * n] = -12 + (n % 5)
+            iq[2 * n + 1] = 11 - (n % 4)
+        for n in range(38, 64):
+            iq[2 * n] = -9 + (n % 4)
+            iq[2 * n + 1] = 7 - (n % 3)
     fields = [
         "CSI_DATA", str(seq), mac, str(rssi),
         "9", "0", "0", "0", "0", "0", "0", "0", "0", "0",
         "-90", "0", "11", "0", "67768165", "0", "109", "0",
-        "128", "0",
+        str(len(iq)), "0",
     ]
-    return ",".join(fields) + ",\"" + "[" + iq + "]\""
+    return ",".join(fields) + ",\"" + "[" + ",".join(str(v) for v in iq) + "]\""
 
 
 HELLO = "HELLO,1,esp32s3-devkitc-1,ESP32-S3,14:C1:9F:26:52:EC,0.1.0,abc123"
@@ -126,7 +142,11 @@ def test_csi_fields_are_named_from_the_upstream_header():
     assert rec.fields["ampdu_cnt"] == "0"
     assert rec.fields["sgi"] == "0"
     assert rec.fields["type"] == "CSI_DATA"
-    assert rec.iq == [0, 0, -3, -5]
+    # the tail carries exactly ``len`` values - one per byte of the CSI buffer
+    assert len(rec.iq) == 128
+    # and the board's real HT20 layout: DC and the guard band are unpopulated
+    assert rec.iq[0:2] == [0, 0]
+    assert all(v == 0 for v in rec.iq[54:76])
     assert rec.has_iq
 
 
@@ -137,17 +157,26 @@ def test_a_real_packet_captured_from_the_board_parses_with_the_right_names():
     with open(os.path.join(here, "fixtures", "csi_packet_sample.txt")) as fh:
         line = fh.read().strip()
     rec = CsiParser().feed(line)
-    assert rec.seq == 10667
-    assert rec.mac == "b8:62:1f:e5:ac:62"
-    assert rec.rssi == -60
-    assert rec.rate == 9
-    assert rec.noise_floor == -90
-    assert rec.channel == 11
-    assert rec.local_timestamp == 67768165
-    assert rec.sig_len == 109
-    assert rec.fields["rx_format"] == "0"
-    assert rec.fields["len"] == "128"
-    assert rec.iq[:4] == [0, 0, -3, -5]
+    # the fixture is a packet captured from the board on 2026-10-22
+    assert rec.seq == 299155
+    assert rec.mac == "40:f4:ec:7e:37:22"
+    assert rec.rssi == -62
+    assert rec.rate == 11
+    assert rec.noise_floor == -96
+    assert rec.channel == 1
+    assert rec.sig_len == 67
+    assert rec.fields["rx_format"] == "1"      # a second copy of sig_mode
+    assert rec.fields["len"] == "128"          # the valid CSI length, in bytes
+    assert rec.fields["first_word"] == "0"     # the first_word_invalid flag
+    # the tail carries exactly `len` values
+    assert len(rec.iq) == 128
+    # and the board's real HT20 layout: DC and the guard band unpopulated
+    amps = [float(abs(v)) for v in rec.iq[:4]]
+    assert rec.iq[0] == 0 and rec.iq[1] == 0
+    assert all(v == 0 for v in rec.iq[54:76])
+    # the device's 32-bit microsecond counter, printed signed
+    assert rec.local_timestamp == 3122514817
+    assert 0 <= rec.local_timestamp < 2 ** 32
 
 
 def test_a_csi_packet_split_across_two_chunks_is_reassembled():

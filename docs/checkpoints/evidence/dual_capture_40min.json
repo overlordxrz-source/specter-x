@@ -1,0 +1,2295 @@
+{
+  "window_s": 2400.2,
+  "usb": {
+    "name": "usb_cdc",
+    "port": "/dev/cu.usbmodem1101",
+    "baud": 115200,
+    "bytes": 86018665,
+    "lines": 184272,
+    "csi_lines": 184132,
+    "log_lines": 84,
+    "last_byte": 1792643502.31626,
+    "last_csi": 1792643502.316264,
+    "last_log": 1792643305.6175108
+  },
+  "uart": {
+    "name": "uart0_console",
+    "port": "/dev/cu.usbmodem5B901602281",
+    "baud": 921600,
+    "bytes": 86005628,
+    "lines": 184243,
+    "csi_lines": 184104,
+    "log_lines": 84,
+    "last_byte": 1792643502.1769989,
+    "last_csi": 1792643502.177006,
+    "last_log": 1792643305.6183271
+  },
+  "samples": [
+    {
+      "t": 0.5,
+      "usb_bytes": 44897,
+      "usb_csi": 96,
+      "uart_bytes": 44904,
+      "uart_csi": 96,
+      "uart_log": 0,
+      "usb_csi_silence_s": 0.01,
+      "uart_csi_silence_s": 0.01
+    },
+    {
+      "t": 15.7,
+      "usb_bytes": 1256181,
+      "usb_csi": 2700,
+      "uart_bytes": 1256188,
+      "uart_csi": 2700,
+      "uart_log": 0,
+      "usb_csi_silence_s": 0.04,
+      "uart_csi_silence_s": 0.04
+    },
+    {
+      "t": 30.8,
+      "usb_bytes": 2472052,
+      "usb_csi": 5320,
+      "uart_bytes": 2471565,
+      "uart_csi": 5319,
+      "uart_log": 0,
+      "usb_csi_silence_s": 0.01,
+      "uart_csi_silence_s": 0.01
+    },
+    {
+      "t": 46.0,
+      "usb_bytes": 3743789,
+      "usb_csi": 8057,
+      "uart_bytes": 3743796,
+      "uart_csi": 8057,
+      "uart_log": 0,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.0
+    },
+    {
+      "t": 61.1,
+      "usb_bytes": 5052262,
+      "usb_csi": 10879,
+      "uart_bytes": 5052269,
+      "uart_csi": 10879,
+      "uart_log": 0,
+      "usb_csi_silence_s": 0.01,
+      "uart_csi_silence_s": 0.01
+    },
+    {
+      "t": 76.2,
+      "usb_bytes": 6357366,
+      "usb_csi": 13708,
+      "uart_bytes": 6356922,
+      "uart_csi": 13707,
+      "uart_log": 0,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.01
+    },
+    {
+      "t": 91.4,
+      "usb_bytes": 7633909,
+      "usb_csi": 16457,
+      "uart_bytes": 7633916,
+      "uart_csi": 16457,
+      "uart_log": 0,
+      "usb_csi_silence_s": 0.02,
+      "uart_csi_silence_s": 0.01
+    },
+    {
+      "t": 106.6,
+      "usb_bytes": 8917089,
+      "usb_csi": 19226,
+      "uart_bytes": 8917096,
+      "uart_csi": 19226,
+      "uart_log": 0,
+      "usb_csi_silence_s": 0.01,
+      "uart_csi_silence_s": 0.01
+    },
+    {
+      "t": 121.7,
+      "usb_bytes": 10211479,
+      "usb_csi": 22015,
+      "uart_bytes": 10211035,
+      "uart_csi": 22014,
+      "uart_log": 0,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.0
+    },
+    {
+      "t": 136.9,
+      "usb_bytes": 11477702,
+      "usb_csi": 24746,
+      "uart_bytes": 11467059,
+      "uart_csi": 24723,
+      "uart_log": 0,
+      "usb_csi_silence_s": 0.01,
+      "uart_csi_silence_s": 0.12
+    },
+    {
+      "t": 152.1,
+      "usb_bytes": 12733863,
+      "usb_csi": 27462,
+      "uart_bytes": 12733870,
+      "uart_csi": 27462,
+      "uart_log": 0,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.0
+    },
+    {
+      "t": 167.2,
+      "usb_bytes": 13998913,
+      "usb_csi": 30207,
+      "uart_bytes": 13983403,
+      "uart_csi": 30172,
+      "uart_log": 0,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.17
+    },
+    {
+      "t": 182.4,
+      "usb_bytes": 15277347,
+      "usb_csi": 32976,
+      "uart_bytes": 15277354,
+      "uart_csi": 32976,
+      "uart_log": 0,
+      "usb_csi_silence_s": 0.02,
+      "uart_csi_silence_s": 0.02
+    },
+    {
+      "t": 197.6,
+      "usb_bytes": 16554102,
+      "usb_csi": 35736,
+      "uart_bytes": 16546330,
+      "uart_csi": 35718,
+      "uart_log": 0,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.08
+    },
+    {
+      "t": 212.7,
+      "usb_bytes": 17735043,
+      "usb_csi": 38293,
+      "uart_bytes": 17725680,
+      "uart_csi": 38273,
+      "uart_log": 0,
+      "usb_csi_silence_s": 0.01,
+      "uart_csi_silence_s": 0.11
+    },
+    {
+      "t": 256.4,
+      "usb_bytes": 18430628,
+      "usb_csi": 39787,
+      "uart_bytes": 18430635,
+      "uart_csi": 39787,
+      "uart_log": 12,
+      "usb_csi_silence_s": 35.52,
+      "uart_csi_silence_s": 35.52
+    },
+    {
+      "t": 286.9,
+      "usb_bytes": 18430628,
+      "usb_csi": 39787,
+      "uart_bytes": 18430635,
+      "uart_csi": 39787,
+      "uart_log": 12,
+      "usb_csi_silence_s": 66.04,
+      "uart_csi_silence_s": 66.04
+    },
+    {
+      "t": 317.4,
+      "usb_bytes": 18430628,
+      "usb_csi": 39787,
+      "uart_bytes": 18430635,
+      "uart_csi": 39787,
+      "uart_log": 12,
+      "usb_csi_silence_s": 96.54,
+      "uart_csi_silence_s": 96.54
+    },
+    {
+      "t": 347.9,
+      "usb_bytes": 18430628,
+      "usb_csi": 39787,
+      "uart_bytes": 18430635,
+      "uart_csi": 39787,
+      "uart_log": 12,
+      "usb_csi_silence_s": 127.05,
+      "uart_csi_silence_s": 127.05
+    },
+    {
+      "t": 378.5,
+      "usb_bytes": 18430628,
+      "usb_csi": 39787,
+      "uart_bytes": 18430635,
+      "uart_csi": 39787,
+      "uart_log": 12,
+      "usb_csi_silence_s": 157.56,
+      "uart_csi_silence_s": 157.56
+    },
+    {
+      "t": 409.0,
+      "usb_bytes": 18430628,
+      "usb_csi": 39787,
+      "uart_bytes": 18430635,
+      "uart_csi": 39787,
+      "uart_log": 12,
+      "usb_csi_silence_s": 188.07,
+      "uart_csi_silence_s": 188.07
+    },
+    {
+      "t": 439.5,
+      "usb_bytes": 18430628,
+      "usb_csi": 39787,
+      "uart_bytes": 18430635,
+      "uart_csi": 39787,
+      "uart_log": 12,
+      "usb_csi_silence_s": 218.58,
+      "uart_csi_silence_s": 218.58
+    },
+    {
+      "t": 470.0,
+      "usb_bytes": 18430628,
+      "usb_csi": 39787,
+      "uart_bytes": 18430635,
+      "uart_csi": 39787,
+      "uart_log": 12,
+      "usb_csi_silence_s": 249.1,
+      "uart_csi_silence_s": 249.1
+    },
+    {
+      "t": 500.5,
+      "usb_bytes": 18430628,
+      "usb_csi": 39787,
+      "uart_bytes": 18430635,
+      "uart_csi": 39787,
+      "uart_log": 12,
+      "usb_csi_silence_s": 279.61,
+      "uart_csi_silence_s": 279.61
+    },
+    {
+      "t": 531.0,
+      "usb_bytes": 18430628,
+      "usb_csi": 39787,
+      "uart_bytes": 18430635,
+      "uart_csi": 39787,
+      "uart_log": 12,
+      "usb_csi_silence_s": 310.13,
+      "uart_csi_silence_s": 310.13
+    },
+    {
+      "t": 561.5,
+      "usb_bytes": 18433040,
+      "usb_csi": 39789,
+      "uart_bytes": 18433047,
+      "uart_csi": 39789,
+      "uart_log": 24,
+      "usb_csi_silence_s": 10.69,
+      "uart_csi_silence_s": 10.69
+    },
+    {
+      "t": 592.0,
+      "usb_bytes": 18433040,
+      "usb_csi": 39789,
+      "uart_bytes": 18433047,
+      "uart_csi": 39789,
+      "uart_log": 24,
+      "usb_csi_silence_s": 41.2,
+      "uart_csi_silence_s": 41.2
+    },
+    {
+      "t": 622.6,
+      "usb_bytes": 18433040,
+      "usb_csi": 39789,
+      "uart_bytes": 18433047,
+      "uart_csi": 39789,
+      "uart_log": 24,
+      "usb_csi_silence_s": 71.72,
+      "uart_csi_silence_s": 71.71
+    },
+    {
+      "t": 653.1,
+      "usb_bytes": 18433040,
+      "usb_csi": 39789,
+      "uart_bytes": 18433047,
+      "uart_csi": 39789,
+      "uart_log": 24,
+      "usb_csi_silence_s": 102.23,
+      "uart_csi_silence_s": 102.22
+    },
+    {
+      "t": 683.6,
+      "usb_bytes": 18433040,
+      "usb_csi": 39789,
+      "uart_bytes": 18433047,
+      "uart_csi": 39789,
+      "uart_log": 24,
+      "usb_csi_silence_s": 132.74,
+      "uart_csi_silence_s": 132.74
+    },
+    {
+      "t": 714.1,
+      "usb_bytes": 18433040,
+      "usb_csi": 39789,
+      "uart_bytes": 18433047,
+      "uart_csi": 39789,
+      "uart_log": 24,
+      "usb_csi_silence_s": 163.25,
+      "uart_csi_silence_s": 163.24
+    },
+    {
+      "t": 744.6,
+      "usb_bytes": 18433040,
+      "usb_csi": 39789,
+      "uart_bytes": 18433047,
+      "uart_csi": 39789,
+      "uart_log": 24,
+      "usb_csi_silence_s": 193.75,
+      "uart_csi_silence_s": 193.74
+    },
+    {
+      "t": 775.1,
+      "usb_bytes": 18433040,
+      "usb_csi": 39789,
+      "uart_bytes": 18433047,
+      "uart_csi": 39789,
+      "uart_log": 24,
+      "usb_csi_silence_s": 224.25,
+      "uart_csi_silence_s": 224.25
+    },
+    {
+      "t": 805.6,
+      "usb_bytes": 18433040,
+      "usb_csi": 39789,
+      "uart_bytes": 18433047,
+      "uart_csi": 39789,
+      "uart_log": 24,
+      "usb_csi_silence_s": 254.77,
+      "uart_csi_silence_s": 254.77
+    },
+    {
+      "t": 836.1,
+      "usb_bytes": 18433040,
+      "usb_csi": 39789,
+      "uart_bytes": 18433047,
+      "uart_csi": 39789,
+      "uart_log": 24,
+      "usb_csi_silence_s": 285.28,
+      "uart_csi_silence_s": 285.28
+    },
+    {
+      "t": 866.6,
+      "usb_bytes": 18433040,
+      "usb_csi": 39789,
+      "uart_bytes": 18433047,
+      "uart_csi": 39789,
+      "uart_log": 24,
+      "usb_csi_silence_s": 315.79,
+      "uart_csi_silence_s": 315.79
+    },
+    {
+      "t": 897.2,
+      "usb_bytes": 19327124,
+      "usb_csi": 41706,
+      "uart_bytes": 19327131,
+      "uart_csi": 41706,
+      "uart_log": 36,
+      "usb_csi_silence_s": 0.01,
+      "uart_csi_silence_s": 0.01
+    },
+    {
+      "t": 912.3,
+      "usb_bytes": 20312854,
+      "usb_csi": 43826,
+      "uart_bytes": 20312861,
+      "uart_csi": 43826,
+      "uart_log": 36,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.0
+    },
+    {
+      "t": 927.5,
+      "usb_bytes": 21145521,
+      "usb_csi": 45619,
+      "uart_bytes": 21140013,
+      "uart_csi": 45607,
+      "uart_log": 36,
+      "usb_csi_silence_s": 0.01,
+      "uart_csi_silence_s": 0.07
+    },
+    {
+      "t": 942.7,
+      "usb_bytes": 22168406,
+      "usb_csi": 47817,
+      "uart_bytes": 22161505,
+      "uart_csi": 47802,
+      "uart_log": 36,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.08
+    },
+    {
+      "t": 957.8,
+      "usb_bytes": 23008694,
+      "usb_csi": 49615,
+      "uart_bytes": 23004689,
+      "uart_csi": 49606,
+      "uart_log": 36,
+      "usb_csi_silence_s": 0.01,
+      "uart_csi_silence_s": 0.04
+    },
+    {
+      "t": 973.0,
+      "usb_bytes": 24106498,
+      "usb_csi": 51974,
+      "uart_bytes": 24106505,
+      "uart_csi": 51974,
+      "uart_log": 36,
+      "usb_csi_silence_s": 0.01,
+      "uart_csi_silence_s": 0.01
+    },
+    {
+      "t": 988.2,
+      "usb_bytes": 25361892,
+      "usb_csi": 54666,
+      "uart_bytes": 25357750,
+      "uart_csi": 54657,
+      "uart_log": 36,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.05
+    },
+    {
+      "t": 1003.3,
+      "usb_bytes": 26637145,
+      "usb_csi": 57398,
+      "uart_bytes": 26637152,
+      "uart_csi": 57398,
+      "uart_log": 36,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.01
+    },
+    {
+      "t": 1018.4,
+      "usb_bytes": 27906791,
+      "usb_csi": 60118,
+      "uart_bytes": 27903416,
+      "uart_csi": 60110,
+      "uart_log": 36,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.03
+    },
+    {
+      "t": 1033.6,
+      "usb_bytes": 29078523,
+      "usb_csi": 62625,
+      "uart_bytes": 29078530,
+      "uart_csi": 62625,
+      "uart_log": 36,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.0
+    },
+    {
+      "t": 1048.8,
+      "usb_bytes": 30254158,
+      "usb_csi": 65147,
+      "uart_bytes": 30249903,
+      "uart_csi": 65138,
+      "uart_log": 36,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.05
+    },
+    {
+      "t": 1064.0,
+      "usb_bytes": 31415744,
+      "usb_csi": 67636,
+      "uart_bytes": 31415751,
+      "uart_csi": 67636,
+      "uart_log": 36,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.0
+    },
+    {
+      "t": 1079.1,
+      "usb_bytes": 32704479,
+      "usb_csi": 70411,
+      "uart_bytes": 32704006,
+      "uart_csi": 70410,
+      "uart_log": 36,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.01
+    },
+    {
+      "t": 1094.2,
+      "usb_bytes": 33906793,
+      "usb_csi": 72986,
+      "uart_bytes": 33895367,
+      "uart_csi": 72961,
+      "uart_log": 36,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.12
+    },
+    {
+      "t": 1109.4,
+      "usb_bytes": 35175367,
+      "usb_csi": 75695,
+      "uart_bytes": 35174408,
+      "uart_csi": 75693,
+      "uart_log": 36,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.01
+    },
+    {
+      "t": 1124.5,
+      "usb_bytes": 36422479,
+      "usb_csi": 78357,
+      "uart_bytes": 36407102,
+      "uart_csi": 78324,
+      "uart_log": 36,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.17
+    },
+    {
+      "t": 1139.7,
+      "usb_bytes": 37700724,
+      "usb_csi": 81074,
+      "uart_bytes": 37698915,
+      "uart_csi": 81070,
+      "uart_log": 36,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.02
+    },
+    {
+      "t": 1154.8,
+      "usb_bytes": 38950521,
+      "usb_csi": 83742,
+      "uart_bytes": 38949578,
+      "uart_csi": 83740,
+      "uart_log": 36,
+      "usb_csi_silence_s": 0.01,
+      "uart_csi_silence_s": 0.01
+    },
+    {
+      "t": 1170.0,
+      "usb_bytes": 40191439,
+      "usb_csi": 86394,
+      "uart_bytes": 40191446,
+      "uart_csi": 86394,
+      "uart_log": 36,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.0
+    },
+    {
+      "t": 1185.1,
+      "usb_bytes": 41448677,
+      "usb_csi": 89072,
+      "uart_bytes": 41445476,
+      "uart_csi": 89065,
+      "uart_log": 36,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.04
+    },
+    {
+      "t": 1200.3,
+      "usb_bytes": 42635415,
+      "usb_csi": 91603,
+      "uart_bytes": 42635422,
+      "uart_csi": 91603,
+      "uart_log": 36,
+      "usb_csi_silence_s": 0.01,
+      "uart_csi_silence_s": 0.0
+    },
+    {
+      "t": 1245.5,
+      "usb_bytes": 43437487,
+      "usb_csi": 93311,
+      "uart_bytes": 43437494,
+      "uart_csi": 93311,
+      "uart_log": 48,
+      "usb_csi_silence_s": 35.64,
+      "uart_csi_silence_s": 35.64
+    },
+    {
+      "t": 1276.0,
+      "usb_bytes": 43437487,
+      "usb_csi": 93311,
+      "uart_bytes": 43437494,
+      "uart_csi": 93311,
+      "uart_log": 48,
+      "usb_csi_silence_s": 66.15,
+      "uart_csi_silence_s": 66.15
+    },
+    {
+      "t": 1306.5,
+      "usb_bytes": 43437487,
+      "usb_csi": 93311,
+      "uart_bytes": 43437494,
+      "uart_csi": 93311,
+      "uart_log": 48,
+      "usb_csi_silence_s": 96.65,
+      "uart_csi_silence_s": 96.65
+    },
+    {
+      "t": 1337.0,
+      "usb_bytes": 43437487,
+      "usb_csi": 93311,
+      "uart_bytes": 43437494,
+      "uart_csi": 93311,
+      "uart_log": 48,
+      "usb_csi_silence_s": 127.16,
+      "uart_csi_silence_s": 127.16
+    },
+    {
+      "t": 1367.5,
+      "usb_bytes": 43437487,
+      "usb_csi": 93311,
+      "uart_bytes": 43437494,
+      "uart_csi": 93311,
+      "uart_log": 48,
+      "usb_csi_silence_s": 157.67,
+      "uart_csi_silence_s": 157.66
+    },
+    {
+      "t": 1398.1,
+      "usb_bytes": 43437487,
+      "usb_csi": 93311,
+      "uart_bytes": 43437494,
+      "uart_csi": 93311,
+      "uart_log": 48,
+      "usb_csi_silence_s": 188.17,
+      "uart_csi_silence_s": 188.17
+    },
+    {
+      "t": 1428.6,
+      "usb_bytes": 43437487,
+      "usb_csi": 93311,
+      "uart_bytes": 43437494,
+      "uart_csi": 93311,
+      "uart_log": 48,
+      "usb_csi_silence_s": 218.68,
+      "uart_csi_silence_s": 218.68
+    },
+    {
+      "t": 1459.1,
+      "usb_bytes": 43437487,
+      "usb_csi": 93311,
+      "uart_bytes": 43437494,
+      "uart_csi": 93311,
+      "uart_log": 48,
+      "usb_csi_silence_s": 249.18,
+      "uart_csi_silence_s": 249.18
+    },
+    {
+      "t": 1489.6,
+      "usb_bytes": 43437487,
+      "usb_csi": 93311,
+      "uart_bytes": 43437494,
+      "uart_csi": 93311,
+      "uart_log": 48,
+      "usb_csi_silence_s": 279.69,
+      "uart_csi_silence_s": 279.69
+    },
+    {
+      "t": 1520.1,
+      "usb_bytes": 43437487,
+      "usb_csi": 93311,
+      "uart_bytes": 43437494,
+      "uart_csi": 93311,
+      "uart_log": 48,
+      "usb_csi_silence_s": 310.21,
+      "uart_csi_silence_s": 310.21
+    },
+    {
+      "t": 1550.6,
+      "usb_bytes": 43960059,
+      "usb_csi": 94424,
+      "uart_bytes": 43960066,
+      "uart_csi": 94424,
+      "uart_log": 60,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.0
+    },
+    {
+      "t": 1565.8,
+      "usb_bytes": 45201258,
+      "usb_csi": 97067,
+      "uart_bytes": 45199302,
+      "uart_csi": 97063,
+      "uart_log": 60,
+      "usb_csi_silence_s": 0.01,
+      "uart_csi_silence_s": 0.03
+    },
+    {
+      "t": 1581.0,
+      "usb_bytes": 46453705,
+      "usb_csi": 99735,
+      "uart_bytes": 46453241,
+      "uart_csi": 99734,
+      "uart_log": 60,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.0
+    },
+    {
+      "t": 1596.2,
+      "usb_bytes": 47650395,
+      "usb_csi": 102286,
+      "uart_bytes": 47640823,
+      "uart_csi": 102265,
+      "uart_log": 60,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.1
+    },
+    {
+      "t": 1611.4,
+      "usb_bytes": 48869072,
+      "usb_csi": 104883,
+      "uart_bytes": 48869079,
+      "uart_csi": 104883,
+      "uart_log": 60,
+      "usb_csi_silence_s": 0.01,
+      "uart_csi_silence_s": 0.01
+    },
+    {
+      "t": 1626.6,
+      "usb_bytes": 50079246,
+      "usb_csi": 107465,
+      "uart_bytes": 50071213,
+      "uart_csi": 107448,
+      "uart_log": 60,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.1
+    },
+    {
+      "t": 1641.7,
+      "usb_bytes": 51237569,
+      "usb_csi": 109935,
+      "uart_bytes": 51237576,
+      "uart_csi": 109935,
+      "uart_log": 60,
+      "usb_csi_silence_s": 0.01,
+      "uart_csi_silence_s": 0.0
+    },
+    {
+      "t": 1656.9,
+      "usb_bytes": 52459706,
+      "usb_csi": 112543,
+      "uart_bytes": 52454154,
+      "uart_csi": 112531,
+      "uart_log": 60,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.06
+    },
+    {
+      "t": 1672.1,
+      "usb_bytes": 53683113,
+      "usb_csi": 115176,
+      "uart_bytes": 53683120,
+      "uart_csi": 115176,
+      "uart_log": 60,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.0
+    },
+    {
+      "t": 1687.2,
+      "usb_bytes": 54993323,
+      "usb_csi": 117999,
+      "uart_bytes": 54992833,
+      "uart_csi": 117998,
+      "uart_log": 60,
+      "usb_csi_silence_s": 0.01,
+      "uart_csi_silence_s": 0.01
+    },
+    {
+      "t": 1702.4,
+      "usb_bytes": 56177425,
+      "usb_csi": 120545,
+      "uart_bytes": 56177432,
+      "uart_csi": 120545,
+      "uart_log": 60,
+      "usb_csi_silence_s": 0.02,
+      "uart_csi_silence_s": 0.01
+    },
+    {
+      "t": 1717.6,
+      "usb_bytes": 57419636,
+      "usb_csi": 123211,
+      "uart_bytes": 57418253,
+      "uart_csi": 123208,
+      "uart_log": 60,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.02
+    },
+    {
+      "t": 1732.8,
+      "usb_bytes": 58659677,
+      "usb_csi": 125856,
+      "uart_bytes": 58649108,
+      "uart_csi": 125833,
+      "uart_log": 60,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.12
+    },
+    {
+      "t": 1748.0,
+      "usb_bytes": 59883503,
+      "usb_csi": 128461,
+      "uart_bytes": 59880933,
+      "uart_csi": 128455,
+      "uart_log": 60,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.03
+    },
+    {
+      "t": 1763.1,
+      "usb_bytes": 61039599,
+      "usb_csi": 130928,
+      "uart_bytes": 61039606,
+      "uart_csi": 130928,
+      "uart_log": 60,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.0
+    },
+    {
+      "t": 1778.4,
+      "usb_bytes": 62291169,
+      "usb_csi": 133601,
+      "uart_bytes": 62282267,
+      "uart_csi": 133582,
+      "uart_log": 60,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.1
+    },
+    {
+      "t": 1793.5,
+      "usb_bytes": 63569703,
+      "usb_csi": 136335,
+      "uart_bytes": 63559354,
+      "uart_csi": 136313,
+      "uart_log": 60,
+      "usb_csi_silence_s": 0.01,
+      "uart_csi_silence_s": 0.12
+    },
+    {
+      "t": 1808.6,
+      "usb_bytes": 64875096,
+      "usb_csi": 139126,
+      "uart_bytes": 64867686,
+      "uart_csi": 139109,
+      "uart_log": 60,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.08
+    },
+    {
+      "t": 1823.8,
+      "usb_bytes": 66148731,
+      "usb_csi": 141842,
+      "uart_bytes": 66137081,
+      "uart_csi": 141817,
+      "uart_log": 60,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.13
+    },
+    {
+      "t": 1839.0,
+      "usb_bytes": 67437181,
+      "usb_csi": 144588,
+      "uart_bytes": 67427819,
+      "uart_csi": 144568,
+      "uart_log": 60,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.1
+    },
+    {
+      "t": 1854.2,
+      "usb_bytes": 68619588,
+      "usb_csi": 147113,
+      "uart_bytes": 68610290,
+      "uart_csi": 147093,
+      "uart_log": 60,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.1
+    },
+    {
+      "t": 1869.3,
+      "usb_bytes": 69867367,
+      "usb_csi": 149781,
+      "uart_bytes": 69864627,
+      "uart_csi": 149775,
+      "uart_log": 60,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.03
+    },
+    {
+      "t": 1905.9,
+      "usb_bytes": 69945778,
+      "usb_csi": 149944,
+      "uart_bytes": 69945785,
+      "uart_csi": 149944,
+      "uart_log": 72,
+      "usb_csi_silence_s": 35.54,
+      "uart_csi_silence_s": 35.54
+    },
+    {
+      "t": 1936.4,
+      "usb_bytes": 69945778,
+      "usb_csi": 149944,
+      "uart_bytes": 69945785,
+      "uart_csi": 149944,
+      "uart_log": 72,
+      "usb_csi_silence_s": 66.04,
+      "uart_csi_silence_s": 66.04
+    },
+    {
+      "t": 1966.9,
+      "usb_bytes": 69945778,
+      "usb_csi": 149944,
+      "uart_bytes": 69945785,
+      "uart_csi": 149944,
+      "uart_log": 72,
+      "usb_csi_silence_s": 96.55,
+      "uart_csi_silence_s": 96.55
+    },
+    {
+      "t": 1997.4,
+      "usb_bytes": 69945778,
+      "usb_csi": 149944,
+      "uart_bytes": 69945785,
+      "uart_csi": 149944,
+      "uart_log": 72,
+      "usb_csi_silence_s": 127.06,
+      "uart_csi_silence_s": 127.06
+    },
+    {
+      "t": 2027.9,
+      "usb_bytes": 69945778,
+      "usb_csi": 149944,
+      "uart_bytes": 69945785,
+      "uart_csi": 149944,
+      "uart_log": 72,
+      "usb_csi_silence_s": 157.56,
+      "uart_csi_silence_s": 157.56
+    },
+    {
+      "t": 2058.4,
+      "usb_bytes": 69945778,
+      "usb_csi": 149944,
+      "uart_bytes": 69945785,
+      "uart_csi": 149944,
+      "uart_log": 72,
+      "usb_csi_silence_s": 188.07,
+      "uart_csi_silence_s": 188.07
+    },
+    {
+      "t": 2088.9,
+      "usb_bytes": 69945778,
+      "usb_csi": 149944,
+      "uart_bytes": 69945785,
+      "uart_csi": 149944,
+      "uart_log": 72,
+      "usb_csi_silence_s": 218.58,
+      "uart_csi_silence_s": 218.58
+    },
+    {
+      "t": 2119.4,
+      "usb_bytes": 69945778,
+      "usb_csi": 149944,
+      "uart_bytes": 69945785,
+      "uart_csi": 149944,
+      "uart_log": 72,
+      "usb_csi_silence_s": 249.09,
+      "uart_csi_silence_s": 249.09
+    },
+    {
+      "t": 2150.0,
+      "usb_bytes": 69945778,
+      "usb_csi": 149944,
+      "uart_bytes": 69945785,
+      "uart_csi": 149944,
+      "uart_log": 72,
+      "usb_csi_silence_s": 279.6,
+      "uart_csi_silence_s": 279.6
+    },
+    {
+      "t": 2180.5,
+      "usb_bytes": 69945778,
+      "usb_csi": 149944,
+      "uart_bytes": 69945785,
+      "uart_csi": 149944,
+      "uart_log": 72,
+      "usb_csi_silence_s": 310.11,
+      "uart_csi_silence_s": 310.1
+    },
+    {
+      "t": 2211.0,
+      "usb_bytes": 70462581,
+      "usb_csi": 151045,
+      "uart_bytes": 70462588,
+      "uart_csi": 151045,
+      "uart_log": 84,
+      "usb_csi_silence_s": 0.01,
+      "uart_csi_silence_s": 0.01
+    },
+    {
+      "t": 2226.1,
+      "usb_bytes": 71634957,
+      "usb_csi": 153546,
+      "uart_bytes": 71632695,
+      "uart_csi": 153541,
+      "uart_log": 84,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.03
+    },
+    {
+      "t": 2241.3,
+      "usb_bytes": 72864443,
+      "usb_csi": 156170,
+      "uart_bytes": 72864450,
+      "uart_csi": 156170,
+      "uart_log": 84,
+      "usb_csi_silence_s": 0.01,
+      "uart_csi_silence_s": 0.0
+    },
+    {
+      "t": 2256.4,
+      "usb_bytes": 74145532,
+      "usb_csi": 158894,
+      "uart_bytes": 74137629,
+      "uart_csi": 158877,
+      "uart_log": 84,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.09
+    },
+    {
+      "t": 2271.6,
+      "usb_bytes": 75397884,
+      "usb_csi": 161564,
+      "uart_bytes": 75397891,
+      "uart_csi": 161564,
+      "uart_log": 84,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.0
+    },
+    {
+      "t": 2286.7,
+      "usb_bytes": 76616347,
+      "usb_csi": 164165,
+      "uart_bytes": 76616354,
+      "uart_csi": 164165,
+      "uart_log": 84,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.0
+    },
+    {
+      "t": 2301.8,
+      "usb_bytes": 77852719,
+      "usb_csi": 166796,
+      "uart_bytes": 77852726,
+      "uart_csi": 166796,
+      "uart_log": 84,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.0
+    },
+    {
+      "t": 2316.9,
+      "usb_bytes": 79065510,
+      "usb_csi": 169368,
+      "uart_bytes": 79059230,
+      "uart_csi": 169354,
+      "uart_log": 84,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.07
+    },
+    {
+      "t": 2332.0,
+      "usb_bytes": 80283305,
+      "usb_csi": 171954,
+      "uart_bytes": 80282832,
+      "uart_csi": 171953,
+      "uart_log": 84,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.01
+    },
+    {
+      "t": 2347.2,
+      "usb_bytes": 81554657,
+      "usb_csi": 174655,
+      "uart_bytes": 81554187,
+      "uart_csi": 174654,
+      "uart_log": 84,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.0
+    },
+    {
+      "t": 2362.3,
+      "usb_bytes": 82821562,
+      "usb_csi": 177346,
+      "uart_bytes": 82821569,
+      "uart_csi": 177346,
+      "uart_log": 84,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.0
+    },
+    {
+      "t": 2377.4,
+      "usb_bytes": 84091388,
+      "usb_csi": 180044,
+      "uart_bytes": 84091395,
+      "uart_csi": 180044,
+      "uart_log": 84,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.0
+    },
+    {
+      "t": 2392.6,
+      "usb_bytes": 85379841,
+      "usb_csi": 182782,
+      "uart_bytes": 85378852,
+      "uart_csi": 182780,
+      "uart_log": 84,
+      "usb_csi_silence_s": 0.0,
+      "uart_csi_silence_s": 0.01
+    }
+  ],
+  "events": [
+    {
+      "t": 225.9,
+      "event": "usb_silence",
+      "usb_silence_s": 5.0,
+      "uart_csi_silence_s": 5.0,
+      "uart_last_log_s_ago": 2.2,
+      "uart_log_tail": [
+        "I (659450) wifi:state: run -> init (1a0)",
+        "I (659450) wifi:pm stop, total sleep time: 3528720 us / 327236893 us",
+        "I (659451) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (661862) wifi:new:<11,0>, old:<1,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (661863) wifi:state: init -> auth (b0)",
+        "I (661866) wifi:state: auth -> assoc (0)",
+        "I (662319) wifi:state: assoc -> run (10)",
+        "I (662320) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (662320) wifi:security: Open Auth, phy: bgn, rssi: -65",
+        "I (662320) wifi:pm start, type: 1",
+        "I (662321) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (662383) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 256.4,
+      "event": "usb_silence",
+      "usb_silence_s": 35.5,
+      "uart_csi_silence_s": 35.5,
+      "uart_last_log_s_ago": 32.7,
+      "uart_log_tail": [
+        "I (659450) wifi:state: run -> init (1a0)",
+        "I (659450) wifi:pm stop, total sleep time: 3528720 us / 327236893 us",
+        "I (659451) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (661862) wifi:new:<11,0>, old:<1,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (661863) wifi:state: init -> auth (b0)",
+        "I (661866) wifi:state: auth -> assoc (0)",
+        "I (662319) wifi:state: assoc -> run (10)",
+        "I (662320) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (662320) wifi:security: Open Auth, phy: bgn, rssi: -65",
+        "I (662320) wifi:pm start, type: 1",
+        "I (662321) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (662383) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 286.9,
+      "event": "usb_silence",
+      "usb_silence_s": 66.0,
+      "uart_csi_silence_s": 66.0,
+      "uart_last_log_s_ago": 63.2,
+      "uart_log_tail": [
+        "I (659450) wifi:state: run -> init (1a0)",
+        "I (659450) wifi:pm stop, total sleep time: 3528720 us / 327236893 us",
+        "I (659451) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (661862) wifi:new:<11,0>, old:<1,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (661863) wifi:state: init -> auth (b0)",
+        "I (661866) wifi:state: auth -> assoc (0)",
+        "I (662319) wifi:state: assoc -> run (10)",
+        "I (662320) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (662320) wifi:security: Open Auth, phy: bgn, rssi: -65",
+        "I (662320) wifi:pm start, type: 1",
+        "I (662321) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (662383) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 317.4,
+      "event": "usb_silence",
+      "usb_silence_s": 96.5,
+      "uart_csi_silence_s": 96.5,
+      "uart_last_log_s_ago": 93.7,
+      "uart_log_tail": [
+        "I (659450) wifi:state: run -> init (1a0)",
+        "I (659450) wifi:pm stop, total sleep time: 3528720 us / 327236893 us",
+        "I (659451) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (661862) wifi:new:<11,0>, old:<1,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (661863) wifi:state: init -> auth (b0)",
+        "I (661866) wifi:state: auth -> assoc (0)",
+        "I (662319) wifi:state: assoc -> run (10)",
+        "I (662320) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (662320) wifi:security: Open Auth, phy: bgn, rssi: -65",
+        "I (662320) wifi:pm start, type: 1",
+        "I (662321) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (662383) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 347.9,
+      "event": "usb_silence",
+      "usb_silence_s": 127.1,
+      "uart_csi_silence_s": 127.1,
+      "uart_last_log_s_ago": 124.2,
+      "uart_log_tail": [
+        "I (659450) wifi:state: run -> init (1a0)",
+        "I (659450) wifi:pm stop, total sleep time: 3528720 us / 327236893 us",
+        "I (659451) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (661862) wifi:new:<11,0>, old:<1,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (661863) wifi:state: init -> auth (b0)",
+        "I (661866) wifi:state: auth -> assoc (0)",
+        "I (662319) wifi:state: assoc -> run (10)",
+        "I (662320) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (662320) wifi:security: Open Auth, phy: bgn, rssi: -65",
+        "I (662320) wifi:pm start, type: 1",
+        "I (662321) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (662383) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 378.5,
+      "event": "usb_silence",
+      "usb_silence_s": 157.6,
+      "uart_csi_silence_s": 157.6,
+      "uart_last_log_s_ago": 154.7,
+      "uart_log_tail": [
+        "I (659450) wifi:state: run -> init (1a0)",
+        "I (659450) wifi:pm stop, total sleep time: 3528720 us / 327236893 us",
+        "I (659451) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (661862) wifi:new:<11,0>, old:<1,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (661863) wifi:state: init -> auth (b0)",
+        "I (661866) wifi:state: auth -> assoc (0)",
+        "I (662319) wifi:state: assoc -> run (10)",
+        "I (662320) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (662320) wifi:security: Open Auth, phy: bgn, rssi: -65",
+        "I (662320) wifi:pm start, type: 1",
+        "I (662321) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (662383) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 409.0,
+      "event": "usb_silence",
+      "usb_silence_s": 188.1,
+      "uart_csi_silence_s": 188.1,
+      "uart_last_log_s_ago": 185.2,
+      "uart_log_tail": [
+        "I (659450) wifi:state: run -> init (1a0)",
+        "I (659450) wifi:pm stop, total sleep time: 3528720 us / 327236893 us",
+        "I (659451) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (661862) wifi:new:<11,0>, old:<1,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (661863) wifi:state: init -> auth (b0)",
+        "I (661866) wifi:state: auth -> assoc (0)",
+        "I (662319) wifi:state: assoc -> run (10)",
+        "I (662320) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (662320) wifi:security: Open Auth, phy: bgn, rssi: -65",
+        "I (662320) wifi:pm start, type: 1",
+        "I (662321) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (662383) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 439.5,
+      "event": "usb_silence",
+      "usb_silence_s": 218.6,
+      "uart_csi_silence_s": 218.6,
+      "uart_last_log_s_ago": 215.8,
+      "uart_log_tail": [
+        "I (659450) wifi:state: run -> init (1a0)",
+        "I (659450) wifi:pm stop, total sleep time: 3528720 us / 327236893 us",
+        "I (659451) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (661862) wifi:new:<11,0>, old:<1,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (661863) wifi:state: init -> auth (b0)",
+        "I (661866) wifi:state: auth -> assoc (0)",
+        "I (662319) wifi:state: assoc -> run (10)",
+        "I (662320) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (662320) wifi:security: Open Auth, phy: bgn, rssi: -65",
+        "I (662320) wifi:pm start, type: 1",
+        "I (662321) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (662383) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 470.0,
+      "event": "usb_silence",
+      "usb_silence_s": 249.1,
+      "uart_csi_silence_s": 249.1,
+      "uart_last_log_s_ago": 246.3,
+      "uart_log_tail": [
+        "I (659450) wifi:state: run -> init (1a0)",
+        "I (659450) wifi:pm stop, total sleep time: 3528720 us / 327236893 us",
+        "I (659451) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (661862) wifi:new:<11,0>, old:<1,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (661863) wifi:state: init -> auth (b0)",
+        "I (661866) wifi:state: auth -> assoc (0)",
+        "I (662319) wifi:state: assoc -> run (10)",
+        "I (662320) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (662320) wifi:security: Open Auth, phy: bgn, rssi: -65",
+        "I (662320) wifi:pm start, type: 1",
+        "I (662321) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (662383) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 500.5,
+      "event": "usb_silence",
+      "usb_silence_s": 279.6,
+      "uart_csi_silence_s": 279.6,
+      "uart_last_log_s_ago": 276.8,
+      "uart_log_tail": [
+        "I (659450) wifi:state: run -> init (1a0)",
+        "I (659450) wifi:pm stop, total sleep time: 3528720 us / 327236893 us",
+        "I (659451) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (661862) wifi:new:<11,0>, old:<1,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (661863) wifi:state: init -> auth (b0)",
+        "I (661866) wifi:state: auth -> assoc (0)",
+        "I (662319) wifi:state: assoc -> run (10)",
+        "I (662320) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (662320) wifi:security: Open Auth, phy: bgn, rssi: -65",
+        "I (662320) wifi:pm start, type: 1",
+        "I (662321) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (662383) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 531.0,
+      "event": "usb_silence",
+      "usb_silence_s": 310.1,
+      "uart_csi_silence_s": 310.1,
+      "uart_last_log_s_ago": 307.3,
+      "uart_log_tail": [
+        "I (659450) wifi:state: run -> init (1a0)",
+        "I (659450) wifi:pm stop, total sleep time: 3528720 us / 327236893 us",
+        "I (659451) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (661862) wifi:new:<11,0>, old:<1,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (661863) wifi:state: init -> auth (b0)",
+        "I (661866) wifi:state: auth -> assoc (0)",
+        "I (662319) wifi:state: assoc -> run (10)",
+        "I (662320) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (662320) wifi:security: Open Auth, phy: bgn, rssi: -65",
+        "I (662320) wifi:pm start, type: 1",
+        "I (662321) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (662383) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 561.5,
+      "event": "usb_silence",
+      "usb_silence_s": 10.7,
+      "uart_csi_silence_s": 10.7,
+      "uart_last_log_s_ago": 7.5,
+      "uart_log_tail": [
+        "I (989375) wifi:state: run -> init (1a0)",
+        "I (989376) wifi:pm stop, total sleep time: 2257379 us / 327055292 us",
+        "I (989376) wifi:new:<11,0>, old:<11,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (991788) wifi:new:<11,0>, old:<11,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (991788) wifi:state: init -> auth (b0)",
+        "I (991790) wifi:state: auth -> assoc (0)",
+        "I (992474) wifi:state: assoc -> run (10)",
+        "I (992475) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (992475) wifi:security: Open Auth, phy: bgn, rssi: -64",
+        "I (992475) wifi:pm start, type: 1",
+        "I (992476) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (992653) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 592.0,
+      "event": "usb_silence",
+      "usb_silence_s": 41.2,
+      "uart_csi_silence_s": 41.2,
+      "uart_last_log_s_ago": 38.1,
+      "uart_log_tail": [
+        "I (989375) wifi:state: run -> init (1a0)",
+        "I (989376) wifi:pm stop, total sleep time: 2257379 us / 327055292 us",
+        "I (989376) wifi:new:<11,0>, old:<11,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (991788) wifi:new:<11,0>, old:<11,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (991788) wifi:state: init -> auth (b0)",
+        "I (991790) wifi:state: auth -> assoc (0)",
+        "I (992474) wifi:state: assoc -> run (10)",
+        "I (992475) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (992475) wifi:security: Open Auth, phy: bgn, rssi: -64",
+        "I (992475) wifi:pm start, type: 1",
+        "I (992476) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (992653) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 622.6,
+      "event": "usb_silence",
+      "usb_silence_s": 71.7,
+      "uart_csi_silence_s": 71.7,
+      "uart_last_log_s_ago": 68.6,
+      "uart_log_tail": [
+        "I (989375) wifi:state: run -> init (1a0)",
+        "I (989376) wifi:pm stop, total sleep time: 2257379 us / 327055292 us",
+        "I (989376) wifi:new:<11,0>, old:<11,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (991788) wifi:new:<11,0>, old:<11,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (991788) wifi:state: init -> auth (b0)",
+        "I (991790) wifi:state: auth -> assoc (0)",
+        "I (992474) wifi:state: assoc -> run (10)",
+        "I (992475) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (992475) wifi:security: Open Auth, phy: bgn, rssi: -64",
+        "I (992475) wifi:pm start, type: 1",
+        "I (992476) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (992653) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 653.1,
+      "event": "usb_silence",
+      "usb_silence_s": 102.2,
+      "uart_csi_silence_s": 102.2,
+      "uart_last_log_s_ago": 99.1,
+      "uart_log_tail": [
+        "I (989375) wifi:state: run -> init (1a0)",
+        "I (989376) wifi:pm stop, total sleep time: 2257379 us / 327055292 us",
+        "I (989376) wifi:new:<11,0>, old:<11,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (991788) wifi:new:<11,0>, old:<11,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (991788) wifi:state: init -> auth (b0)",
+        "I (991790) wifi:state: auth -> assoc (0)",
+        "I (992474) wifi:state: assoc -> run (10)",
+        "I (992475) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (992475) wifi:security: Open Auth, phy: bgn, rssi: -64",
+        "I (992475) wifi:pm start, type: 1",
+        "I (992476) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (992653) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 683.6,
+      "event": "usb_silence",
+      "usb_silence_s": 132.7,
+      "uart_csi_silence_s": 132.7,
+      "uart_last_log_s_ago": 129.6,
+      "uart_log_tail": [
+        "I (989375) wifi:state: run -> init (1a0)",
+        "I (989376) wifi:pm stop, total sleep time: 2257379 us / 327055292 us",
+        "I (989376) wifi:new:<11,0>, old:<11,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (991788) wifi:new:<11,0>, old:<11,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (991788) wifi:state: init -> auth (b0)",
+        "I (991790) wifi:state: auth -> assoc (0)",
+        "I (992474) wifi:state: assoc -> run (10)",
+        "I (992475) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (992475) wifi:security: Open Auth, phy: bgn, rssi: -64",
+        "I (992475) wifi:pm start, type: 1",
+        "I (992476) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (992653) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 714.1,
+      "event": "usb_silence",
+      "usb_silence_s": 163.2,
+      "uart_csi_silence_s": 163.2,
+      "uart_last_log_s_ago": 160.1,
+      "uart_log_tail": [
+        "I (989375) wifi:state: run -> init (1a0)",
+        "I (989376) wifi:pm stop, total sleep time: 2257379 us / 327055292 us",
+        "I (989376) wifi:new:<11,0>, old:<11,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (991788) wifi:new:<11,0>, old:<11,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (991788) wifi:state: init -> auth (b0)",
+        "I (991790) wifi:state: auth -> assoc (0)",
+        "I (992474) wifi:state: assoc -> run (10)",
+        "I (992475) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (992475) wifi:security: Open Auth, phy: bgn, rssi: -64",
+        "I (992475) wifi:pm start, type: 1",
+        "I (992476) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (992653) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 744.6,
+      "event": "usb_silence",
+      "usb_silence_s": 193.7,
+      "uart_csi_silence_s": 193.7,
+      "uart_last_log_s_ago": 190.6,
+      "uart_log_tail": [
+        "I (989375) wifi:state: run -> init (1a0)",
+        "I (989376) wifi:pm stop, total sleep time: 2257379 us / 327055292 us",
+        "I (989376) wifi:new:<11,0>, old:<11,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (991788) wifi:new:<11,0>, old:<11,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (991788) wifi:state: init -> auth (b0)",
+        "I (991790) wifi:state: auth -> assoc (0)",
+        "I (992474) wifi:state: assoc -> run (10)",
+        "I (992475) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (992475) wifi:security: Open Auth, phy: bgn, rssi: -64",
+        "I (992475) wifi:pm start, type: 1",
+        "I (992476) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (992653) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 775.1,
+      "event": "usb_silence",
+      "usb_silence_s": 224.3,
+      "uart_csi_silence_s": 224.3,
+      "uart_last_log_s_ago": 221.1,
+      "uart_log_tail": [
+        "I (989375) wifi:state: run -> init (1a0)",
+        "I (989376) wifi:pm stop, total sleep time: 2257379 us / 327055292 us",
+        "I (989376) wifi:new:<11,0>, old:<11,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (991788) wifi:new:<11,0>, old:<11,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (991788) wifi:state: init -> auth (b0)",
+        "I (991790) wifi:state: auth -> assoc (0)",
+        "I (992474) wifi:state: assoc -> run (10)",
+        "I (992475) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (992475) wifi:security: Open Auth, phy: bgn, rssi: -64",
+        "I (992475) wifi:pm start, type: 1",
+        "I (992476) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (992653) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 805.6,
+      "event": "usb_silence",
+      "usb_silence_s": 254.8,
+      "uart_csi_silence_s": 254.8,
+      "uart_last_log_s_ago": 251.6,
+      "uart_log_tail": [
+        "I (989375) wifi:state: run -> init (1a0)",
+        "I (989376) wifi:pm stop, total sleep time: 2257379 us / 327055292 us",
+        "I (989376) wifi:new:<11,0>, old:<11,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (991788) wifi:new:<11,0>, old:<11,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (991788) wifi:state: init -> auth (b0)",
+        "I (991790) wifi:state: auth -> assoc (0)",
+        "I (992474) wifi:state: assoc -> run (10)",
+        "I (992475) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (992475) wifi:security: Open Auth, phy: bgn, rssi: -64",
+        "I (992475) wifi:pm start, type: 1",
+        "I (992476) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (992653) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 836.1,
+      "event": "usb_silence",
+      "usb_silence_s": 285.3,
+      "uart_csi_silence_s": 285.3,
+      "uart_last_log_s_ago": 282.1,
+      "uart_log_tail": [
+        "I (989375) wifi:state: run -> init (1a0)",
+        "I (989376) wifi:pm stop, total sleep time: 2257379 us / 327055292 us",
+        "I (989376) wifi:new:<11,0>, old:<11,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (991788) wifi:new:<11,0>, old:<11,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (991788) wifi:state: init -> auth (b0)",
+        "I (991790) wifi:state: auth -> assoc (0)",
+        "I (992474) wifi:state: assoc -> run (10)",
+        "I (992475) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (992475) wifi:security: Open Auth, phy: bgn, rssi: -64",
+        "I (992475) wifi:pm start, type: 1",
+        "I (992476) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (992653) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 866.6,
+      "event": "usb_silence",
+      "usb_silence_s": 315.8,
+      "uart_csi_silence_s": 315.8,
+      "uart_last_log_s_ago": 312.6,
+      "uart_log_tail": [
+        "I (989375) wifi:state: run -> init (1a0)",
+        "I (989376) wifi:pm stop, total sleep time: 2257379 us / 327055292 us",
+        "I (989376) wifi:new:<11,0>, old:<11,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (991788) wifi:new:<11,0>, old:<11,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (991788) wifi:state: init -> auth (b0)",
+        "I (991790) wifi:state: auth -> assoc (0)",
+        "I (992474) wifi:state: assoc -> run (10)",
+        "I (992475) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (992475) wifi:security: Open Auth, phy: bgn, rssi: -64",
+        "I (992475) wifi:pm start, type: 1",
+        "I (992476) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (992653) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 1215.0,
+      "event": "usb_silence",
+      "usb_silence_s": 5.1,
+      "uart_csi_silence_s": 5.1,
+      "uart_last_log_s_ago": 2.4,
+      "uart_log_tail": [
+        "I (1648535) wifi:state: run -> init (1a0)",
+        "I (1648535) wifi:pm stop, total sleep time: 3109918 us / 326964646 us",
+        "I (1648536) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (1650947) wifi:new:<11,0>, old:<1,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (1650948) wifi:state: init -> auth (b0)",
+        "I (1650952) wifi:state: auth -> assoc (0)",
+        "I (1651065) wifi:state: assoc -> run (10)",
+        "I (1651066) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (1651066) wifi:security: Open Auth, phy: bgn, rssi: -60",
+        "I (1651067) wifi:pm start, type: 1",
+        "I (1651067) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (1651312) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 1245.5,
+      "event": "usb_silence",
+      "usb_silence_s": 35.6,
+      "uart_csi_silence_s": 35.6,
+      "uart_last_log_s_ago": 32.9,
+      "uart_log_tail": [
+        "I (1648535) wifi:state: run -> init (1a0)",
+        "I (1648535) wifi:pm stop, total sleep time: 3109918 us / 326964646 us",
+        "I (1648536) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (1650947) wifi:new:<11,0>, old:<1,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (1650948) wifi:state: init -> auth (b0)",
+        "I (1650952) wifi:state: auth -> assoc (0)",
+        "I (1651065) wifi:state: assoc -> run (10)",
+        "I (1651066) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (1651066) wifi:security: Open Auth, phy: bgn, rssi: -60",
+        "I (1651067) wifi:pm start, type: 1",
+        "I (1651067) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (1651312) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 1276.0,
+      "event": "usb_silence",
+      "usb_silence_s": 66.1,
+      "uart_csi_silence_s": 66.1,
+      "uart_last_log_s_ago": 63.4,
+      "uart_log_tail": [
+        "I (1648535) wifi:state: run -> init (1a0)",
+        "I (1648535) wifi:pm stop, total sleep time: 3109918 us / 326964646 us",
+        "I (1648536) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (1650947) wifi:new:<11,0>, old:<1,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (1650948) wifi:state: init -> auth (b0)",
+        "I (1650952) wifi:state: auth -> assoc (0)",
+        "I (1651065) wifi:state: assoc -> run (10)",
+        "I (1651066) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (1651066) wifi:security: Open Auth, phy: bgn, rssi: -60",
+        "I (1651067) wifi:pm start, type: 1",
+        "I (1651067) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (1651312) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 1306.5,
+      "event": "usb_silence",
+      "usb_silence_s": 96.7,
+      "uart_csi_silence_s": 96.7,
+      "uart_last_log_s_ago": 93.9,
+      "uart_log_tail": [
+        "I (1648535) wifi:state: run -> init (1a0)",
+        "I (1648535) wifi:pm stop, total sleep time: 3109918 us / 326964646 us",
+        "I (1648536) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (1650947) wifi:new:<11,0>, old:<1,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (1650948) wifi:state: init -> auth (b0)",
+        "I (1650952) wifi:state: auth -> assoc (0)",
+        "I (1651065) wifi:state: assoc -> run (10)",
+        "I (1651066) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (1651066) wifi:security: Open Auth, phy: bgn, rssi: -60",
+        "I (1651067) wifi:pm start, type: 1",
+        "I (1651067) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (1651312) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 1337.0,
+      "event": "usb_silence",
+      "usb_silence_s": 127.2,
+      "uart_csi_silence_s": 127.2,
+      "uart_last_log_s_ago": 124.4,
+      "uart_log_tail": [
+        "I (1648535) wifi:state: run -> init (1a0)",
+        "I (1648535) wifi:pm stop, total sleep time: 3109918 us / 326964646 us",
+        "I (1648536) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (1650947) wifi:new:<11,0>, old:<1,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (1650948) wifi:state: init -> auth (b0)",
+        "I (1650952) wifi:state: auth -> assoc (0)",
+        "I (1651065) wifi:state: assoc -> run (10)",
+        "I (1651066) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (1651066) wifi:security: Open Auth, phy: bgn, rssi: -60",
+        "I (1651067) wifi:pm start, type: 1",
+        "I (1651067) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (1651312) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 1367.5,
+      "event": "usb_silence",
+      "usb_silence_s": 157.7,
+      "uart_csi_silence_s": 157.7,
+      "uart_last_log_s_ago": 154.9,
+      "uart_log_tail": [
+        "I (1648535) wifi:state: run -> init (1a0)",
+        "I (1648535) wifi:pm stop, total sleep time: 3109918 us / 326964646 us",
+        "I (1648536) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (1650947) wifi:new:<11,0>, old:<1,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (1650948) wifi:state: init -> auth (b0)",
+        "I (1650952) wifi:state: auth -> assoc (0)",
+        "I (1651065) wifi:state: assoc -> run (10)",
+        "I (1651066) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (1651066) wifi:security: Open Auth, phy: bgn, rssi: -60",
+        "I (1651067) wifi:pm start, type: 1",
+        "I (1651067) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (1651312) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 1398.1,
+      "event": "usb_silence",
+      "usb_silence_s": 188.2,
+      "uart_csi_silence_s": 188.2,
+      "uart_last_log_s_ago": 185.4,
+      "uart_log_tail": [
+        "I (1648535) wifi:state: run -> init (1a0)",
+        "I (1648535) wifi:pm stop, total sleep time: 3109918 us / 326964646 us",
+        "I (1648536) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (1650947) wifi:new:<11,0>, old:<1,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (1650948) wifi:state: init -> auth (b0)",
+        "I (1650952) wifi:state: auth -> assoc (0)",
+        "I (1651065) wifi:state: assoc -> run (10)",
+        "I (1651066) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (1651066) wifi:security: Open Auth, phy: bgn, rssi: -60",
+        "I (1651067) wifi:pm start, type: 1",
+        "I (1651067) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (1651312) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 1428.6,
+      "event": "usb_silence",
+      "usb_silence_s": 218.7,
+      "uart_csi_silence_s": 218.7,
+      "uart_last_log_s_ago": 215.9,
+      "uart_log_tail": [
+        "I (1648535) wifi:state: run -> init (1a0)",
+        "I (1648535) wifi:pm stop, total sleep time: 3109918 us / 326964646 us",
+        "I (1648536) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (1650947) wifi:new:<11,0>, old:<1,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (1650948) wifi:state: init -> auth (b0)",
+        "I (1650952) wifi:state: auth -> assoc (0)",
+        "I (1651065) wifi:state: assoc -> run (10)",
+        "I (1651066) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (1651066) wifi:security: Open Auth, phy: bgn, rssi: -60",
+        "I (1651067) wifi:pm start, type: 1",
+        "I (1651067) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (1651312) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 1459.1,
+      "event": "usb_silence",
+      "usb_silence_s": 249.2,
+      "uart_csi_silence_s": 249.2,
+      "uart_last_log_s_ago": 246.4,
+      "uart_log_tail": [
+        "I (1648535) wifi:state: run -> init (1a0)",
+        "I (1648535) wifi:pm stop, total sleep time: 3109918 us / 326964646 us",
+        "I (1648536) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (1650947) wifi:new:<11,0>, old:<1,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (1650948) wifi:state: init -> auth (b0)",
+        "I (1650952) wifi:state: auth -> assoc (0)",
+        "I (1651065) wifi:state: assoc -> run (10)",
+        "I (1651066) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (1651066) wifi:security: Open Auth, phy: bgn, rssi: -60",
+        "I (1651067) wifi:pm start, type: 1",
+        "I (1651067) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (1651312) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 1489.6,
+      "event": "usb_silence",
+      "usb_silence_s": 279.7,
+      "uart_csi_silence_s": 279.7,
+      "uart_last_log_s_ago": 276.9,
+      "uart_log_tail": [
+        "I (1648535) wifi:state: run -> init (1a0)",
+        "I (1648535) wifi:pm stop, total sleep time: 3109918 us / 326964646 us",
+        "I (1648536) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (1650947) wifi:new:<11,0>, old:<1,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (1650948) wifi:state: init -> auth (b0)",
+        "I (1650952) wifi:state: auth -> assoc (0)",
+        "I (1651065) wifi:state: assoc -> run (10)",
+        "I (1651066) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (1651066) wifi:security: Open Auth, phy: bgn, rssi: -60",
+        "I (1651067) wifi:pm start, type: 1",
+        "I (1651067) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (1651312) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 1520.1,
+      "event": "usb_silence",
+      "usb_silence_s": 310.2,
+      "uart_csi_silence_s": 310.2,
+      "uart_last_log_s_ago": 307.4,
+      "uart_log_tail": [
+        "I (1648535) wifi:state: run -> init (1a0)",
+        "I (1648535) wifi:pm stop, total sleep time: 3109918 us / 326964646 us",
+        "I (1648536) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (1650947) wifi:new:<11,0>, old:<1,0>, ap:<255,255>, sta:<11,0>, prof:1",
+        "I (1650948) wifi:state: init -> auth (b0)",
+        "I (1650952) wifi:state: auth -> assoc (0)",
+        "I (1651065) wifi:state: assoc -> run (10)",
+        "I (1651066) wifi:connected with Kent State Guest, aid = 1, channel 11, BW20, bssid = b8:62:1f:e5:ac:62",
+        "I (1651066) wifi:security: Open Auth, phy: bgn, rssi: -60",
+        "I (1651067) wifi:pm start, type: 1",
+        "I (1651067) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (1651312) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 1875.4,
+      "event": "usb_silence",
+      "usb_silence_s": 5.0,
+      "uart_csi_silence_s": 5.0,
+      "uart_last_log_s_ago": 2.3,
+      "uart_log_tail": [
+        "I (2308992) wifi:state: run -> init (1a0)",
+        "I (2308993) wifi:pm stop, total sleep time: 493718 us / 327353982 us",
+        "I (2308994) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (2311405) wifi:new:<6,0>, old:<1,0>, ap:<255,255>, sta:<6,0>, prof:1",
+        "I (2311406) wifi:state: init -> auth (b0)",
+        "I (2311457) wifi:state: auth -> assoc (0)",
+        "I (2311530) wifi:state: assoc -> run (10)",
+        "I (2311531) wifi:connected with Kent State Guest, aid = 4, channel 6, BW20, bssid = b8:62:1f:b4:a5:62",
+        "I (2311531) wifi:security: Open Auth, phy: bgn, rssi: -76",
+        "I (2311531) wifi:pm start, type: 1",
+        "I (2311532) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (2311722) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 1905.9,
+      "event": "usb_silence",
+      "usb_silence_s": 35.5,
+      "uart_csi_silence_s": 35.5,
+      "uart_last_log_s_ago": 32.8,
+      "uart_log_tail": [
+        "I (2308992) wifi:state: run -> init (1a0)",
+        "I (2308993) wifi:pm stop, total sleep time: 493718 us / 327353982 us",
+        "I (2308994) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (2311405) wifi:new:<6,0>, old:<1,0>, ap:<255,255>, sta:<6,0>, prof:1",
+        "I (2311406) wifi:state: init -> auth (b0)",
+        "I (2311457) wifi:state: auth -> assoc (0)",
+        "I (2311530) wifi:state: assoc -> run (10)",
+        "I (2311531) wifi:connected with Kent State Guest, aid = 4, channel 6, BW20, bssid = b8:62:1f:b4:a5:62",
+        "I (2311531) wifi:security: Open Auth, phy: bgn, rssi: -76",
+        "I (2311531) wifi:pm start, type: 1",
+        "I (2311532) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (2311722) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 1936.4,
+      "event": "usb_silence",
+      "usb_silence_s": 66.0,
+      "uart_csi_silence_s": 66.0,
+      "uart_last_log_s_ago": 63.3,
+      "uart_log_tail": [
+        "I (2308992) wifi:state: run -> init (1a0)",
+        "I (2308993) wifi:pm stop, total sleep time: 493718 us / 327353982 us",
+        "I (2308994) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (2311405) wifi:new:<6,0>, old:<1,0>, ap:<255,255>, sta:<6,0>, prof:1",
+        "I (2311406) wifi:state: init -> auth (b0)",
+        "I (2311457) wifi:state: auth -> assoc (0)",
+        "I (2311530) wifi:state: assoc -> run (10)",
+        "I (2311531) wifi:connected with Kent State Guest, aid = 4, channel 6, BW20, bssid = b8:62:1f:b4:a5:62",
+        "I (2311531) wifi:security: Open Auth, phy: bgn, rssi: -76",
+        "I (2311531) wifi:pm start, type: 1",
+        "I (2311532) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (2311722) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 1966.9,
+      "event": "usb_silence",
+      "usb_silence_s": 96.5,
+      "uart_csi_silence_s": 96.5,
+      "uart_last_log_s_ago": 93.8,
+      "uart_log_tail": [
+        "I (2308992) wifi:state: run -> init (1a0)",
+        "I (2308993) wifi:pm stop, total sleep time: 493718 us / 327353982 us",
+        "I (2308994) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (2311405) wifi:new:<6,0>, old:<1,0>, ap:<255,255>, sta:<6,0>, prof:1",
+        "I (2311406) wifi:state: init -> auth (b0)",
+        "I (2311457) wifi:state: auth -> assoc (0)",
+        "I (2311530) wifi:state: assoc -> run (10)",
+        "I (2311531) wifi:connected with Kent State Guest, aid = 4, channel 6, BW20, bssid = b8:62:1f:b4:a5:62",
+        "I (2311531) wifi:security: Open Auth, phy: bgn, rssi: -76",
+        "I (2311531) wifi:pm start, type: 1",
+        "I (2311532) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (2311722) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 1997.4,
+      "event": "usb_silence",
+      "usb_silence_s": 127.1,
+      "uart_csi_silence_s": 127.1,
+      "uart_last_log_s_ago": 124.4,
+      "uart_log_tail": [
+        "I (2308992) wifi:state: run -> init (1a0)",
+        "I (2308993) wifi:pm stop, total sleep time: 493718 us / 327353982 us",
+        "I (2308994) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (2311405) wifi:new:<6,0>, old:<1,0>, ap:<255,255>, sta:<6,0>, prof:1",
+        "I (2311406) wifi:state: init -> auth (b0)",
+        "I (2311457) wifi:state: auth -> assoc (0)",
+        "I (2311530) wifi:state: assoc -> run (10)",
+        "I (2311531) wifi:connected with Kent State Guest, aid = 4, channel 6, BW20, bssid = b8:62:1f:b4:a5:62",
+        "I (2311531) wifi:security: Open Auth, phy: bgn, rssi: -76",
+        "I (2311531) wifi:pm start, type: 1",
+        "I (2311532) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (2311722) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 2027.9,
+      "event": "usb_silence",
+      "usb_silence_s": 157.6,
+      "uart_csi_silence_s": 157.6,
+      "uart_last_log_s_ago": 154.9,
+      "uart_log_tail": [
+        "I (2308992) wifi:state: run -> init (1a0)",
+        "I (2308993) wifi:pm stop, total sleep time: 493718 us / 327353982 us",
+        "I (2308994) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (2311405) wifi:new:<6,0>, old:<1,0>, ap:<255,255>, sta:<6,0>, prof:1",
+        "I (2311406) wifi:state: init -> auth (b0)",
+        "I (2311457) wifi:state: auth -> assoc (0)",
+        "I (2311530) wifi:state: assoc -> run (10)",
+        "I (2311531) wifi:connected with Kent State Guest, aid = 4, channel 6, BW20, bssid = b8:62:1f:b4:a5:62",
+        "I (2311531) wifi:security: Open Auth, phy: bgn, rssi: -76",
+        "I (2311531) wifi:pm start, type: 1",
+        "I (2311532) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (2311722) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 2058.4,
+      "event": "usb_silence",
+      "usb_silence_s": 188.1,
+      "uart_csi_silence_s": 188.1,
+      "uart_last_log_s_ago": 185.4,
+      "uart_log_tail": [
+        "I (2308992) wifi:state: run -> init (1a0)",
+        "I (2308993) wifi:pm stop, total sleep time: 493718 us / 327353982 us",
+        "I (2308994) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (2311405) wifi:new:<6,0>, old:<1,0>, ap:<255,255>, sta:<6,0>, prof:1",
+        "I (2311406) wifi:state: init -> auth (b0)",
+        "I (2311457) wifi:state: auth -> assoc (0)",
+        "I (2311530) wifi:state: assoc -> run (10)",
+        "I (2311531) wifi:connected with Kent State Guest, aid = 4, channel 6, BW20, bssid = b8:62:1f:b4:a5:62",
+        "I (2311531) wifi:security: Open Auth, phy: bgn, rssi: -76",
+        "I (2311531) wifi:pm start, type: 1",
+        "I (2311532) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (2311722) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 2088.9,
+      "event": "usb_silence",
+      "usb_silence_s": 218.6,
+      "uart_csi_silence_s": 218.6,
+      "uart_last_log_s_ago": 215.9,
+      "uart_log_tail": [
+        "I (2308992) wifi:state: run -> init (1a0)",
+        "I (2308993) wifi:pm stop, total sleep time: 493718 us / 327353982 us",
+        "I (2308994) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (2311405) wifi:new:<6,0>, old:<1,0>, ap:<255,255>, sta:<6,0>, prof:1",
+        "I (2311406) wifi:state: init -> auth (b0)",
+        "I (2311457) wifi:state: auth -> assoc (0)",
+        "I (2311530) wifi:state: assoc -> run (10)",
+        "I (2311531) wifi:connected with Kent State Guest, aid = 4, channel 6, BW20, bssid = b8:62:1f:b4:a5:62",
+        "I (2311531) wifi:security: Open Auth, phy: bgn, rssi: -76",
+        "I (2311531) wifi:pm start, type: 1",
+        "I (2311532) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (2311722) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 2119.4,
+      "event": "usb_silence",
+      "usb_silence_s": 249.1,
+      "uart_csi_silence_s": 249.1,
+      "uart_last_log_s_ago": 246.4,
+      "uart_log_tail": [
+        "I (2308992) wifi:state: run -> init (1a0)",
+        "I (2308993) wifi:pm stop, total sleep time: 493718 us / 327353982 us",
+        "I (2308994) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (2311405) wifi:new:<6,0>, old:<1,0>, ap:<255,255>, sta:<6,0>, prof:1",
+        "I (2311406) wifi:state: init -> auth (b0)",
+        "I (2311457) wifi:state: auth -> assoc (0)",
+        "I (2311530) wifi:state: assoc -> run (10)",
+        "I (2311531) wifi:connected with Kent State Guest, aid = 4, channel 6, BW20, bssid = b8:62:1f:b4:a5:62",
+        "I (2311531) wifi:security: Open Auth, phy: bgn, rssi: -76",
+        "I (2311531) wifi:pm start, type: 1",
+        "I (2311532) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (2311722) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 2150.0,
+      "event": "usb_silence",
+      "usb_silence_s": 279.6,
+      "uart_csi_silence_s": 279.6,
+      "uart_last_log_s_ago": 276.9,
+      "uart_log_tail": [
+        "I (2308992) wifi:state: run -> init (1a0)",
+        "I (2308993) wifi:pm stop, total sleep time: 493718 us / 327353982 us",
+        "I (2308994) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (2311405) wifi:new:<6,0>, old:<1,0>, ap:<255,255>, sta:<6,0>, prof:1",
+        "I (2311406) wifi:state: init -> auth (b0)",
+        "I (2311457) wifi:state: auth -> assoc (0)",
+        "I (2311530) wifi:state: assoc -> run (10)",
+        "I (2311531) wifi:connected with Kent State Guest, aid = 4, channel 6, BW20, bssid = b8:62:1f:b4:a5:62",
+        "I (2311531) wifi:security: Open Auth, phy: bgn, rssi: -76",
+        "I (2311531) wifi:pm start, type: 1",
+        "I (2311532) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (2311722) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    },
+    {
+      "t": 2180.5,
+      "event": "usb_silence",
+      "usb_silence_s": 310.1,
+      "uart_csi_silence_s": 310.1,
+      "uart_last_log_s_ago": 307.4,
+      "uart_log_tail": [
+        "I (2308992) wifi:state: run -> init (1a0)",
+        "I (2308993) wifi:pm stop, total sleep time: 493718 us / 327353982 us",
+        "I (2308994) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1",
+        "I (2311405) wifi:new:<6,0>, old:<1,0>, ap:<255,255>, sta:<6,0>, prof:1",
+        "I (2311406) wifi:state: init -> auth (b0)",
+        "I (2311457) wifi:state: auth -> assoc (0)",
+        "I (2311530) wifi:state: assoc -> run (10)",
+        "I (2311531) wifi:connected with Kent State Guest, aid = 4, channel 6, BW20, bssid = b8:62:1f:b4:a5:62",
+        "I (2311531) wifi:security: Open Auth, phy: bgn, rssi: -76",
+        "I (2311531) wifi:pm start, type: 1",
+        "I (2311532) wifi:set rx beacon pti, rx_bcn_pti: 0, bcn_timeout: 25000, mt_pti: 0, mt_time: 10000",
+        "I (2311722) wifi:AP's beacon interval = 313344 us, DTIM period = 1"
+      ],
+      "uart_csi_tail": [
+        "CSI_DATA,66492,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438811712,0,108,0,128,0",
+        "CSI_DATA,66493,40:f4:ec:7e:37:22,-63,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438817575,0,108,0,128,0",
+        "CSI_DATA,66494,40:f4:ec:7e:37:22,-64,9,0,0,0,0,0,0,0,0,0,-95,0,1,0,438822480,0,109,0,128,0"
+      ]
+    }
+  ]
+}

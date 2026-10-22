@@ -60,9 +60,12 @@ class FakePort:
         self.buf += text.encode()
 
 
-def csi(seq, iq="0,0,-3,-5"):
+def csi(seq, iq=None):
+    """A realistic CSI line: the tail carries exactly ``len`` values."""
+    if iq is None:
+        iq = [-12, 11] * 64
     return (f"CSI_DATA,{seq},b8:62:1f:e5:ac:62,-60,9,0,0,0,0,0,0,0,0,0,-90,0,11,0,"
-            f"67768165,0,109,0,128,0,\"[{iq}]\"\r\n")
+            f"67768165,0,109,0,{len(iq)},0,\"[{','.join(str(v) for v in iq)}]\"\r\n")
 
 
 HELLO = "HELLO,1,esp32s3-devkitc-1,ESP32-S3,14:C1:9F:26:52:EC,0.1.0,abc\r\n"
@@ -190,7 +193,8 @@ def test_malformed_records_are_counted_and_do_not_stop_the_stream(wired):
     try:
         wired.feed("CSI_DATA,notanumber,mac,-60,9\r\n"
                    "garbage line\r\n"
-                   "CSI_DATA,1,mac,-60,9,0,0,0,0,0,0,0,0,0,-90,0,11,0,1,0,109,0,128,0\r\n")
+                   "CSI_DATA,1,mac,-60,9,0,0,0,0,0,0,0,0,0,-90,0,11,0,1,0,109,0,128,0\r\n"
+                   + csi(2))
         assert _wait(lambda: r.health().packets >= 1)
         h = r.health()
         assert h.malformed >= 1
@@ -290,7 +294,13 @@ def test_the_measurement_carries_the_counters_and_the_device_clock(wired):
         assert v["rssi"] == -60
         assert v["channel"] == 11
         assert v["local_timestamp"] == 67768165
-        assert v["subcarriers"] == 2
+        # 128 bytes of CSI buffer = 64 complex subcarriers
+        assert v["subcarriers"] == 64
+        assert v["iq_samples"] == 128
+        # the received frame's PHY rate is a confound and is carried
+        assert v["rate"] == 9
+        assert v["first_word_invalid"] is False
+        assert v["invalid_subcarriers"] == 0
         assert v["packets"] == 1
         assert v["link_state"] == "CONNECTED"
     finally:
