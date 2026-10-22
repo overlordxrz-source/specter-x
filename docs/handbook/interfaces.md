@@ -2,6 +2,8 @@
 
 [Hub](../README.md) · **Baseline compatibility plus proposed requirements.**
 
+> **Edition 2 reconciliation:** Project intent follows the [canonical charter](north-star.md). Local code links below still target `77abdd0`; newer Alpha `95eae17` source/build/simulation status is recorded in the [separate review](alpha-95eae17-review.md), without a merge. Reported builds and 261 tests do not establish flashed or hardware-validated firmware.
+
 Interface owner roles are recommendations; individual owners are unassigned. A proposed field or acceptance condition does not modify executable behavior. Use one implementation review to ratify each version.
 
 ## ICD-01: SENSE to CORE measurement
@@ -25,6 +27,10 @@ The baseline `STAT` requires exactly five comma-separated fields including its t
 CSI currently uses Espressif CSV plus a quoted complex-sample tail. Length is in bytes in the vendor structure; complex pairing, sign order, compensation and PHY layout must follow the pinned implementation. Preserve metadata, `first_word_invalid`, rate class and the unsigned timestamp. Keep a real captured fixture and truncated/wrong-length controls.
 
 Proposed transport requirements: whole records, bounded maximum size, one serialized writer, counted overload, boot/session changes and time-wrap handling. Do not mistake UART's 921600 setting for native USB's physical transfer rate. Acceptance: stress beyond normal display workload; partial read/write and unplug; no unbounded memory; explicit malformed/gap/drop metrics; host resumes after a bounded blocked-output interval without a silent device wedge.
+
+### Alpha candidate diagnostic boundary
+
+Alpha `95eae17` uses `SPECTER_STAT` with key/value diagnostics (`role`, `peer`, channel/RSSI, callback, printed/drop and queue counters). It does not extend or emit legacy supervisor `STAT`. This avoids the earlier exact-field-count collision, but does not establish host-supervisor integration or runtime framing/atomicity. See the [reconciliation](alpha-95eae17-review.md); ratify consumption/version semantics before promoting diagnostics into measurements.
 
 ## ICD-03: CORE session and replay
 

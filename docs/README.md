@@ -1,15 +1,19 @@
 # SPECTER-X documentation hub
 
-**Baseline: 22 October 2026 · repository snapshot `77abdd0` · documentation edition 1.**
+**Edition 2 · 22 October 2026 · local code base `77abdd0` · Alpha `95eae17` reviewed separately.**
 
-SPECTER-X is a modular multisensor research platform working toward a shared, evidence-backed picture of an environment. The “God’s Eye” aspiration means combining complementary observations while showing blind spots, uncertainty and age. It does not mean universal visibility, identification through walls, medical diagnosis or certified rescue capability.
+**Start with the [Canonical Vision and Long-Term Project Charter](handbook/north-star.md).** It is the authoritative North Star for identity, goals and engineering doctrine; this hub and the detailed chapters support it. Read the [Alpha reconciliation](handbook/alpha-95eae17-review.md) for newer engineering status without merging branches.
 
-**What exists:** a Python application, provenance-bearing measurements, HUD and simulated team pipeline; recorded DI-188 streaming and real ESP32-S3 CSI host integration. **What remains unverified:** calibrated analog signals, integrated field hardware, reliable controlled CSI human detection, through-obstruction inference and vital signs. Code presence, simulated output and a physical measurement are separate milestones.
+SPECTER-X is the first wearable/AR interface to a vertically integrated, multimodal spatial-intelligence ecosystem: SPECTER-OS, persistent SPECTER-WORLD, future AIR / GROUND / ORBIT integration and experimental SPECTER-BIO. The “God’s Eye” aspiration means combining complementary observations while showing blind spots, uncertainty and age. It does not mean universal visibility, identification through walls, medical diagnosis or certified rescue capability.
+
+**What exists:** a Python application, provenance-bearing measurements, HUD and simulated team pipeline; recorded DI-188 streaming and real ESP32-S3 CSI host integration. **What remains unverified:** calibrated analog signals, integrated field hardware, reliable controlled CSI human detection, through-obstruction inference and vital signs. Alpha `95eae17` adds controlled-link firmware source and synthetic sweep evidence. Station/SoftAP builds and 261 passing tests are reported; the firmware is not flashed or hardware-validated. Code presence, reported builds/tests, simulated output and a physical measurement are separate milestones.
 
 ## Start here
 
 | Reader / question | Document |
 |---|---|
+| Canonical identity, doctrine and five-plus-year ambition | [North Star charter](handbook/north-star.md) |
+| What changed in Alpha `95eae17`? | [Evidence and compatibility reconciliation](handbook/alpha-95eae17-review.md) |
 | What are we building and why? | [Vision, scope and principles](handbook/vision.md) |
 | What hardware do we actually have? | [Inventory and readiness ledger](handbook/hardware-inventory.md) |
 | Who might supply equipment? What was sponsored? | [Supplier leads and sponsorship evidence](handbook/suppliers.md) |
@@ -28,6 +32,10 @@ SPECTER-X is a modular multisensor research platform working toward a shared, ev
 | Which sources support which statements? | [Evidence register and external references](handbook/sources.md) |
 | What was inspected and changed in this handoff? | [Documentation handoff and access gaps](handbook/handoff.md) |
 
+## Evidence states through the whole pipeline
+
+Measured, inferred, predicted, simulated and unknown describe what a value represents. These states apply per observation, joint, track and rendered inference, independently of implementation/build readiness. Preserve them across storage, fusion and communication; do not use a single confidence score as a substitute.
+
 ## Read the evidence labels literally
 
 - **RECORDED HARDWARE:** a repository artifact or checkpoint reports a real-device run. This documentation task did not rerun hardware.
@@ -38,7 +46,7 @@ SPECTER-X is a modular multisensor research platform working toward a shared, ev
 - **SPECULATIVE:** a research direction without demonstrated SPECTER-X capability.
 - **UNKNOWN / BLOCKED:** source, physical access or evidence is missing. Unknown is never silently converted to “shipped” or “working.”
 
-The handbook is the reconciled entry point. Existing [checkpoint records](handbook/verification-baseline.md) and [earlier design notes](design/esp32-firmware-integration.md) remain historical evidence; disagreements and overstated claims are called out rather than erased. The repository root README is older and contains capability language that should be read with these qualifications.
+The charter governs project intent; dated evidence governs capability claims. The handbook is the reconciled entry point. Existing [checkpoint records](handbook/verification-baseline.md) and [earlier design notes](design/esp32-firmware-integration.md) remain historical evidence; disagreements and overstated claims are called out rather than erased. The repository root README is older and contains capability language that should be read with these qualifications.
 
 ## Working rules
 

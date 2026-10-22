@@ -1,6 +1,12 @@
 # First-party firmware strategy built on ESP-IDF
 
-[Hub](../README.md) · **PROPOSED strategy; documentation only.**
+[Hub](../README.md) · **Strategy plus reviewed Alpha candidate; no hardware execution in this handoff.**
+
+> **Edition 2 reconciliation:** Project intent follows the [canonical charter](north-star.md). Local code links below still target `77abdd0`; newer Alpha `95eae17` source/build/simulation status is recorded in the [separate review](alpha-95eae17-review.md), without a merge. Reported builds and 261 tests do not establish flashed or hardware-validated firmware.
+
+## Newer candidate status
+
+Alpha `95eae17` implements a controlled-link candidate and reports station/SoftAP builds, not a flashed system. It uses a separate `SPECTER_STAT` diagnostic tag and has no legacy supervisor HELLO/STAT/HB telemetry. The [review](alpha-95eae17-review.md) identifies exact source, static-test scope and remaining output/dependency/hardware gates. The component table and migration requirements below remain acceptance requirements, not declarations that candidate firmware already satisfies them.
 
 ## Recommendation
 

@@ -10,6 +10,10 @@ At this snapshot construction requires sensor and frame identifiers, checks sour
 
 `t_host` uses `time.time()`: it is wall-clock time and can step. The source comment “monotonic-ish” must not be interpreted as a monotonic guarantee. Proposed fields below are not already implemented and must not be injected into the existing schema without versioned compatibility work.
 
+## Epistemic state is separate from origin and confidence
+
+The [canonical doctrine](north-star.md) requires measured, inferred, predicted, simulated and unknown to remain distinguishable at observation, skeletal-joint, track and rendered-inference level. A real camera image is measured input; model-generated keypoints are inferred, extrapolated joints are predicted, and absent depth can leave metric position unknown. Replayed hardware data retains its acquisition origin and adds replay status. These semantics are required design direction; the baseline dataclass does not enforce a complete per-value state field. Add them through a versioned contract, not an undocumented payload convention.
+
 ## Proposed vNext envelope
 
 | Group | Required meaning |

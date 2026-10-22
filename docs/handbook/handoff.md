@@ -2,7 +2,19 @@
 
 [Documentation hub](../README.md)
 
-## Produced repository state
+## Edition 2 — canonical charter and Alpha reconciliation
+
+The owner adopted the [North Star charter](north-star.md) on 22 October 2026. It governs identity and doctrine; detailed chapters and dated evidence have separate roles. The handbook now explicitly includes SPECTER-OS, WORLD, AIR/GROUND/ORBIT and BIO, the multispectral wearable/skeletal/AR ambition, per-value epistemic states and a five-plus-year horizon.
+
+Added `docs/handbook/north-star.md` and `docs/handbook/alpha-95eae17-review.md`. Updated the hub, vision, architecture, contracts, firmware strategy, ICD, backlog, inventory, roadmap, research/platforms, verification/source registers and this handoff. These are documentation changes only, on the existing `docs/specter-x-handbook-20261022` branch. The original edition's manifest below is retained as history; edition 2 brings the handbook to 20 Markdown files.
+
+Inspected Alpha `95eae1787bfa5a3f09d46bd19ad917874cb80029` through local Git: checkpoint 012, candidate source, contract tests, dependency manifest and saved synthetic CSV. Builds and 261 tests remain reported, not reproduced. Firmware remains not flashed or hardware-validated. Static contract checks do not establish runtime output reliability or sensing; new diagnostics are distinct from the original supervisor protocol. The original checkout stayed on the same clean Alpha commit during this update. No software/test/firmware changes, merges, rebases, pushes, resets or hardware operations were performed.
+
+The docs branch still inherits code at `77abdd0`; Alpha is reconciled in prose with immutable source identifiers, not merged. No newer checkpoint was overwritten. Remaining access gaps include the original parts-status CSV, sponsor/shipment evidence, independent complete 261-test transcript and reproduced build/hardware results. The earlier source/access notes below retain their edition-1 dates and scope; the new Alpha review supersedes its uninspected-agent limitation.
+
+## Edition 1 historical record
+
+### Produced repository state
 
 - Existing source repository: `/Users/overlord/sideprojects/specter-x`.
 - Isolated linked worktree: `/Users/overlord/sideprojects/specter-x-docs-20261022`.

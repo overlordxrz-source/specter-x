@@ -2,6 +2,8 @@
 
 [Hub](../README.md) · **As-of: repository `77abdd0`, 22 October 2026.**
 
+> **Edition 2 reconciliation:** Project intent follows the [canonical charter](north-star.md). Local code links below still target `77abdd0`; newer Alpha `95eae17` source/build/simulation status is recorded in the [separate review](alpha-95eae17-review.md), without a merge. Reported builds and 261 tests do not establish flashed or hardware-validated firmware.
+
 ## Status vocabulary and missing source
 
 Use two independent axes: **logistics** (have / shipped / confirmed-trackable / awaiting / needed / unknown) and **verification** (uninspected / identified / streaming / referenced / calibrated / integrated / field-validated). “Have” means historical possession is evidenced, not that a device is attached today. “Shipped” requires a dated dispatch record. “Confirmed-trackable” additionally requires an accessible carrier acceptance or movement event, not merely a label number. “Awaiting” requires an actual order or supplier commitment. “Needed” is a proposed acquisition dependency, not an order.
@@ -60,6 +62,7 @@ Names and interfaces below are repository design selections, not purchasing conf
 | Jumper leads, suitable DMM, safe low-voltage reference, verified grounding | Complete first DAQ measurement and calibration |
 | Second CSI-capable board or dedicated controllable AP/traffic peer | Separate network behavior from sensing; SoftAP option needs feasibility check |
 | Rigid mounts, fiducials, rulers, reference thermometer / suitable thermal target | Establish repeatable optical/thermal/range geometry |
+| Optical/NIR capability and any compatible illumination (model undecided) | Spectral response, lens/filter and exposure verification; emitter safety/power review if active; no receipt or validated NIR capability implied |
 | Depth camera or stereo pair; LiDAR (model undecided) | Metric depth and mapping research; no hardware or driver selection verified |
 | Respiratory reference and approved ECG reference system | Later respiration/cardio experiments; avoid improvised body-connected electronics |
 | Power supply, current/power logger, powered hub if required | Peak load and brownout characterization before a battery design |

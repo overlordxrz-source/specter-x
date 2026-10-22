@@ -1,6 +1,8 @@
-# Future platforms: AIR, GROUND, satellite data and communications
+# Future platforms: SPECTER-AIR / GROUND / ORBIT
 
 [Hub](../README.md) · **SPECULATIVE architecture extensions; no platform procurement, flight or deployment.**
+
+> **Edition 2 reconciliation:** Project intent follows the [canonical charter](north-star.md). Local code links below still target `77abdd0`; newer Alpha `95eae17` source/build/simulation status is recorded in the [separate review](alpha-95eae17-review.md), without a merge. Reported builds and 261 tests do not establish flashed or hardware-validated firmware.
 
 ## Shared premise
 
@@ -18,7 +20,11 @@ A future airborne NODE could provide a different vantage for optical/thermal map
 
 Start with recorded public/authorized aerial datasets or a static elevated rig. Any flight would require a separate reviewed operating plan, qualified operator, site/airspace permissions and local rules. The [FAA Part 107 overview](https://www.faa.gov/newsroom/small-unmanned-aircraft-systems-uas-regulations-part-107) is a US reference; educational status alone does not settle which rules apply. No flight authorization or legal determination is made here.
 
-## Satellite data as contextual evidence
+## SPECTER-ORBIT: satellite data and resilient communications
+
+ORBIT is the canonical future family for satellite-data context and space/service-assisted resilient communications. It is not an assertion of a launched satellite, live global coverage or a new spacecraft project.
+
+### Satellite data as contextual evidence
 
 First integrate existing licensed/public imagery, terrain and environmental data as timestamped context. Every layer needs source, acquisition time, publication/processing time, resolution, georeference, cloud/quality mask, license and update cadence. Reproject into a declared coordinate reference system; do not silently equate orthometric and ellipsoidal heights.
 

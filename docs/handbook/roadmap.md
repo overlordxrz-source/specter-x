@@ -2,6 +2,8 @@
 
 [Hub](../README.md) · **Planning windows start 22 October 2026; dates are targets, not commitments.**
 
+> **Edition 2 reconciliation:** Project intent follows the [canonical charter](north-star.md). Local code links below still target `77abdd0`; newer Alpha `95eae17` source/build/simulation status is recorded in the [separate review](alpha-95eae17-review.md), without a merge. Reported builds and 261 tests do not establish flashed or hardware-validated firmware.
+
 ## First 30 days — through 21 November 2026
 
 Goal: reproducible bench acquisition and one honest physical reference experiment.
@@ -37,11 +39,19 @@ Conditional directions: richer optical/depth/thermal/radar fusion, distributed g
 
 **Exit:** task-specific repeatability across unseen rooms/subjects/platform motion; quantified failure envelope and support burden. Commercial pilot planning requires independent privacy, security, safety, ownership and regulatory review appropriate to the intended product.
 
-## Years 3–5 and beyond
+## Years 3–5 and beyond — ecosystem horizon
 
 SPECULATIVE: cooperative AIR/GROUND sensing, geospatial/satellite context, remote scientific deployments and low-bandwidth fallback communications. Laboratory quantum magnetometry may become a university collaboration if access, sensitivity and environmental interference justify it. It remains separate from portable cardiac sensing promises.
 
 Do not plan a custom satellite as a dependency of the local platform. Begin with existing licensed/public datasets or an approved communications service. Custom space hardware would be a distinct program with its own budget, spectrum, launch and operations constraints.
+
+## Year 5+ — 2031 onward, research ambition
+
+Pursue the complete ecosystem in the [charter](north-star.md): a multispectral X wearable with skeletal/AR interaction; SPECTER-OS coordinating heterogeneous hardware and optimized data/health/calibration services; persistent semantic WORLD models with observation histories; AIR/GROUND nodes and ORBIT data/resilient communications; and BIO supported by university laboratory methods. None has a guaranteed completion date. Each capability graduates independently through reproducible verification.
+
+Proposed additions include NIR-compatible optics and, where appropriate, controlled illumination; stereo/depth; LiDAR; controlled CSI peers; positioning anchors; and optical/thermal/range reference fixtures. Advanced BIO adds appropriate physiological references and later calibrated magnetic instrumentation. Choose exact parts only after compatibility, optical/RF safety, power, compute and calibration review; see the inventory.
+
+University methods/results may support a later narrow startup application, subject to evidence, demand, IP/licensing, manufacturability and support. The horizon preserves ambition without treating procurement, grants, partnerships or research success as scheduled facts.
 
 ## Decision and stop gates
 

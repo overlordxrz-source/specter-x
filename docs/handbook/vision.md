@@ -1,8 +1,12 @@
 # Vision, scope and principles
 
-[Documentation hub](../README.md) · **PROPOSED program direction, grounded in the recorded baseline.**
+[Documentation hub](../README.md) · **Owner-adopted project intent; capabilities remain evidence-gated.**
+
+> **Edition 2 reconciliation:** Project intent follows the [canonical charter](north-star.md). Local code links below still target `77abdd0`; newer Alpha `95eae17` source/build/simulation status is recorded in the [separate review](alpha-95eae17-review.md), without a merge. Reported builds and 261 tests do not establish flashed or hardware-validated firmware.
 
 ## Executive vision
+
+The [canonical charter](north-star.md) fixes the central vision: SPECTER-X is the first interface to a vertically integrated spatial-intelligence ecosystem, with multispectral wearable/AR ambitions, SPECTER-OS, WORLD, AIR/GROUND/ORBIT and BIO.
 
 Build one coherent family of sensing tools: a portable unit, distributed sensor nodes and eventually mobile platforms sharing compatible measurements, clocks, calibration records and health information. A user should be able to ask what changed, where it happened, what observed it and how uncertain the answer is. The system should answer with evidence or explicitly say it does not know.
 

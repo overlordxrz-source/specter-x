@@ -2,9 +2,12 @@
 
 [Hub](../README.md) · **Names below define a proposed product architecture, not existing packages or shipped products.**
 
+> **Edition 2 reconciliation:** Project intent follows the [canonical charter](north-star.md). Local code links below still target `77abdd0`; newer Alpha `95eae17` source/build/simulation status is recorded in the [separate review](alpha-95eae17-review.md), without a merge. Reported builds and 261 tests do not establish flashed or hardware-validated firmware.
+
 | Layer | Responsibility | Baseline implementation / gap |
 |---|---|---|
-| **SPECTER-X** | Whole program and integrated research experience | Existing repository; prototype-level integration |
+| **SPECTER-X** | Initial multispectral wearable / skeletal-perception / AR interface to the ecosystem | Existing research repository and HUD; complete wearable/AR integration unvalidated |
+| **SPECTER-OS** | Unified device/software foundation: firmware, drivers, protocols, scheduling, health, calibration and communication | Architectural ambition spanning CORE/SENSE/LINK and supporting services; no independent OS/kernel claimed |
 | **SPECTER-CORE** | Runtime, configuration, device registry, lifecycle, clock service, logging and replay orchestration | `specter/app.py`, events and hardware helpers; no complete independent CORE service |
 | **SPECTER-NODE** | A physical compute/sensor unit with identity, power and health | Local host plus peripherals; multi-node operation primarily simulated |
 | **SPECTER-SENSE** | Device adapters producing raw observations and calibrated measurements | `specter/sensors/`; mixed real paths, parsers and stubs |
@@ -12,6 +15,10 @@
 | **SPECTER-FUSION** | Time alignment, transforms, association and state estimation | Measurement/frame helpers, team association, EKF; real multimodal rig unvalidated |
 | **SPECTER-WORLD** | Versioned environment model, occupancy, tracks and history | Proposed coherent layer; do not equate the current track list with a complete world model |
 | **SPECTER-VIEW** | HUD, maps, diagnostic plots, replay and evidence inspection | `specter/hud/` and CSI/DAQ tools; new interfaces remain proposals |
+
+## Product families and technical layers
+
+The [charter](north-star.md) defines product/program identities. CORE, NODE, SENSE, LINK, FUSION and VIEW remain implementation boundaries, not replacement names for that vision. WORLD spans persistent spatial semantics, uncertainty and history. AIR/GROUND/ORBIT are future platform/data/comms extensions; BIO is the experimental physiology/quantum laboratory track. These names do not claim shipped subsystems or require a package rename.
 
 ## Data path and trust boundaries
 

@@ -2,6 +2,8 @@
 
 [Hub](../README.md) · **All performance goals here are proposed. No new sensing result is claimed.**
 
+> **Edition 2 reconciliation:** Project intent follows the [canonical charter](north-star.md). Local code links below still target `77abdd0`; newer Alpha `95eae17` source/build/simulation status is recorded in the [separate review](alpha-95eae17-review.md), without a merge. Reported builds and 261 tests do not establish flashed or hardware-validated firmware.
+
 ## Observability before fusion
 
 Each modality measures a different physical quantity. A camera keypoint, a thermal region, a radar point and a change in a radio channel are not interchangeable sightings of a named person. Start with an observation model, expected failure modes and an independent reference. Add an inference only after a held-out experiment supports it.
@@ -46,7 +48,7 @@ Start with an empty-scene control, one consenting participant or mechanical targ
 
 60 GHz must not be assumed to penetrate a building usefully because Wi-Fi sometimes does. Material loss and multipath must be measured at the actual frequency and geometry. A positive result behind one panel establishes only that condition. No barrier result is sufficient for rescue, rubble searches or an “empty room” conclusion. No covert or non-consensual trials are part of this program.
 
-## Non-contact respiration and cardiac motion — experimental laboratory track
+## SPECTER-BIO: non-contact respiration and cardiac motion
 
 Begin with a driven motion phantom and a known displacement/time reference. Establish the instrument's detectable displacement versus frequency, distance, aspect, traffic and motion artifacts. Record complex samples if available; phase needs oscillator/common-phase handling and amplitude can also respond through multipath. Avoid claiming either channel is inherently sufficient or impossible.
 
@@ -56,7 +58,7 @@ For respiration, compare to a synchronized respiratory reference, with quality r
 
 [TI's vital-sign lab](https://www.ti.com/video/5428037798001) illustrates seated chest-motion measurements; its [IWR6843 example](https://dev.ti.com/tirex/explore/content/radar_toolbox_4_00_00_05/source/ti/examples/Industrial_and_Personal_Electronics/Vital_Signs/Vital_Signs_With_People_Tracking/docs/vital_signs_with_people_tracking_user_guide.html) describes vendor-specific tracking/vitals output. Those examples motivate feasibility experiments; they do not validate SPECTER hardware, performance or use behind debris.
 
-## Quantum magnetometry — long-term laboratory research
+## SPECTER-BIO: quantum magnetometry — long-term laboratory research
 
 Optically pumped magnetometers measure magnetic fields using atomic-spin physics; magnetocardiography concerns cardiac magnetic signals. This is different from radar displacement sensing and does not follow from the existing IMU magnetometer. A compact sensor does not make the environment magnetically quiet.
 

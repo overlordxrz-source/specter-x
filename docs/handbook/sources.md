@@ -2,6 +2,8 @@
 
 [Hub](../README.md) · **Reviewed 22 October 2026.**
 
+> **Edition 2 reconciliation:** Project intent follows the [canonical charter](north-star.md). Local code links below still target `77abdd0`; newer Alpha `95eae17` source/build/simulation status is recorded in the [separate review](alpha-95eae17-review.md), without a merge. Reported builds and 261 tests do not establish flashed or hardware-validated firmware.
+
 ## Source hierarchy
 
 A saved raw artifact supports what its capture and instrument actually measure. A checkpoint is an account of a run; source code establishes implementation, not physical success. User/agent reports are attributed statements. A manufacturer's specification establishes a part specification, not this assembled system's performance. Research papers establish results under their own apparatus and protocol, not SPECTER validation.
@@ -30,6 +32,10 @@ Paths are relative to the snapshot `77abdd0` used by the docs worktree. They rem
 | L14 | [Measurement](../../specter/fusion/measurement.py), [messages](../../specter/net/messages.py), [supervisor parser](../../specter/sensors/esp32/protocol.py) | Existing fields and exact compatibility behavior inspected |
 | L15 | [Pinmap](../../specter/hw/pinmap.yaml), [rig calibration](../../specter/calibration/rig.json), [frames](../../specter/fusion/coordinate_frames.py) | Design assignments and placeholder/coordinate state; not verified wiring/calibration |
 | L16 | [DAQ wiring](../di188-wiring.md) | Existing grounding/common-mode guidance with physical-board questions still open |
+
+## Edition 2 primary local sources
+
+The owner’s 22 October 2026 charter instruction establishes canonical intent, not measured capability. Full Alpha commit `95eae1787bfa5a3f09d46bd19ad917874cb80029` was inspected through local Git without merging it. [Alpha reconciliation](alpha-95eae17-review.md) enumerates the exact checkpoint, firmware, dependency, tests and simulated artifacts, plus the 261-test report and its missing independent transcript. This supersedes the first edition’s “recent agent work unreviewed” limitation; physical tests and build reproduction remain outside this handoff.
 
 ## Context and inaccessible inputs
 

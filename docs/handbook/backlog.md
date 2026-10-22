@@ -2,16 +2,18 @@
 
 [Hub](../README.md) · **Proposed work orders; no engineering changes authorized by this document.**
 
+> **Edition 2 reconciliation:** Project intent follows the [canonical charter](north-star.md). Local code links below still target `77abdd0`; newer Alpha `95eae17` source/build/simulation status is recorded in the [separate review](alpha-95eae17-review.md), without a merge. Reported builds and 261 tests do not establish flashed or hardware-validated firmware.
+
 Priority 0 blocks an honest next measurement; priority 1 enables integration; priority 2 expands scope. Owners are roles to assign, not promises that another agent is doing the work.
 
 | ID / priority | Work / owner role | Dependency | Concrete acceptance / evidence |
 |---|---|---|---|
 | DOC-01 / P0 | Reconcile original parts-status CSV / owner | Missing upload | Exact source hash, dated logistics per row; sponsors and receipt proof separate |
-| ENG-01 / P0 | Review coding agent's final diff and new sweep/firmware artifacts / reviewer | Agent completion | Snapshot, changed files, actual build/run outputs, unresolved failures; no automatic merge |
+| ENG-01 / P0 | Complete candidate runtime/source acceptance review after the docs reconciliation / reviewer | Alpha `95eae17` reviewed read-only | Obtain reproducible build/test evidence; resolve framing/output/counter gates; no automatic merge |
 | SCI-01 / P0 | Freeze synthetic sweep and null protocol / experiment lead | Baseline analysis inspection | Seeded effect curve, null trial denominator and interval, positive control, held-out seeds, finite checks |
 | CSI-01 / P0 | Verify owned controlled-link feasibility / RF engineer | Controllable peer; SoftAP CSI support question | Pin device/IDF/mode; record received qualifying frames and fixed geometry; source/traffic known |
 | DAQ-01 / P0 | Inspect analog board and obtain safe reference equipment / instrumentation | Leads, DMM/reference, grounding | Board photos/identity, common-mode review, first known voltage with reference reading |
-| ICD-01 / P0 | Resolve STAT compatibility and queue/drop policy / firmware+host | Prior design vs parser conflict | One agreed schema and priority policy with fixtures on both ends |
+| ICD-01 / P0 | Ratify SPECTER_STAT consumption, output atomicity and drop semantics / firmware+host | Alpha separate tag vs older STAT proposal | Preserve legacy parser; one agreed diagnostics/version/priority policy with runtime evidence |
 | FW-01 / P1 | Reproducible ESP-IDF candidate and provenance manifest / firmware | Agent work review, dependency locks | Clean target build, licenses, configuration and artifact hashes; candidate only until reviewed |
 | USB-01 / P1 | Hostile-host and radio-outage validation / integration | Later authorized firmware test | Continuous / slow / stopped reader, bounded counted loss, no torn lines or silent wedge, independent liveness |
 | TIME-01 / P1 | Clock-map and wrap/reset design / runtime | Data contract review | Reboot and wrap injections, wall-clock step test, measured residual and uncertainty |

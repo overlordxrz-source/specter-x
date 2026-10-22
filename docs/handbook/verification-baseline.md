@@ -2,6 +2,8 @@
 
 [Hub](../README.md) · **Evidence review of `77abdd0`; no hardware or application tests rerun in this documentation task.**
 
+> **Edition 2 reconciliation:** Project intent follows the [canonical charter](north-star.md). Local code links below still target `77abdd0`; newer Alpha `95eae17` source/build/simulation status is recorded in the [separate review](alpha-95eae17-review.md), without a merge. Reported builds and 261 tests do not establish flashed or hardware-validated firmware.
+
 ## Capability ledger
 
 | Capability | What exists / source | Evidence scope and remaining gate |
@@ -65,8 +67,8 @@ Do not conclude “an effect exists, only power is missing.” A nonsignificant 
 
 No existing historical document was rewritten. The [validation plan](validation.md) defines the stronger evidence required next.
 
-## Concurrent agent boundary
+## Newer Alpha reconciliation — 95eae17
 
-A read-only check of the SPECTER-X OpenCode session found recent activity on a synthetic sweep and a firmware project after the snapshot. A status query reported `running: false` at that instant, while recent messages described ongoing implementation. This is an observation, not a guarantee of completion or inactivity. Those changes are excluded from this baseline; no agent was interrupted or messaged. A later integration review must inspect its final diff and evidence.
+The later [Alpha review](alpha-95eae17-review.md) supersedes the first edition's “agent work not inspected” status. Committed candidate source, sweep evidence and contract tests were inspected read-only at the full pinned commit. Station/SoftAP builds are reported in checkpoint 012; 261 passing tests are reported by the owner from OpenCode. Neither was reproduced here. Firmware remains **not flashed or hardware-validated**. The new candidate does not emit legacy supervisor telemetry. Local code and historical links above remain at `77abdd0`; this docs branch does not contain the newer firmware or tests.
 
-The referenced chat reports 251 passing tests. They were **not rerun or independently confirmed here**. No current suite-passing, firmware-build, flashed-supervisor or controlled-link claim is made by this handoff.
+The first edition's 251-test figure referred to the older reported snapshot; it is not the newer Alpha count. Static source checks and a hand-authored parser fixture cannot establish runtime serialization, slow-host survival, SoftAP callback support or physical sensing. The review records qualifications without rewriting Alpha's historical checkpoint or changing engineering source.
