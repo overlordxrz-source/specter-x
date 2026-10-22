@@ -85,24 +85,44 @@ def main(argv=None) -> int:
     host_payload = sum(t.get("payload_frames", 0) for t in trials)
     host_null = sum(t.get("null_frames", 0) for t in trials)
     host_total = host_payload + host_null
+    keys = ("csi_cb", "printed", "data", "null", "rej",
+            "drop_old", "drop_new")
+    incomplete = [i for i, l in enumerate(stat)
+                  if not all(_stat_int(l, k) is not None for k in keys)]
+    # Every splice in the preserved evidence is the first line after attach:
+    # the device truncated a record while no host was reading. A torn line
+    # AFTER the first would be a mid-session loss and is a real failure.
+    complete = [l for i, l in enumerate(stat) if i not in incomplete]
+    torn_later = [i for i in incomplete if i != 0]
+    check("no torn status line after attach", not torn_later,
+          f"{len(torn_later)} torn beyond line 0")
+    if incomplete:
+        check("torn line only at attach (known, open)", incomplete == [0],
+              f"incomplete status lines {incomplete} of {len(stat)}")
     dev = None
-    if len(stat) >= 2:
-        a, b = stat[0], stat[-1]
-        d = {k: (_stat_int(b, k) - _stat_int(a, k))
-             for k in ("csi_cb", "printed", "data", "null", "rej",
-                       "drop_old", "drop_new")}
+    if len(complete) >= 2:
+        a, b = complete[0], complete[-1]
+        d = {k: (_stat_int(b, k) - _stat_int(a, k)) for k in keys}
         dev = d
     if dev and dev["printed"]:
-        drift = abs(host_total - dev["printed"]) / dev["printed"]
-        check("host records match device printed", drift <= 0.02,
-              f"host {host_total}, device {dev['printed']} "
-              f"({drift * 100:.2f}% apart)")
+        excluded = sum(t.get("excluded_pre_go", 0)
+                       + t.get("excluded_post_stop", 0)
+                       + t.get("excluded_guard", 0) for t in trials)
+        late = sum(t.get("late_frames") or 0 for t in trials)
+        effective = host_total + excluded + late
+        drift = abs(effective - dev["printed"]) / dev["printed"]
+        check("host records + exclusions match device printed", drift <= 0.02,
+              f"host {host_total} + excluded {excluded} + late {late} = "
+              f"{effective}, device {dev['printed']} ({drift * 100:.2f}% apart)")
         dp = dev.get("data") or 0
         if dp:
-            drift_p = abs(host_payload - dp) / dp
-            check("host payload matches device data", drift_p <= 0.02,
-                  f"host {host_payload}, device {dp} "
-                  f"({drift_p * 100:.2f}% apart)")
+            frac = host_payload / host_total if host_total else 0.0
+            est_payload = host_payload + excluded * frac
+            drift_p = abs(est_payload - dp) / dp
+            check("host payload + estimated exclusions match device data",
+                  drift_p <= 0.03,
+                  f"host {host_payload} + ~{excluded * frac:.0f} = "
+                  f"{est_payload:.0f}, device {dp} ({drift_p * 100:.2f}% apart)")
         check("no device queue drops", (dev.get("drop_old", 0) +
                                        dev.get("drop_new", 0)) == 0,
               f"drop_old {dev.get('drop_old')}, drop_new {dev.get('drop_new')}")

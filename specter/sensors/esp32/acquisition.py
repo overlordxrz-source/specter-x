@@ -118,7 +118,8 @@ class TrialRecorder:
                  max_gap_s: float = 1.0,
                  payload_min_sig_len: int = 33,
                  raw_out: Optional[str] = None,
-                 span_tolerance_s: float = 0.5):
+                 span_tolerance_s: float = 0.5,
+                 startup_timeout_s: float = 3.0):
         self.source = source
         self.parser = parser or CsiParser()
         self.clock = clock
@@ -128,6 +129,7 @@ class TrialRecorder:
         self.max_gap_s = float(max_gap_s)
         self.payload_min_sig_len = int(payload_min_sig_len)
         self.span_tolerance_s = float(span_tolerance_s)
+        self.startup_timeout_s = float(startup_timeout_s)
         self.raw_out = raw_out
 
         self.frames: List[Frame] = []
@@ -322,6 +324,15 @@ class TrialRecorder:
         if lead_in_s > 0:
             self.pump_for(lead_in_s)
 
+        # The reader runs in a thread, so with a zero lead-in GO could be
+        # taken before the first frame exists and the trial would have no
+        # sensor marker at all. Wait a bounded time for the stream to start.
+        deadline = self.clock() + self.startup_timeout_s
+        while not self.frames and self.clock() < deadline:
+            if self._thread is None:
+                self.pump_once()
+            self.sleep(0.01)
+
         go = self._cue("go")
         if on_cue:
             on_cue("go")
@@ -336,9 +347,15 @@ class TrialRecorder:
         sel: List[Frame] = []
         if go_s is None or stop_s is None or stop_s <= go_s:
             reason = "no sensor clock at the boundaries"
-            return TrialResult(label, block, index, 0.0, 0.0, 0.0, 0, 0,
-                               0, 0, 0, 0, 0.0, 0.0, 0, False, reason,
-                               [e.__dict__ for e in self.cues[-3:]])
+            return TrialResult(
+                label=label, block=block, index=index,
+                active_s=0.0, sensor_span_s=0.0, sample_span_s=0.0,
+                delivery_span_s=0.0, payload_frames=0, null_frames=0,
+                excluded_pre=0, excluded_post=0, excluded_guard=0,
+                late_frames=None, max_sensor_gap_s=0.0,
+                boundary_uncertainty_s=0.0, clock_resets=0, valid=False,
+                invalid_reason=reason,
+                cues=[e.__dict__ for e in self.cues[-3:]])
 
         with self._lock:
             pending = self.frames[self._cursor:]

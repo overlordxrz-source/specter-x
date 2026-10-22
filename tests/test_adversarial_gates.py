@@ -412,3 +412,35 @@ def test_offset_uses_the_minimum_delay_and_reports_the_spread():
     off, unc = rec._offset()
     assert off < 0.05, off                      # min, not the 10th percentile
     assert unc > 0.1, unc
+
+
+def test_a_silent_link_returns_a_result_not_a_crash():
+    """The no-sensor-clock path must be a TrialResult, not a TypeError."""
+    rec = _rec(FakeClock(), [])
+    t = rec.run_trial("bench", 0.2, block=0, index=0, lead_in_s=0.0)
+    assert t.valid is False
+    assert "sensor clock" in (t.invalid_reason or "")
+
+
+def test_a_trial_with_zero_lead_in_waits_for_the_first_frame():
+    """Regression: GO was taken before the reader thread had any frame."""
+    clock = FakeClock()
+    sched = [(0.30 + i * 0.05, _line(i, int((0.30 + i * 0.05) * 1e6)))
+             for i in range(12)]
+    rec = _rec(clock, sched, guard_s=0.01)
+    # synchronous path: the warm-up loop is what must wait for a frame
+    t = rec.run_trial("bench", 0.6, block=0, index=0, lead_in_s=0.0)
+    assert t.valid is True, t.invalid_reason
+    assert t.payload_frames > 0
+
+
+def test_a_torn_first_line_is_counted_and_does_not_poison_the_next():
+    """The observed splice: one torn record at line 0, then a clean stream."""
+    clock = FakeClock()
+    torn = (b"CSI_DATA,2,de:1c:7e:d8:26:70,-50,11,1,6,0,1,1,0,0,0,1,-94,0,"
+            b"SPECTER_STAT,role=softap,peer=de:1c:7e:d8:26:70,ch=6\n")
+    good = _line(3, 100_000)
+    rec = _rec(clock, [(0.0, torn + good)])
+    rec.pump_for(0.1)
+    assert rec.malformed == 1
+    assert [f.seq for f in rec.frames] == [3], [f.seq for f in rec.frames]
