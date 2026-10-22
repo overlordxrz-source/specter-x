@@ -222,11 +222,147 @@ followed by `verify_flash` against the same file.
 6. The v3 preflight passes with `flash size` **PASS** — the check that was
    failing — and `0 ambiguous` frames.
 
-## 9. Status
+## 9. Status at the pre-flash gate
 
-All pre-flight checks passed. The write plan is two regions, the partition
-table is provably identical, the backup is verified by two independent
-reads, and the rollback commands are hash-verified. **Nothing has been
-written to the board.**
+All pre-flight checks passed. The write plan was two regions, the partition
+table provably identical, the backup verified by two independent reads, and
+the rollback commands hash-verified. At that point nothing had been written
+to the board. **READY FOR FLASH AUTHORIZATION.** (Authorised and executed;
+results below.)
 
-**READY FOR FLASH AUTHORIZATION.**
+---
+
+# 10. Post-flash results
+
+Written and verified on 2026-10-22 after explicit authorisation of the
+two-region plan.
+
+## 10.1 Write
+
+| region | bytes | verification |
+|---|---|---|
+| `0x0` bootloader | 21 072 | `-- verify OK (digest matched)` |
+| `0x10000` application | 745 056 | `-- verify OK (digest matched)` |
+
+Untouched regions read back after the write **and after several boots**:
+
+| region | SHA-256 (first 16) | unchanged |
+|---|---|---|
+| partition `0x8000`–`0x9000` | `b9118aa3840f7c04` | yes |
+| NVS `0x9000`–`0xF000` | `7b78d61e4e2671f2` | yes |
+| PHY `0xF000`–`0x10000` | `9749381a19fe46e3` | yes |
+
+The partition table was not rewritten, and NVS was unchanged even after the
+new firmware had booted — the firmware does not write to NVS.
+
+## 10.2 Boot
+
+`ESP-IDF v5.2.2 2nd stage bootloader`, **`SPI Flash Size : 16MB`**, **no**
+"Detected size … larger than the size in the binary image header" warning,
+`Loaded app from partition at offset 0x10000`, app `933e856-dirty`, compile
+`03:45:27`, ELF SHA `9261de6e…` (matching the built image). No abort, no
+watchdog, `Returned from app_main()`.
+
+`specter_csi: flash: 16384 kB available at runtime, 16384 kB on the chip` —
+**the flash defect is fixed at the bootloader, as diagnosed in 017.**
+
+One provenance note: the flashed bootloader's embedded banner says
+`01:44:31`, not `03:45`. `build-softap/bootloader/bootloader.bin` is an
+incremental artefact retained from the previous session because no
+bootloader input changed during the 03:45 build. It declares 16 MB, its
+hash matches what was written and verified, and the running banner confirms
+the 16 MB configuration.
+
+Also noted: the 01:43 `build/` bootloader (`a17d5ca5…`) is a different
+binary from the 01:44 `build-softap/` one (`36c01f50…`), which is consistent
+with the app-provenance discrepancy in §2 — the two build trees were not
+interchangeable.
+
+## 10.3 WPA2, peer and DHCP
+
+* `SoftAP 'SPECTER-LAB' on channel 6, WPA2`, DHCP server on `192.168.4.1`.
+* The iPhone associated with the new passphrase — the definitive proof that
+  the AP is WPA2-PSK, not merely configured as such.
+* Peer: `de:1c:7e:d8:26:70` — an **iOS private Wi-Fi address**, so it differs
+  from the `38:9c:b2:7e:37:a2` recorded in checkpoint 015. The firmware locks
+  onto whatever MAC associates, so this is expected, but a reader comparing
+  the two checkpoints should know the MAC changed by design on the phone.
+* RSSI −48 to −55 dBm, channel 6, `amb=0` throughout.
+* DHCP is established functionally: the ping traffic that produced the data
+  frames below requires a leased address and a working ARP/ICMP path.
+
+## 10.4 The v3 scored run — PASS
+
+60 s, `--expect-rate 10`, phone pinging `192.168.4.1` at 100 ms.
+
+| check | measured | result |
+|---|---|---|
+| csi callback activity | 25.1/s | PASS |
+| packet continuity | **100.3% of 10/s (602 data frames)** | PASS |
+| frame mix | **602 data, 900 null, 0 ambiguous** | PASS |
+| data frame rate | 10.0/s | PASS |
+| device vs host records | 1502 host, 1487 device (1.01%) | PASS |
+| longest gap | 0.209 s | PASS |
+| malformed / rescued / spliced | 0 / 0 / 0 | PASS |
+| sequence gaps | 0 | PASS |
+| RSSI | −48 dBm (−68…−43) | PASS |
+| noise floor | −94 dBm | PASS |
+| subcarrier nulls | 1502/1502 clean | PASS |
+| active coverage | 52/52 slots | PASS |
+| queue drops | 0 | PASS |
+| usb vs console byte drift | 0.06% | PASS |
+| flash size | 16 MB (chip 16 MB) | **PASS** |
+
+This is the check that was failing before the bootloader write, now passing
+on the same metric.
+
+**Signal-length histogram:** `28 → 900`, `138 → 599`, `125 → 2`, `82 → 1`.
+The payload frames are now **138 B**, against **122 B** in the checkpoint-016
+trial. That is a 16-byte larger ICMP payload — independent evidence that the
+traffic app changed between the two experiments, which is exactly the
+confound recorded in 017 §5.
+
+## 10.5 USB/UART integrity, analysed independently of the tool
+
+| | console (CH343) | native USB-JTAG |
+|---|---|---|
+| bytes | 655 020 | 655 391 |
+| records | 1 501 | 1 502 |
+| head fields | 24 (all) | 24 (all) |
+| IQ values | 128 (all) | 128 (all) |
+| malformed | **0** | **0** |
+| sequence gaps | **0** | **0** |
+| sequence span | 2687–4187 | 2687–4188 |
+
+The streams differ by exactly **one record — the final one (seq 4188)** —
+which is present on the native path and absent from the console because the
+console reader closed first. That is a capture-stop boundary, 0.057% of
+bytes, not a mid-stream loss: both streams have zero internal gaps and zero
+malformed records. The single-writer change is consistent with this result —
+no torn or spliced line appeared in 60 s of dense output.
+
+## 10.6 Evidence
+
+| artefact | SHA-256 |
+|---|---|
+| `preflight-v3-phone.raw` (console) | `52f9fe583ebfa8302bd62d71df17da2dfadeeff12acf445d7e4f894aab0d6c5d` |
+| `preflight-v3-phone.raw.csi` (native) | `5625eecbc3bc4235f0053a9688118c54703d05484cc07449905ce7ba879728e2` |
+| `preflight-v3-phone.json` | `cfc4981e63e4992811ce6dadac150101c9fbc9aa1971309ab55260bdc111ae75` |
+
+Also preserved: `boot-after-flash.raw`, `association-check.raw`,
+`ap-state-20s.raw`, `preflight-prejoin.{raw,raw.csi,json}`,
+`postflash-0x8000-0x10000.bin`, and the `rollback/` images — all under the
+gitignored `runs/alpha002_hw_validation_20261022b/`.
+
+## 10.7 What this proves, and what it does not
+
+**Proven on hardware:** the hardened firmware boots; the runtime sees all
+16 MB; WPA2 association with a real iPhone works; CSI records are produced
+with correct subcarrier structure; the three counts are separated and close
+exactly; the transport delivered 1 502 records with no malformed line and no
+sequence gap.
+
+**Not proven:** motion or vital-sign detection (nothing measured); sustained
+unattended reliability (the phone is still the weak element); performance
+superiority (no comparison); and the metadata/IQ-boundary splice remains
+undetectable without a checksum.
