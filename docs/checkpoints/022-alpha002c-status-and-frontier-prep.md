@@ -86,13 +86,35 @@ No capability was promoted to implemented or validated by that edit.
 1. Owner authorizes the session and supplies the geometry line (measured or
    declared-estimate per Amendment 3). No value will be invented.
 2. Write `<session>.geometry.json` from those values only.
-3. Run the 10 s non-human pre-check; it must show ~10 payload/s, valid
-   windows and uncertainty ≤ 0.10 s.
+3. Retry the 10 s non-human pre-check after the phone's ping app is confirmed
+   running. The first attempt failed closed: 0 payload frames (see below).
+   It must show ~10 payload/s, valid windows and uncertainty ≤ 0.10 s.
 4. Run the frozen 20-trial protocol only after the pre-check passes.
 5. Analyse with `tools/alpha002c_motion_v2.py`; preserve PASS/FAIL/
    INCONCLUSIVE/INVALID with the raw stream and counters.
 
-No trial, pre-check or hardware capture was started for this checkpoint.
+### 10 s pre-check attempt (non-human, 2026-10-23T01:33:55Z)
+
+Run on `/dev/cu.usbmodem1101` with no cues, no subject and no motion. Result:
+**INVALID — 0 payload frames.** The trial reports `active_s=0.0`,
+`payload_frames=0`, `null_frames=0`, `valid=False`, reason *"no sensor clock
+at the boundaries"*.
+
+The raw stream explains it: 12 `SPECTER_STAT` lines, one torn attach-time
+splice, and 5 genuine `CSI_DATA` records in 10 s, all null-data frames
+(`sig_len=128`, rate 9). Device counters at the end: `csi_cb=111633`,
+`printed=105976`, `data=41141`, `null=64835`, `drop_old=0`, `drop_new=0`,
+`q=0`, `q_high=27`; peer MAC stable, channel 6, RSSI −28 dBm.
+
+Interpretation: the ESP32 is alive and the phone is associated, but the link
+carried no payload traffic during the window. This is an apparatus/offered-load
+failure, not a motion or sensing result. The most likely cause is that the
+ping app stopped or the phone slept; that must be confirmed on the phone, not
+assumed. Evidence is retained at
+`runs/alpha002c_motion_v2/precheck-10s.json` and `.json.raw` (gitignored).
+
+No 20-trial session and no human trial was started. One 10 s non-human
+pre-check was run and failed closed.
 
 ## Limitations
 
