@@ -4,7 +4,7 @@ Verified locally on the Mac, 23 October 2026. Base `dc695c7`; branch `feature/sp
 
 ## Observed checks
 
-- **442 tests passed**, one inherited warning, 14.69 s. This includes 20 new WORLD cases in addition to FRONTIER and the original appropriate suite. The real DI-188 acceptance module was excluded explicitly, including collection, to avoid hardware operation.
+- **193 tests passed**, 1 hardware deselected, in the integration worktree after review remediation. This includes 67 new FRONTIER/WORLD cases. The earlier 442-test feature-branch run is not the integration baseline. The real DI-188 acceptance module was excluded explicitly, including collection, to avoid hardware operation.
 - Browser acceptance exercised real navigation, source selection, filtering, observation inspection, scrubbing, play/pause, speed changes, evidence reading, detach/reopen, empty spatial state, viewport resizing and explicit SIMULATED/UNKNOWN/error cases. Final machine-readable checks and screenshots accompany the handoff. No browser JavaScript runtime exceptions were observed.
 - The empty offline screen had no signal plot, disabled playback and truthful source states. Its shutdown button returned success and stopped that separate service instance.
 - Source SHA-256 `f0323be3d79af1bd5f29fd21b483323c90eeb7be3f90c8e89c980e92d8432b2c`: **7,290 observations**, **299 non-CSI lines**, zero malformed/unsupported records and zero missing source sequence numbers. Raw source hash was unchanged after acceptance.
@@ -16,7 +16,7 @@ The inherited warning is NumPy's `RuntimeWarning: invalid value encountered in s
 
 ## Negative controls and defects corrected here
 
-The tests reject duplicate/out-of-order source records, malformed framing, wrong typed CSI payloads, altered capture bytes, changing source files, unknown source origins promoted to hardware, invalid seek/speed/play values, catalog symlink escapes and unauthorized HTTP commands. Missing timestamps remain unknown. Simulated canonical observations remain SIMULATED. Queue overflows, stale test ingress and disconnect/error/reconnect boundaries are exercised without devices. Concurrent replay source replacements are serialized and covered by a regression test.
+The tests reject duplicate/out-of-order source records, malformed framing, wrong typed CSI payloads, altered capture bytes, changing source files, unknown source origins promoted to hardware, invalid seek/speed/play values, catalog symlink escapes and unauthorized HTTP commands. They also cover lost-newline splices/torn prefixes, explicit-only replay roots, the bounded catalog, and delayed inspection/evidence responses. Missing timestamps remain unknown. Simulated canonical observations remain SIMULATED. Queue overflows, stale test ingress and disconnect/error/reconnect boundaries are exercised without devices. Concurrent replay source replacements are serialized and covered by a regression test.
 
 Corrections during implementation: play commands previously coerced non-boolean values; a load could restore READY after detach; concurrent replacements needed a lifecycle lock; generic envelopes needed CSI-specific payload checks before rendering; global quality warnings initially used gaps only through the selected record; navigation retained a previous page's scroll position; and delayed prior-session responses could briefly expose old READY controls during a source switch. The UI now enters LOADING immediately and rejects prior-generation responses. A delayed-response browser control exercises that race. These were fixed and covered by Python or browser regression checks. A browser test's initial text selector incorrectly required a metric without its unit; that was a test-selector fault, not a data failure. A resumed tool session also required restarting the local service after the previous process ended; no old process was assumed to remain running.
 
@@ -25,9 +25,9 @@ Corrections during implementation: play commands previously coerced non-boolean 
 From the isolated worktree:
 
 ```sh
-cd /Users/overlord/sideprojects/specter-x-world-integration
-PYTHONDONTWRITEBYTECODE=1 /Users/overlord/sideprojects/specter-x/.venv/bin/python -m pytest -q -p no:cacheprovider --ignore=tests/test_alpha001_acceptance_real.py
-PYTHONDONTWRITEBYTECODE=1 /Users/overlord/sideprojects/specter-x/.venv/bin/python tools/world_verify.py --source /Users/overlord/sideprojects/specter-x/runs/alpha002_hw_validation_20261022b/phase0-short.raw.csi --outdir /absolute/path/to/new/private-world-verification
+cd "$SPECTER_WORLD_WORKTREE"
+PYTHONDONTWRITEBYTECODE=1 "$SPECTER_X_PYTHON" -m pytest -q -p no:cacheprovider --ignore=tests/test_alpha001_acceptance_real.py
+PYTHONDONTWRITEBYTECODE=1 "$SPECTER_X_PYTHON" tools/world_verify.py --source "$SPECTER_CAPTURE" --outdir /absolute/path/to/new/private-world-verification
 ```
 
 The verifier requires a new directory. Its synthetic stress capture is explicitly labeled and removed after verification; it writes a summary JSON. Original recordings are never modified. The complete private capture is not copied into the branch or delivery patch. The source's signal-length distribution includes several lengths besides 28 and 138 bytes; WORLD preserves these actual categories instead of rewriting them as a binary experimental label.

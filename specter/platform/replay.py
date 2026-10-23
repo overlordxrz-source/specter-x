@@ -71,87 +71,99 @@ class CsiReplay:
                 if not text.startswith("CSI_DATA,"):
                     self.counts["non_csi"] += 1
                     continue
-                try:
-                    rec = parser.feed(text)
-                except ValueError:
+                outcome = parser.feed_resilient(text)
+                if outcome.malformed:
                     self.counts["malformed"] += 1
-                    continue
-                if len(rec.iq) != 128:
-                    self.counts["unsupported_layout"] += 1
-                    continue
-                if last_seq is not None and rec.seq <= last_seq:
-                    self.counts["nonmonotonic_sequence"] += 1
-                    raise ContractError(
-                        "sequence reset/out-of-order: explicit session split required"
-                    )
-                dropped = 0 if last_seq is None else rec.seq - last_seq - 1
-                last_seq = rec.seq
-                self.counts["sequence_missing"] += dropped
-                ts, epoch, flags = clock.push(rec.local_timestamp)
-                flags += [
-                    "uncalibrated",
-                    "clock_unsynced",
-                    "signal_domain",
-                    "not_spatial",
-                    "receive_time_unrecorded",
-                ]
-                amps = [math.hypot(im, re) for im, re in zip(rec.iq[::2], rec.iq[1::2])]
-                if rec.first_word_invalid:
-                    amps[:2] = [None, None]
-                    flags.append("first_word_invalid")
-                if not self.known_source:
-                    flags.append("source_origin_unverified")
-                self.counts["observations"] += 1
-                yield Observation(
-                    dict(
-                        schema=SCHEMA,
-                        id=f"{self.digest[:16]}:{line_no}",
-                        node_id="bench",
-                        sensor_id="bench/esp32-s3/csi",
-                        seq=rec.seq,
-                        kind="csi_lltf_amplitude",
-                        value=dict(
-                            amplitudes=amps,
-                            rssi_dbm=rec.rssi,
-                            phy_rate_code=rec.rate,
-                            sig_len_bytes=rec.sig_len,
-                            noise_floor_dbm=rec.noise_floor,
-                            csi_bytes=len(rec.iq),
-                        ),
-                        units="gain_compensated_csi_counts",
-                        frame_id="esp32/lltf-frequency",
-                        origin=self.origin,
-                        classification="measured" if self.known_source else "unknown",
-                        acquisition=dict(
-                            domain="esp32.rx_ctrl.timestamp_us",
-                            epoch=epoch,
-                            ticks=rec.local_timestamp,
-                            unwrapped_ticks=ts,
-                            tick_hz=1_000_000,
-                            wrap_bits=32,
-                        ),
-                        received=dict(domain="unrecorded", time_ns=None),
-                        calibration=dict(
-                            status="uncalibrated", id=None, reference=None
-                        ),
-                        uncertainty=dict(kind="unknown", variables=[], covariance=None),
-                        evidence=dict(
-                            level="recorded_hardware"
-                            if self.known_source
-                            else "unverified",
-                            raw=dict(
-                                artifact=self.path.name,
-                                sha256=self.digest,
-                                line=line_no,
+                if outcome.spliced:
+                    self.counts["spliced_lines"] += 1
+                if outcome.records:
+                    self.counts["recovered_records"] += len(outcome.records)
+                for record_index, rec in enumerate(outcome.records):
+                    if rec is None:
+                        self.counts["malformed"] += 1
+                        continue
+                    if len(rec.iq) != 128:
+                        self.counts["unsupported_layout"] += 1
+                        continue
+                    if last_seq is not None and rec.seq <= last_seq:
+                        self.counts["nonmonotonic_sequence"] += 1
+                        raise ContractError(
+                            "sequence reset/out-of-order: explicit session split required"
+                        )
+                    dropped = 0 if last_seq is None else rec.seq - last_seq - 1
+                    last_seq = rec.seq
+                    self.counts["sequence_missing"] += dropped
+                    ts, epoch, flags = clock.push(rec.local_timestamp)
+                    flags += [
+                        "uncalibrated",
+                        "clock_unsynced",
+                        "signal_domain",
+                        "not_spatial",
+                        "receive_time_unrecorded",
+                    ]
+                    if outcome.spliced:
+                        flags.append("spliced_line")
+                    if outcome.malformed:
+                        flags.append("torn_line")
+                    amps = [math.hypot(im, re) for im, re in zip(rec.iq[::2], rec.iq[1::2])]
+                    if rec.first_word_invalid:
+                        amps[:2] = [None, None]
+                        flags.append("first_word_invalid")
+                    if not self.known_source:
+                        flags.append("source_origin_unverified")
+                    self.counts["observations"] += 1
+                    record_suffix = (f":{record_index}"
+                                     if len(outcome.records) > 1 else "")
+                    yield Observation(
+                        dict(
+                            schema=SCHEMA,
+                            id=f"{self.digest[:16]}:{line_no}{record_suffix}",
+                            node_id="bench",
+                            sensor_id="bench/esp32-s3/csi",
+                            seq=rec.seq,
+                            kind="csi_lltf_amplitude",
+                            value=dict(
+                                amplitudes=amps,
+                                rssi_dbm=rec.rssi,
+                                phy_rate_code=rec.rate,
+                                sig_len_bytes=rec.sig_len,
+                                noise_floor_dbm=rec.noise_floor,
+                                csi_bytes=len(rec.iq),
                             ),
-                            parents=[],
-                            algorithm="esp-csi-amplitude-replay",
-                            revision="frontier001-adapter-v1",
-                        ),
-                        validity=dict(state="degraded", flags=flags),
-                        dropped_before=dropped,
+                            units="gain_compensated_csi_counts",
+                            frame_id="esp32/lltf-frequency",
+                            origin=self.origin,
+                            classification="measured" if self.known_source else "unknown",
+                            acquisition=dict(
+                                domain="esp32.rx_ctrl.timestamp_us",
+                                epoch=epoch,
+                                ticks=rec.local_timestamp,
+                                unwrapped_ticks=ts,
+                                tick_hz=1_000_000,
+                                wrap_bits=32,
+                            ),
+                            received=dict(domain="unrecorded", time_ns=None),
+                            calibration=dict(
+                                status="uncalibrated", id=None, reference=None
+                            ),
+                            uncertainty=dict(kind="unknown", variables=[], covariance=None),
+                            evidence=dict(
+                                level="recorded_hardware"
+                                if self.known_source
+                                else "unverified",
+                                raw=dict(
+                                    artifact=self.path.name,
+                                    sha256=self.digest,
+                                    line=line_no,
+                                ),
+                                parents=[],
+                                algorithm="esp-csi-amplitude-replay",
+                                revision="frontier001-adapter-v1",
+                            ),
+                            validity=dict(state="degraded", flags=flags),
+                            dropped_before=dropped,
+                        )
                     )
-                )
 
 
 def write_capture(path, observations):

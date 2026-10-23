@@ -17,24 +17,74 @@ from .store import WorldStore
 WEB = Path(__file__).with_name("web")
 
 
+CATALOG_LIMIT = 512
+
+
+def approved_roots(root_args, replay_path=None):
+    """Explicit roots only.
+
+    ``--replay`` selects one initial source; it must not implicitly authorize
+    the capture's parent directory for evidence browsing. Callers that want a
+    directory browsable must pass it as ``--root`` explicitly.
+    """
+    return [Path(root).resolve() for root in root_args]
+
+
+def _catalog_walk(root):
+    """Yield files under root with a bounded, deterministic DFS.
+
+    Do not materialize ``root.rglob('*')``: a large approved directory must
+    not consume memory before the catalog cap is applied.
+    """
+    stack = [root]
+    while stack:
+        directory = stack.pop()
+        try:
+            entries = sorted(directory.iterdir(), key=lambda p: p.name)
+        except OSError:
+            continue
+        for entry in entries:
+            try:
+                if entry.is_symlink():
+                    resolved = entry.resolve()
+                    if not resolved.is_relative_to(root):
+                        continue
+                    if resolved.is_dir():
+                        continue
+                    path = resolved
+                elif entry.is_dir():
+                    stack.append(entry)
+                    continue
+                else:
+                    path = entry
+                if not path.is_file():
+                    continue
+            except OSError:
+                continue
+            yield path
+
+
 def catalog(roots):
     items = []
     for root in roots:
         root = Path(root).resolve()
         if not root.is_dir():
             continue
-        for p in sorted(root.rglob("*")):
-            if len(items) >= 512:
+        for p in _catalog_walk(root):
+            if len(items) >= CATALOG_LIMIT:
                 return items
-            if not p.is_file() or not p.resolve().is_relative_to(root):
+            try:
+                if not p.resolve().is_relative_to(root):
+                    continue
+                replay = p.name.endswith((".raw.csi", ".observations.jsonl"))
+                evidence = p.suffix in (".md", ".json") and not p.name.endswith(
+                    ".manifest.json"
+                )
+                if not replay and not evidence:
+                    continue
+                size = p.stat().st_size
+            except OSError:
                 continue
-            replay = p.name.endswith((".raw.csi", ".observations.jsonl"))
-            evidence = p.suffix in (".md", ".json") and not p.name.endswith(
-                ".manifest.json"
-            )
-            if not replay and not evidence:
-                continue
-            size = p.stat().st_size
             if size > (WorldStore.MAX_BYTES if replay else 256 * 1024):
                 continue
             items.append(
@@ -206,7 +256,7 @@ def main(argv=None):
     )
     p.add_argument(
         "--replay",
-        help="initial preserved capture; its parent is included in approved roots",
+        help="initial preserved capture; pass --root explicitly to browse evidence",
     )
     p.add_argument(
         "--port", type=int, default=0, help="loopback port; default chooses a free port"
@@ -215,9 +265,7 @@ def main(argv=None):
     p.add_argument("--max-records", type=int, default=250_000)
     a = p.parse_args(argv)
     store = WorldStore(a.max_records)
-    roots = list(a.root)
-    if a.replay:
-        roots.append(str(Path(a.replay).resolve().parent))
+    roots = approved_roots(a.root, a.replay)
     try:
         server = WorldServer(("127.0.0.1", a.port), store, roots)
         if a.replay:

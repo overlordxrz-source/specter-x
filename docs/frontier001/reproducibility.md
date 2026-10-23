@@ -4,14 +4,14 @@
 
 ## Environment and exact commands
 
-Working directory: `/Users/overlord/sideprojects/specter-x-frontier001`. Existing Python environment: `/Users/overlord/sideprojects/specter-x/.venv/bin/python` (Python 3.11, NumPy 2.4.6, OpenCV 5.0.0). The system Python initially lacked `cv2`; using the existing project environment resolved that environment issue without installing project dependencies or modifying OpenCode's environment.
+Set `SPECTER_X_PYTHON` and `SPECTER_CAPTURE` to the local interpreter and preserved capture before running the commands. Working directory: the isolated FRONTIER worktree. Use the project Python environment with NumPy and OpenCV (the recorded run used Python 3.11, NumPy 2.4.6, OpenCV 5.0.0). The system Python initially lacked `cv2`; using the existing project environment resolved that environment issue without installing project dependencies or modifying OpenCode's environment.
 
 ```sh
-cd /Users/overlord/sideprojects/specter-x-frontier001
+cd "$SPECTER_FRONTIER_WORKTREE"
 export PYTHONDONTWRITEBYTECODE=1
-/Users/overlord/sideprojects/specter-x/.venv/bin/python -m pytest -q -p no:cacheprovider --ignore=tests/test_alpha001_acceptance_real.py
-/Users/overlord/sideprojects/specter-x/.venv/bin/python tools/frontier001_verify.py --source /Users/overlord/sideprojects/specter-x/runs/alpha002_hw_validation_20261022b/phase0-short.raw.csi --outdir /absolute/path/to/a/new/private-verification-directory
-/Users/overlord/sideprojects/specter-x/.venv/bin/python -m specter.app --console --replay /Users/overlord/sideprojects/specter-x/runs/alpha002_hw_validation_20261022b/phase0-short.raw.csi --at 255 --console-size 800x480 --headless --save-frame /absolute/path/to/preview.png
+"$SPECTER_X_PYTHON" -m pytest -q -p no:cacheprovider --ignore=tests/test_alpha001_acceptance_real.py
+"$SPECTER_X_PYTHON" tools/frontier001_verify.py --source "$SPECTER_CAPTURE" --outdir /absolute/path/to/a/new/private-verification-directory
+"$SPECTER_X_PYTHON" -m specter.app --console --replay "$SPECTER_CAPTURE" --at 255 --console-size 800x480 --headless --save-frame /absolute/path/to/preview.png
 ```
 
 The verification directory must be new: capture files are exclusive-create. The verifier materializes this finite recording for comparison; it is not the bounded UI loader or a live streaming service. UI loading separately caps records at 4,096 by default, maximum 50,000; registry history is independently bounded.

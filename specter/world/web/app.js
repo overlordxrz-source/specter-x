@@ -538,14 +538,17 @@ function navigate(view) {
   window.scrollTo(0, 0);
 }
 async function inspect(index) {
+  const requestGeneration = generation;
   try {
     const d = index === "current" ? state : await api("state?index=" + index);
+    if (requestGeneration !== generation) return;
     $("#inspection-title").textContent =
       "Observation " + fmt(d.observation?.seq);
     $("#inspection-body").innerHTML =
       `<p>Preserved FRONTIER envelope. ${esc(d.observation?.origin)} origin; ${esc(d.observation?.validity.state)} validity.</p><pre>${esc(JSON.stringify(d.observation, null, 2))}</pre>`;
     $("#inspection").showModal();
   } catch (e) {
+    if (requestGeneration !== generation) return;
     notice(e.message);
   }
 }
@@ -557,11 +560,15 @@ document.addEventListener("click", async (e) => {
   if (b.dataset.inspect) inspect("current");
   if (b.dataset.index) inspect(b.dataset.index);
   if (b.dataset.evidence) {
+    const requestGeneration = generation;
     try {
+      const result = await api("evidence?id=" + b.dataset.evidence);
+      if (requestGeneration !== generation) return;
       evidenceId = b.dataset.evidence;
-      evidenceText = await api("evidence?id=" + evidenceId);
+      evidenceText = result;
       render();
     } catch (err) {
+      if (requestGeneration !== generation) return;
       notice(err.message);
     }
   }

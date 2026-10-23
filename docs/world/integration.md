@@ -1,6 +1,6 @@
 # FRONTIER / WORLD integration review
 
-23 October 2026. Base `main` / `origin/main`: `1edabbc`. Branch `integrate/frontier-world-main`, isolated worktree `/Users/overlord/sideprojects/specter-x-world-integration`. Source milestones: FRONTIER-001 `dc695c7` and SPECTER-WORLD `9520377`. This is a draft integration for review, not a merge or hardware release.
+23 October 2026. Base `main` / `origin/main`: `1edabbc`. Branch `integrate/frontier-world-main`, isolated worktree `$SPECTER_WORLD_WORKTREE`. Source milestones: FRONTIER-001 `dc695c7` and SPECTER-WORLD `9520377`. This is a draft integration for review, not a merge or hardware release.
 
 ## Canonical main and conflict decisions
 
@@ -18,24 +18,36 @@ The working copy removed nineteen lines from the browser harness after WORLD com
 
 **Origin remains UNATTRIBUTED.** Filesystem metadata does not identify a writer. The current Codex transcript contains the addition, commit and later discovery, but no removal command in the edit interval. The searched local OpenCode database contained no matching tool record; the read-only bridge inventory does not supply a writer audit for that file. These searches do not exclude other processes or stores. No agent or person is accused, and no author was inferred from timing alone.
 
-The committed delayed-response block is retained. An additional observation now checks that the previous session's READY state never reappears after the delayed response arrives. **26 browser checks pass.** On a separate temporary frontend with the generation guards disabled, the browser harness fails specifically at `Prior-session READY response never reappears`. No production file was mutated for that negative control. This proves that the guard-specific check can fail; it does not establish correctness for every possible race.
+The committed delayed-response block is retained. An additional observation now checks that the previous session's READY state never reappears after the delayed response arrives. **28 browser checks pass.** On a separate temporary frontend with the generation guards disabled, the browser harness fails specifically at `Prior-session READY response never reappears`. No production file was mutated for that negative control. This proves that the guard-specific check can fail; it does not establish correctness for every possible race.
 
 ## Verification on this integration
 
-[Machine-readable results](integration-verification.json) record exact results and protection count. Main baseline: **126 passed, 1 hardware deselected**. Integration: **189 passed, 1 hardware deselected**; all **63 new** FRONTIER/WORLD cases are retained. There are no test failures or new Python warnings. The older 442-test feature-branch result included Alpha code/tests that main does not contain; importing those experiments just to reproduce a count would be an incorrect integration.
+[Machine-readable results](integration-verification.json) record exact results and protection count. Main baseline: **126 passed, 1 hardware deselected**. Integration: **193 passed, 1 hardware deselected**; all **67 new** FRONTIER/WORLD cases are retained. There are no test failures or new Python warnings. The older 442-test feature-branch result included Alpha code/tests that main does not contain; importing those experiments just to reproduce a count would be an incorrect integration.
 
-The local environment has no `pip` module; `uv pip check --python /Users/overlord/sideprojects/specter-x/.venv/bin/python` verified all eight installed packages compatible. Runtime imports, CLI startup, JS syntax and launcher syntax passed. Browser verification used existing Playwright 1.62.1 and Chromium 149.0.7827.55 on the Mac. No missing application runtime dependencies remained. Main's existing CI installs its own dependency set; its remote result is reported separately on the draft PR.
+The local environment has no `pip` module; `uv pip check --python "$SPECTER_X_PYTHON"` verified all eight installed packages compatible. Runtime imports, CLI startup, JS syntax and launcher syntax passed. Browser verification used existing Playwright 1.62.1 and Chromium 149.0.7827.55 on the Mac. No missing application runtime dependencies remained. Main's existing CI installs its own dependency set; its remote result is reported separately on the draft PR.
 
 The integration service launched and indexed the original, read-only **7,290-record** CSI source, preserving its hash and native timestamps. Independent raw-CSV checks matched source count and sampled amplitudes/RSSI/signal length/raw lines. The **50,000-record simulated** stress run completed in 3.971 s; largest sampled query time during loading was 11.61 ms. These are local observations, not real-time guarantees or human-sensing evidence. No serial/camera connection was opened. Screenshots are actual app output.
 
 ## Reproduce and hand off
 
 ```sh
-cd /Users/overlord/sideprojects/specter-x-world-integration
-PYTHONDONTWRITEBYTECODE=1 /Users/overlord/sideprojects/specter-x/.venv/bin/python -m pytest -q -p no:cacheprovider -m 'not hardware'
+cd "$SPECTER_WORLD_WORKTREE"
+PYTHONDONTWRITEBYTECODE=1 "$SPECTER_X_PYTHON" -m pytest -q -p no:cacheprovider -m 'not hardware'
 ./SPECTER-WORLD.command
 ```
 
-The launcher includes main's current handbook among the approved evidence roots. Browser acceptance commands and fault controls are in [verification](verification.md); use this worktree and a fresh output directory. Run `tools/world_ui_verify.cjs` with both the preserved Phase 0 capture and generated fault controls available. The delayed-response block must not be removed to make a run pass.
+The launcher includes main's current handbook among the explicit evidence roots. `--replay` loads its one initial source but no longer authorizes the capture parent. Browser acceptance commands and fault controls are in [verification](verification.md); use this worktree and a fresh output directory. Run `tools/world_ui_verify.cjs` with both the preserved Phase 0 capture and generated fault controls available. The delayed-response block must not be removed to make a run pass.
 
 Main's project memory, firmware and frozen Alpha records stay intact. The separate Alpha feature checkout is not modified. The draft PR contains no private raw recordings, temporary indexes, browser dependencies or local audit transcripts. A push and draft PR are owner-authorized; merging, flashing, deployment and new physical/human experiments are not.
+
+## Review remediation (23 October 2026)
+
+Addressed the independent review against `daaf081`:
+
+- `CsiReplay` now uses the canonical `feed_resilient` parser, recovers records from lost-newline splices and torn prefixes, preserves the physical raw-line reference and adds `spliced_line`/`torn_line` quality flags plus `spliced_lines`/`recovered_records` counters. Regression tests cover both cases.
+- `--replay FILE` no longer adds the capture's parent to approved roots. Browsing requires an explicit `--root`; sibling and symlink escape tests remain fail-closed.
+- `inspect()` and evidence responses now use the same request-generation guard as refresh; delayed inspection/evidence controls are in the browser harness.
+- `catalog()` walks a bounded DFS and stops at `CATALOG_LIMIT` before materializing a large tree; a 552-file test confirms the 512-item cap.
+- Integration docs use portable environment placeholders and no longer describe a review branch as canonical. The launcher keeps its existing fallback and accepts `SPECTER_X_PYTHON`/`SPECTER_WORLD_CAPTURE` overrides.
+
+Re-run: **193 Python tests passed, 1 hardware deselected; 28 browser checks passed.** The source capture remained read-only and its SHA-256 was unchanged.

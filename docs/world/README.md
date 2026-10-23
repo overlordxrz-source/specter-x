@@ -9,19 +9,19 @@ WORLD is the Mac desktop research application; VIEW remains the compact Newhaven
 Double-click `SPECTER-WORLD.command` in this worktree, or run:
 
 ```sh
-cd /Users/overlord/sideprojects/specter-x-world-integration
+cd "$SPECTER_X_WORLD_WORKTREE"
 ./SPECTER-WORLD.command
 ```
 
-If macOS refuses double-click execution, use the Terminal command above. The launcher uses the existing project Python environment and the preserved Phase 0 source when it exists. It opens a free loopback port, avoiding conflicts with other applications. Close with **Shut down service** in the sidebar, or Ctrl-C in Terminal; closing the browser tab alone does not terminate the service.
+Set `SPECTER_X_WORLD_WORKTREE`, `SPECTER_X_PYTHON` and `SPECTER_WORLD_CAPTURE` if the local paths differ. If macOS refuses double-click execution, use the Terminal command above. The launcher uses the existing project Python environment and the preserved Phase 0 source when it exists. It opens a free loopback port, avoiding conflicts with other applications. Close with **Shut down service** in the sidebar, or Ctrl-C in Terminal; closing the browser tab alone does not terminate the service.
 
 Explicit command with approved recording/evidence roots:
 
 ```sh
-PYTHONDONTWRITEBYTECODE=1 /Users/overlord/sideprojects/specter-x/.venv/bin/python -m specter.world --replay /Users/overlord/sideprojects/specter-x/runs/alpha002_hw_validation_20261022b/phase0-short.raw.csi --root docs/checkpoints
+PYTHONDONTWRITEBYTECODE=1 "$SPECTER_X_PYTHON" -m specter.world --replay "$SPECTER_WORLD_CAPTURE" --root docs/checkpoints
 ```
 
-Portable setup: install the repository's normal Python dependencies, then `python -m specter.world --root /path/to/approved/recordings`. The installed `specter-world` command is equivalent. Add repeatable `--root` directories to browse reports and recordings; `--replay` also approves its parent. The source is read-only. Only `.raw.csi` and `.observations.jsonl` files are replayable; manifests accompany the latter. Report `.json` and `.md` files are inspected as evidence text. No file upload or arbitrary-path API is exposed. Use `--no-browser` for automation; the printed URL is the real local endpoint.
+Portable setup: install the repository's normal Python dependencies, then `python -m specter.world --root /path/to/approved/recordings`. The installed `specter-world` command is equivalent. Add repeatable `--root` directories to browse reports and recordings. `--replay FILE` loads that one initial source but does **not** approve its parent; pass an explicit `--root` to browse evidence. The source is read-only. Only `.raw.csi` and `.observations.jsonl` files are replayable; manifests accompany the latter. Report `.json` and `.md` files are inspected as evidence text. No file upload or arbitrary-path API is exposed. Use `--no-browser` for automation; the printed URL is the real local endpoint.
 
 ## Operate
 

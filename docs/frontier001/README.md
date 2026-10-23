@@ -15,7 +15,7 @@ python -m specter.app --console --replay /absolute/path/to/phase0-short.raw.csi 
 python -m specter.app --console --replay /absolute/path/to/phase0-short.raw.csi --at 255 --headless --console-size 800x480 --save-frame preview.png
 ```
 
-The real preserved capture used in local verification is `/Users/overlord/sideprojects/specter-x/runs/alpha002_hw_validation_20261022b/phase0-short.raw.csi`; it is private, gitignored and not copied into this branch. All CSI records are shown as acquired radio-channel data, not human observations or localized points. Default empty console shows OFFLINE sources, never generated feeds.
+The real preserved capture used in local verification is a private, gitignored `phase0-short.raw.csi` under the owner's Alpha run directory; it is not copied into this branch. Point `--replay` at the local capture. All CSI records are shown as acquired radio-channel data, not human observations or localized points. Default empty console shows OFFLINE sources, never generated feeds.
 
 Space plays/pauses; A/D steps; click the bottom timeline to seek; E cycles provenance pages, N node readiness, S signal view, J the next session, Q exits. `--session-dir` browses at most 64 `.raw.csi` or `.observations.jsonl` files. `--replay-limit` defaults to 4096 (maximum 50000), and a visible “limited” marker exposes truncation. `--buffer-capacity` bounds the retained diagnostic history; evictions are not sensor losses. The per-source rate is computed from native acquisition ticks, not render FPS or replay wall time. Playback uses fixed record batches for inspection, not a real-time-rate simulator. Window controls remain offline; there is no network or hardware command path.
 
@@ -27,7 +27,7 @@ The normative runtime validator is `specter/platform/observation.py`. Covariance
 
 The bundled `specter/platform/sources.json` binds two reviewed hardware-recording digests to their historical sources. An arbitrary CSI text file is **UNKNOWN**, not hardware-measured merely because its syntax parses. Adding a hardware source requires a reviewed hash/source entry; simulated envelopes stay simulated.
 
-The CSI adapter uses the existing parser, preserves uint32 microsecond ticks and LLTF ordering, masks hardware-invalid first pairs, retains PHY/signal-length/RSSI metadata, and cites raw SHA-256 plus physical line number. It supports the captured 128-value LLTF layout; other layouts are counted unsupported. Reset/out-of-order sequence fails closed and requires an explicit source/session split. Wraps and inferred timing discontinuities carry flags and unrecorded epoch labels. No boot ID, receipt timestamp, calibration or synchronization is invented.
+The CSI adapter uses the existing **resilient** parser, preserves uint32 microsecond ticks and LLTF ordering, masks hardware-invalid first pairs, retains PHY/signal-length/RSSI metadata, recovers lost-newline splices/torn prefixes, marks them with `spliced_line`/`torn_line` quality flags, and cites raw SHA-256 plus physical line number. It supports the captured 128-value LLTF layout; other layouts are counted unsupported. Reset/out-of-order sequence fails closed and requires an explicit source/session split. Wraps and inferred timing discontinuities carry flags and unrecorded epoch labels. No boot ID, receipt timestamp, calibration or synchronization is invented.
 
 ## Deterministic capture / replay
 

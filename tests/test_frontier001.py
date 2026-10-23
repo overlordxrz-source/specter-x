@@ -193,6 +193,40 @@ def test_parser_replay_counts_gaps_malformed_and_masks_invalid(raw):
     assert obs[1].to_dict()["dropped_before"] == 1
 
 
+def test_replay_recovers_lost_newline_splice_with_quality_flags(raw):
+    rows = [json.loads(x)["line"] for x in
+            (ROOT / "tests/fixtures/esp32_csi/phone_station_lltf.jsonl")
+            .read_text().splitlines()]
+    raw.write_text(rows[0] + rows[1] + "\n")
+    adapter = CsiReplay(raw)
+    observations = list(adapter)
+    assert len(observations) == 2
+    assert adapter.counts["spliced_lines"] == 1
+    assert adapter.counts["malformed"] == 0
+    assert adapter.counts["recovered_records"] == 2
+    assert observations[0].to_dict()["id"] != observations[1].to_dict()["id"]
+    for observation in observations:
+        d = observation.to_dict()
+        assert d["evidence"]["raw"]["line"] == 1
+        assert "spliced_line" in d["validity"]["flags"]
+
+
+def test_replay_recovers_a_record_after_a_torn_prefix(raw):
+    rows = [json.loads(x)["line"] for x in
+            (ROOT / "tests/fixtures/esp32_csi/phone_station_lltf.jsonl")
+            .read_text().splitlines()]
+    raw.write_text(rows[0][:80] + rows[1] + "\n")
+    adapter = CsiReplay(raw)
+    observations = list(adapter)
+    assert len(observations) == 1
+    assert adapter.counts["malformed"] == 1
+    assert adapter.counts["spliced_lines"] == 1
+    d = observations[0].to_dict()
+    assert d["evidence"]["raw"]["line"] == 1
+    assert "spliced_line" in d["validity"]["flags"]
+    assert "torn_line" in d["validity"]["flags"]
+
+
 def test_duplicate_raw_sequence_is_not_silently_replayed(raw):
     raw.write_text(raw.read_text() * 2)
     with pytest.raises(ContractError):

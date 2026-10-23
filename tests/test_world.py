@@ -11,7 +11,8 @@ import pytest
 from specter.platform.replay import CsiReplay, write_capture
 from specter.platform.observation import Observation, ContractError
 from specter.world.store import WorldStore
-from specter.world.server import WorldServer, catalog
+from specter.world.server import (CATALOG_LIMIT, WorldServer,
+                                  approved_roots, catalog)
 from specter.world.ingress import Ingress
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -173,6 +174,29 @@ def test_catalog_rejects_escape_symlink(raw, tmp_path):
     root.mkdir()
     (root / "escape.raw.csi").symlink_to(raw)
     assert catalog([root]) == []
+
+
+def test_replay_does_not_implicitly_authorize_its_parent(raw, tmp_path):
+    sibling = tmp_path / "private-note.md"
+    sibling.write_text("should not be browsable")
+    assert approved_roots([], raw) == []
+    store = WorldStore()
+    server = WorldServer(("127.0.0.1", 0), store, approved_roots([], raw))
+    try:
+        assert server.items == []
+    finally:
+        server.server_close()
+        store.close()
+
+
+def test_catalog_stops_at_the_bounded_limit(tmp_path):
+    root = tmp_path / "large"
+    root.mkdir()
+    for i in range(CATALOG_LIMIT + 40):
+        (root / f"evidence-{i:04d}.md").write_text("x")
+    items = catalog([root])
+    assert len(items) == CATALOG_LIMIT
+    assert [i["name"] for i in items] == sorted(i["name"] for i in items)
 
 
 def test_http_security_and_shutdown_negative_control(raw, store):

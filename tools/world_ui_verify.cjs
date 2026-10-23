@@ -334,6 +334,65 @@ async function until(fn, ms = 10000) {
       await until(async () =>
         (await page.locator("#source-status").innerText()).startsWith("READY"),
       );
+
+      // A delayed observation inspector response must not open after a
+      // source switch. This is separate from the delayed /api/state refresh
+      // guard above.
+      await page.getByRole("button", { name: "Overview", exact: true }).click();
+      await page.locator("tbody tr[data-index]").first().waitFor();
+      let releaseInspection, inspectionFetched;
+      const inspectionRelease = new Promise((r) => (releaseInspection = r));
+      const inspectionFetchedPromise = new Promise((r) => (inspectionFetched = r));
+      await page.route(
+        "**/api/state?index=*",
+        async (route) => {
+          const response = await route.fetch();
+          inspectionFetched();
+          await inspectionRelease;
+          await route.fulfill({ response });
+        },
+        { times: 1 },
+      );
+      await page.locator("tbody tr[data-index]").first().click();
+      await inspectionFetchedPromise;
+      await openNamed("synthetic-control.observations.jsonl");
+      releaseInspection();
+      await page.waitForTimeout(200);
+      check(
+        "Prior-session inspection response never opens",
+        (await page.locator("#inspection[open]").count()) === 0,
+      );
+
+      // A delayed evidence response must not replace the new session's
+      // evidence reader.
+      await page
+        .getByRole("button", { name: "Research & sessions", exact: true })
+        .click();
+      await page.locator("[data-evidence]").nth(1).waitFor();
+      let releaseEvidence, evidenceFetched, evidenceMarker;
+      const evidenceRelease = new Promise((r) => (releaseEvidence = r));
+      const evidenceFetchedPromise = new Promise((r) => (evidenceFetched = r));
+      await page.route(
+        "**/api/evidence?id=*",
+        async (route) => {
+          const response = await route.fetch();
+          const data = await response.json();
+          evidenceMarker = String(data.content || "").slice(0, 80);
+          evidenceFetched();
+          await evidenceRelease;
+          await route.fulfill({ response });
+        },
+        { times: 1 },
+      );
+      await page.locator("[data-evidence]").nth(1).click();
+      await evidenceFetchedPromise;
+      await openNamed("synthetic-control.observations.jsonl");
+      releaseEvidence();
+      await page.waitForTimeout(200);
+      check(
+        "Prior-session evidence response never renders",
+        !(await page.locator("#content").innerText()).includes(evidenceMarker),
+      );
     }
     check("No browser runtime exceptions", errors.length === 0);
     const report = {
