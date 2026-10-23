@@ -34,11 +34,51 @@ state, and do not overwrite uncommitted work.
 | Alpha 002-C | **IN PROGRESS — exploratory positive, independent replication pending.** One 20-trial session, 20/20 valid; p = 1/1024, d_z = 1.69, CI [1.34, 2.91]. Original INVALID and corrected PASS preserved. Not confirmatory. |
 | Alpha 003 screening | **PREPARED — software rehearsal complete; no human session and no authorization yet.** Screening endpoints remain frozen at `e7af1ad`; execution checklist at `285bc2c` (`docs/design/alpha003-screening-execution.md`). Readiness: 32 targeted preflight/acquisition/cue tests and `414 passed, 1 deselected` for the automatic suite. |
 | FRONTIER-001 / SPECTER-WORLD | **Work-owned**, separate `specter-x-frontier001` worktree. Read-only from this documentation effort; do not touch, merge or overwrite. |
+| PR #5 review | **REQUEST CHANGES — not merged**, commit **`0929ad6`**, base `main`. Independent Python run: **189 passed, 1 hardware deselected**; 7,290-record replay count and source hash reproduced. Findings below. |
 | Hardware/firmware | No Alpha 003 hardware run. Do not flash firmware or start a human session without explicit owner authorization. |
+
+## PR #5 review findings
+
+**Verdict: REQUEST CHANGES.** The platform separation, local-only binding,
+token/origin checks, provenance model and evidence links are credible, but
+the following need correction or an explicit documented limitation before
+integration:
+
+- **P1 — splice/torn-line loss in `CsiReplay`.** It calls `CsiParser.feed`;
+  a lost newline or torn prefix produces one malformed line and **drops both
+  recoverable records**. Independent probe of two concatenated fixture rows:
+  0 observations, `malformed=1`; `feed_resilient` recovered 2 records
+  (`spliced=True`), and a torn prefix recovered 1. Use the resilient parser
+  or document the unsupported case and count it explicitly.
+- **P2 — implicit parent-directory approval.** `specter.world --replay FILE`
+  adds `FILE.parent` to approved roots; `catalog()` then exposes every
+  sibling `.md`/`.json` through the no-token `/api/evidence` GET. A single
+  capture should not silently authorize unrelated evidence; require explicit
+  `--root` or catalog only the replay file.
+- **P2 — stale inspection/evidence responses.** `refresh()` has a generation
+  guard, but `inspect()` and the evidence fetch do not capture the generation.
+  A late response can display an old observation/report after a session
+  switch. Apply the same guard and regression test.
+- **P2 — catalog is not actually bounded while scanning.** `catalog()` calls
+  `sorted(root.rglob("*"))` before enforcing the 512-item cap, so a large
+  approved root can consume unbounded memory/startup time. Stream and stop at
+  the cap.
+- **P3 — documentation polish.** `docs/README.md` still says “Review branch
+  integration” (change for the integrated state); new WORLD/FRONTIER docs
+  contain absolute local `/Users/overlord/...` paths and the launcher has a
+  sibling checkout fallback; replace with portable placeholders.
+
+No remote/LAN binding or arbitrary-path API was found; the Host/Origin/token
+tests passed. The browser/Playwright claims were not independently rerun in
+this review. The `.github`, handbook and frozen Alpha files are unchanged.
 
 ## Next single task
 
-**Alpha 003 screening is prepared, not authorized.** Read
+**PR #5 is not ready to merge.** Work should address the REQUEST CHANGES
+findings and re-request review. Do not merge or amend Work's checkout from
+this documentation branch.
+
+**Alpha 003 screening is prepared but not authorized.** Read
 [alpha003-screening-v1.md](https://github.com/overlordxrz-source/specter-x/blob/e7af1ad/docs/design/alpha003-screening-v1.md)
 and the
 [execution checklist](https://github.com/overlordxrz-source/specter-x/blob/285bc2c/docs/design/alpha003-screening-execution.md).
@@ -52,6 +92,7 @@ also only with authorization.
 
 ## Do not
 
+- Do not merge PR #5 while the review verdict is REQUEST CHANGES.
 - Do not merge unfinished Alpha 003 or SPECTER-WORLD code.
 - Do not merge the documentation branch with feature/Work branches.
 - Do not touch or modify Work's `specter-x-frontier001` worktree.
