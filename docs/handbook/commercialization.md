@@ -39,7 +39,30 @@ The [USPTO provisional-application guidance](https://www.uspto.gov/patents/basic
 5. Choose hardware kits, research software/services, calibration tooling or a complete device based on evidence, not branding alone.
 6. Budget manufacturing test fixtures, traceability, secure updates, privacy/security and product-specific compliance before sale.
 
-Possible differentiators are rigorous provenance, modular device interfaces, replayable experiments, calibrated fusion and honest degraded operation. Through-wall life detection or quantum cardiac sensing must not be marketing claims while they remain unproven research.
+Possible differentiators:
+
+- **Verifiable fusion:** every fused output cites observations, parents, time,
+  calibration and uncertainty.
+- **Uncertainty-aware world models:** missing coverage, age and disagreement
+  stay visible instead of being smoothed away.
+- **Heterogeneous interoperability:** the same contracts span cameras, radar,
+  CSI, wearables and future AIR nodes.
+- **Affordable hardware tiers:** different coverage and uncertainty at
+  different prices, with the same evidence semantics.
+- **Graceful degradation:** local fail-safes and honest degraded modes rather
+  than silent failure.
+
+Through-wall life detection or quantum cardiac sensing must not be marketing
+claims while they remain unproven research.
+
+## Regulatory and export-control gates
+
+Aerial autonomy, thermal imaging, RF sensing and encryption can be subject to
+export-control, spectrum, privacy and product-safety rules that vary by
+jurisdiction. Classify the exact hardware/software and intended destination
+with qualified counsel before sale, transfer, demonstration or public
+disclosure. Nothing in this repository is a legal determination, licence or
+authorization to fly, transmit or export.
 
 ## Decisions still required
 

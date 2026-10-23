@@ -53,6 +53,7 @@ AI summaries must retain evidence references, age and uncertainty, and distingui
 | Power/thermal instability | Brownouts, resets, throttling, hot enclosure | Simultaneous-load tests and measured thermal/power design |
 | Unconsented inference or disclosure | Unexpected recipients/data fields or bystanders | Scope/retention/access controls; no default public raw export |
 | Unsupported rescue/medical interpretation | Display text implying life/absence or safety assurance | Explicit experimental states and task-specific evidence limits |
+| Hub or cloud dependency in flight/control | Platform cannot arm, hold or land when CORE/cloud is absent | Local safety functions; explicit degraded mode; no flight-critical cloud path |
 | Supplier/ownership confusion | Lead shown as sponsor or delivery | Dated receipt and terms before status promotion |
 
 Each future test records an owner, stop condition and recovery procedure. This is a program-specific constraints register, not evidence of regulatory compliance.

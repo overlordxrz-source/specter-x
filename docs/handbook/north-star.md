@@ -20,7 +20,7 @@ Our long-term **God’s Eye** concept is a coherent, shared, historical picture 
 | **SPECTER-AIR / GROUND / ORBIT** | Future aerial and terrestrial nodes, satellite-data integration and resilient communications | ORBIT begins with existing data/services; a custom satellite is a separate possible program |
 | **SPECTER-BIO** | Experimental non-contact physiology, radar vital signs and eventual university-level quantum-sensing research | Laboratory research with independent references; no medical or remote life-detection capability established |
 
-CORE, NODE, SENSE, LINK, FUSION and VIEW remain the [technical architecture](architecture.md) boundaries that serve this ecosystem. SPECTER-OS coordinates the software/device foundation; WORLD owns spatial state and history; X is the wearable experience, with future platforms consuming the same evidence contracts.
+CORE, NODE, SENSE, LINK, FUSION and VIEW remain the [technical architecture](architecture.md) boundaries that serve this ecosystem. SPECTER-OS coordinates the software/device foundation; WORLD owns spatial state and history; X is the wearable experience, with future platforms consuming the same evidence contracts. CORE is the runtime and, PLANNED, the edge-AI and mission-coordination hub that assembles validated observations into WORLD, publishes evidence summaries to wearables and issues only authorized, auditable task updates to autonomous platforms. A task update is never inferred automatically from a single sensor observation, and onboard safety remains local.
 
 ## Engineering doctrine
 

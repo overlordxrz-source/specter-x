@@ -4,6 +4,15 @@
 
 > **Edition 3 reconciliation:** Project intent follows the [canonical charter](north-star.md). Code links below target the Alpha snapshot `933e856`; the `95eae17` [review](alpha-95eae17-review.md) remains the dated record of that earlier state. The Alpha firmware has since been flashed to real hardware and passed a CSI acquisition preflight — see the [verification baseline](verification-baseline.md). *Hardware-validated* there means the acquisition preflight passed. It does not establish motion sensing, sustained unattended reliability, or performance superiority over any alternative.
 
+## Current program status (22 October 2026)
+
+| Program | Status | Evidence / boundary |
+|---|---|---|
+| Alpha 002-C controlled CSI motion | **IN PROGRESS — frozen, not run** | Preregistration v2 frozen; no session or geometry record. No human trial without owner authorization. |
+| FRONTIER-001 observation/replay slice | **PLANNED — preparatory** | Additive observation-contract fields only; registry, pipeline and adapters not implemented. |
+| SPECTER-CORE mission coordination | **VISION** | Architecture boundary only; no hub service. |
+| SPECTER-AIR fleet / SPECTER-LINK / Ferettux | **VISION / RESEARCH** | Documents only; no hardware, flight or kernel adoption. |
+
 ## First 30 days — through 21 November 2026
 
 Goal: reproducible bench acquisition and one honest physical reference experiment.
@@ -35,7 +44,7 @@ Develop calibrated portable nodes if budgets permit. Evaluate GNSS/UWB/IMU pose 
 
 ## Years 2–3
 
-Conditional directions: richer optical/depth/thermal/radar fusion, distributed geometry, purpose-built carrier/enclosure, robust multi-node networking, and limited GROUND experiments. Add AIR only after navigation, vibration, link and operational constraints are addressed. Through-obstruction research stays material-specific, with opaque-wall controls and held-out layouts. Investigate whether affordable hardware tiers can share the same contracts while exposing different uncertainty and coverage.
+Conditional directions: richer optical/depth/thermal/radar fusion, distributed geometry, purpose-built carrier/enclosure, robust multi-node networking, and limited GROUND experiments. Add AIR fleet roles (fixed-wing scout, multirotor, thermal overwatch, mapping, relay) only after navigation, vibration, link and operational constraints are addressed; see [platforms](platforms.md). Through-obstruction research stays material-specific, with opaque-wall controls and held-out layouts. Investigate whether affordable hardware tiers can share the same contracts while exposing different uncertainty and coverage.
 
 **Exit:** task-specific repeatability across unseen rooms/subjects/platform motion; quantified failure envelope and support burden. Commercial pilot planning requires independent privacy, security, safety, ownership and regulatory review appropriate to the intended product.
 

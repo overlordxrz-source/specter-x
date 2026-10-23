@@ -38,6 +38,22 @@ The [earlier firmware proposal](https://github.com/overlordxrz-source/specter-x/
 
 Reuse ESP-IDF/FreeRTOS, supported USB/UART APIs, vendor drivers and maintained sensor SDKs. Wrap them behind SENSE contracts. Build first-party code when it supplies missing observability, reproducibility, control or integration. Rewrite a driver only when its defect is reproduced, the hardware protocol is documented, licensing permits the work and a reference comparison exists. “Proprietary” is a distribution/licensing choice, not a performance property.
 
+## SPECTER-OS host foundation: Ferret lineage (RESEARCH / PLANNED)
+
+Ferret is a separate effort. A future Ferettux/SPECTER-OS could provide the
+host foundation for compatible edge-compute platforms, but no Ferret code,
+license, API or hardware compatibility is assumed, and no package rename is
+proposed. Adoption is incremental: a kernel or driver component is considered
+only after it is reproducible, passes the observation/timing contracts, and
+is measured against the current host baseline for latency, power, update and
+recovery.
+
+Microcontrollers and flight controllers retain dedicated firmware — for
+example ESP-IDF/FreeRTOS on the ESP32-S3, and the selected flight-controller
+stack on AIR nodes. A general-purpose OS is not forced onto them. The
+observation contract is the portability boundary, not the kernel. No
+Ferettux/SPECTER-OS capability is claimed by this section.
+
 ## Migration gates
 
 1. Preserve current image metadata and private backup provenance; recover exact source/dependency versions where possible. The dirty delta is still unknown.

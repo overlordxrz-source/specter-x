@@ -47,6 +47,23 @@ Measured, inferred, predicted, simulated and unknown describe what a value repre
 - **SPECULATIVE:** a research direction without demonstrated SPECTER-X capability.
 - **UNKNOWN / BLOCKED:** source, physical access or evidence is missing. Unknown is never silently converted to “shipped” or “working.”
 
+## Status vocabulary for new and edited pages
+
+New or edited statements use these five labels. Older pages keep their existing
+labels; this table maps them.
+
+| Label | Meaning in this repository |
+|---|---|
+| **VISION** | Long-term intent. No implementation, hardware or experiment exists for the claim. |
+| **RESEARCH** | An open question or feasibility track. It may produce a negative result. |
+| **PLANNED** | A specified design, experiment or integration that has not started. |
+| **IN PROGRESS** | Work exists and is partially evidenced; it is not yet validated. |
+| **VALIDATED** | A recorded hardware or experimental result supports the specific claim, with an artifact and a stated boundary. |
+
+Mapping: RECORDED HARDWARE → VALIDATED for the measured scope only;
+IMPLEMENTED → IN PROGRESS; PROPOSED → PLANNED; SPECULATIVE → VISION or
+RESEARCH. SIMULATED is never a hardware or experimental validation.
+
 The charter governs project intent; dated evidence governs capability claims. The handbook is the reconciled entry point. Existing [checkpoint records](handbook/verification-baseline.md) and [earlier design notes](https://github.com/overlordxrz-source/specter-x/blob/933e856fa578a1f923d53016a3aa942cc20ecbab/docs/design/esp32-firmware-integration.md) remain historical evidence; disagreements and overstated claims are called out rather than erased. The repository root README is older and contains capability language that should be read with these qualifications.
 
 ## Working rules
