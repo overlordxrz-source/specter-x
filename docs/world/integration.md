@@ -1,6 +1,6 @@
 # FRONTIER / WORLD integration review
 
-23 October 2026. Base `main` / `origin/main`: `1edabbc`. Branch `integrate/frontier-world-main`, isolated worktree `$SPECTER_WORLD_WORKTREE`. Source milestones: FRONTIER-001 `dc695c7` and SPECTER-WORLD `9520377`. This is a draft integration for review, not a merge or hardware release.
+23 October 2026. Base `main` / `origin/main`: `daaf081` (the review handoff was merged into this remediation branch; the original integration base was `1edabbc`). Branch `integrate/frontier-world-main`, isolated worktree `$SPECTER_WORLD_WORKTREE`. Source milestones: FRONTIER-001 `dc695c7` and SPECTER-WORLD `9520377`. This is a draft integration for review, not a merge or hardware release.
 
 ## Canonical main and conflict decisions
 
