@@ -87,6 +87,7 @@ Links below were retrieved or surfaced from primary-source search during this ha
 | E14 | [Ultralytics licensing](https://www.ultralytics.com/license) | Optional dependency/model license review gate; official source surfaced; exact project obligations unresolved |
 | E15 | [USPTO provisional application guidance](https://www.uspto.gov/patents/basics/apply/provisional-application) | Disclosure/IP planning reference; not case-specific legal advice |
 | E16 | [FAA Part 107 overview](https://www.faa.gov/newsroom/small-unmanned-aircraft-systems-uas-regulations-part-107) | Future US flight-planning reference; no operational permission established |
+| E17 | [DARPA CODE program](https://www.darpa.mil/program/collaborative-operations-in-denied-environment) | Prior art for collaborative aircraft under supervisory control; program complete; cited as inspiration only, no affiliation or capability equivalence |
 
 ## Citation maintenance
 

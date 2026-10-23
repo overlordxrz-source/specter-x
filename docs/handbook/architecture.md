@@ -8,7 +8,7 @@
 |---|---|---|
 | **SPECTER-X** | Initial multispectral wearable / skeletal-perception / AR interface to the ecosystem | Existing research repository and HUD; complete wearable/AR integration unvalidated |
 | **SPECTER-OS** | Unified device/software foundation: firmware, drivers, protocols, scheduling, health, calibration and communication | Architectural ambition spanning CORE/SENSE/LINK and supporting services; no independent OS/kernel claimed |
-| **SPECTER-CORE** | Runtime, configuration, device registry, lifecycle, clock service, logging and replay orchestration | `specter/app.py`, events and hardware helpers; no complete independent CORE service |
+| **SPECTER-CORE** | Runtime, configuration, device registry, lifecycle, clock service, logging and replay orchestration. **PLANNED:** edge-AI and mission-coordination hub that aggregates validated observations into WORLD, publishes evidence summaries to wearables and authorized task updates to platforms | `specter/app.py`, events and hardware helpers; no complete independent CORE service or mission hub |
 | **SPECTER-NODE** | A physical compute/sensor unit with identity, power and health | Local host plus peripherals; multi-node operation primarily simulated |
 | **SPECTER-SENSE** | Device adapters producing raw observations and calibrated measurements | `specter/sensors/`; mixed real paths, parsers and stubs |
 | **SPECTER-LINK** | Discovery, transport, identity, freshness and access control | `specter/net/`; HMAC UDP prototype; confidentiality and durable replay protection missing |
@@ -41,7 +41,40 @@ Every NODE owns its hardware interfaces and local monotonic clock. SENSE cannot 
 
 Raw video stays local by default; the existing team design sends compact tracks. This reduces bandwidth but does not make positions or skeletons nonsensitive. Authorization and encryption remain required design work for sensitive multi-unit research.
 
+## Evidence plane and control plane
+
+CORE has two deliberately separate planes.
+
+**Evidence plane (IN PROGRESS / PLANNED).** SENSE adapters emit versioned
+observations; CORE validates, timestamps, logs and replays them; FUSION
+aligns and associates; WORLD holds versioned spatial state; VIEW and
+wearables read evidence with provenance and uncertainty. A summary sent to a
+wearable cites observation IDs and never becomes a new independent sensor.
+
+**Control plane (VISION / PLANNED).** CORE may propose task updates to
+autonomous platforms (for example, “revisit this area”), but a task update is
+authorized action, not an observation. It requires explicit policy, an
+authorized operator or rule, a bounded validity window and an audit record.
+No control message is generated automatically from a single sensor
+observation, and no platform may treat CORE's absence as permission to act.
+
+## SPECTER-LINK contract (boundary)
+
+LINK carries identity, provenance, acquisition time, clock-map and
+uncertainty, freshness, integrity and authorization. It preserves the
+acquisition time of the original observation and adds transport time
+separately; a relay repeats evidence references and does not create an
+independent observation. Compact tracks are preferred over raw streams.
+Current HMAC UDP is a prototype: confidentiality, per-device identity and
+durable replay protection are PLANNED. Message shapes and acceptance cases
+stay in [ICD-04](interfaces.md).
+
 ## Model boundaries
+
+**Memory pointer:** the provenance/double-counting and confidence-vs-spatial
+constraints are recorded in [ADR-002 and ADR-003](decisions.md); the
+[research ideas log](research-ideas.md) tracks the unimplemented fusion
+concepts. They are boundaries, not claims that fusion exists.
 
 - **Raw observation:** bytes, frames, ADC counts or complex CSI plus device metadata.
 - **Measurement:** a typed value in stated units/frame/time with provenance and calibration validity.

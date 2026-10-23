@@ -4,6 +4,12 @@
 
 > **Edition 3 reconciliation:** Project intent follows the [canonical charter](north-star.md). Code links below target the Alpha snapshot `933e856`; the `95eae17` [review](alpha-95eae17-review.md) remains the dated record of that earlier state. The Alpha firmware has since been flashed to real hardware and passed a CSI acquisition preflight — see the [verification baseline](verification-baseline.md). *Hardware-validated* there means the acquisition preflight passed. It does not establish motion sensing, sustained unattended reliability, or performance superiority over any alternative.
 
+> **Edition 4 memory note (23 October 2026):** status lines in this 22 October
+> backlog are historical. Current gates, including Alpha 002-C exploratory
+> replication and Alpha 003 planning, are in the
+> [experiment ledger](experiment-ledger.md) and
+> [agent handoff](agent-handoff.md). Do not treat a stale row as authorization.
+
 Priority 0 blocks an honest next measurement; priority 1 enables integration; priority 2 expands scope. Owners are roles to assign, not promises that another agent is doing the work.
 
 | ID / priority | Work / owner role | Dependency | Concrete acceptance / evidence |
@@ -21,12 +27,13 @@ Priority 0 blocks an honest next measurement; priority 1 enables integration; pr
 | USB-01 / P1 | Hostile-host and radio-outage validation / integration | Later authorized firmware test | Continuous / slow / stopped reader, bounded counted loss, no torn lines or silent wedge, independent liveness |
 | TIME-01 / P1 | Clock-map and wrap/reset design / runtime | Data contract review | Reboot and wrap injections, wall-clock step test, measured residual and uncertainty |
 | DAQ-02 / P1 | Analog calibration and uncertainty / instrumentation | DAQ-01 | Two-point fit plus independent check points, reference uncertainty, drift and residual report |
-| CSI-02 / P1 | Controlled blinded motion experiment / experiment lead | SCI-01, CSI-01, stable capture | Preregistered endpoint, randomized trials, marked geometry, independent labels, held-out evaluation |
+| CSI-02 / P1 | Controlled blinded motion experiment / experiment lead | SCI-01, CSI-01, stable capture | **Frozen v2, not run:** preregistration and analysis frozen on the feature branch; no session or geometry record yet. Owner authorization and recorded geometry are required before any human trial. |
 | RIG-01 / P1 | Receipt-driven optical/thermal/radar bring-up / sensing | Actual deliveries and fixtures | Per-device identity, calibration, raw examples and failure controls; no wholesale “integrated” label |
 | FUS-01 / P1 | Time/frame-aware paired-sensor baseline / estimation | RIG-01, TIME-01 | Compare best single sensor against fused result; wrong-calibration/time-offset controls |
 | LINK-01 / P1 | Peer threat model and privacy design / communications | Intended multi-node experiment | Encryption/identity/freshness design, partition behavior, data-retention policy; v1 gaps documented |
 | PWR-01 / P1 | Power/thermal/cable budget / hardware | Delivered compute and sensors | Measured startup, peak and steady watts, temperature, brownout/recovery and cable retention |
 | REPLAY-01 / P1 | Manifest-based replay / runtime | Raw logging contract | Frozen session replay, missing-artifact failure, deterministic comparisons and synthetic labels |
+| FRONTIER-01 / P2 | Versioned observation contract, sensor registry, bounded replay pipeline and diagnostic VIEW / runtime | Alpha 002-C closure; incremental hardware arrival | Contract fixtures, explicit drop accounting, deterministic replay, clock/stale/malformed tests; no fusion or spatial claim |
 | WORLD-01 / P2 | Persistent environment model / estimation+VIEW | Validated fusion | Unknown space, source/time/uncertainty per object, expiry, no identity inference by default |
 | VITAL-01 / P2 | Respiration feasibility with references / lab lead | Stable phase-capable rig and institutional review | Known-motion phantom first; reference respiration, abstention and motion-artifact results |
 | FUT-01 / P2 | AIR/GROUND/satellite feasibility / systems | Core unit gates and budget | Separate measured link/power/pose plans; no procurement or flight implied |
@@ -34,6 +41,6 @@ Priority 0 blocks an honest next measurement; priority 1 enables integration; pr
 
 ## First useful sequence
 
-Review the concurrent agent's completed artifacts without modifying them. The Alpha firmware has since been flashed and has passed a 60-second acquisition preflight on an owned controlled link; that closes the feasibility question, not the sensing question. Reconcile the inventory when its source is available. Run the frozen offline null/sensitivity analysis before recruiting participants. In parallel, prepare safe analog reference equipment and obtain a station whose sleep behaviour is controlled, without which unattended acquisition cannot be characterised. Resolve the interface mismatch before any further firmware acceptance session. Then perform calibration and controlled sensing, retaining failures.
+Review the concurrent agent's completed artifacts without modifying them. The Alpha firmware has since been flashed and has passed a 60-second acquisition preflight on an owned controlled link; that closes the feasibility question, not the sensing question. **Alpha 002-C controlled motion is the immediate priority: finish it or record an honest closure before FRONTIER-001 becomes the main implementation effort.** Reconcile the inventory when its source is available. Run the frozen offline null/sensitivity analysis before recruiting participants. In parallel, prepare safe analog reference equipment and obtain a station whose sleep behaviour is controlled, without which unattended acquisition cannot be characterised. Resolve the interface mismatch before any further firmware acceptance session. Then perform calibration and controlled sensing, retaining failures.
 
 Do not schedule a broad fusion demonstration until time, transforms and at least two physical modalities are validated. Do not expand to cardiac or through-obstruction claims because a software metric moved. The [validation plan](validation.md) supplies concrete controls and stopping rules.

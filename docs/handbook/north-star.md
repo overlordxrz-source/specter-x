@@ -20,7 +20,7 @@ Our long-term **God’s Eye** concept is a coherent, shared, historical picture 
 | **SPECTER-AIR / GROUND / ORBIT** | Future aerial and terrestrial nodes, satellite-data integration and resilient communications | ORBIT begins with existing data/services; a custom satellite is a separate possible program |
 | **SPECTER-BIO** | Experimental non-contact physiology, radar vital signs and eventual university-level quantum-sensing research | Laboratory research with independent references; no medical or remote life-detection capability established |
 
-CORE, NODE, SENSE, LINK, FUSION and VIEW remain the [technical architecture](architecture.md) boundaries that serve this ecosystem. SPECTER-OS coordinates the software/device foundation; WORLD owns spatial state and history; X is the wearable experience, with future platforms consuming the same evidence contracts.
+CORE, NODE, SENSE, LINK, FUSION and VIEW remain the [technical architecture](architecture.md) boundaries that serve this ecosystem. SPECTER-OS coordinates the software/device foundation; WORLD owns spatial state and history; X is the wearable experience, with future platforms consuming the same evidence contracts. CORE is the runtime and, PLANNED, the edge-AI and mission-coordination hub that assembles validated observations into WORLD, publishes evidence summaries to wearables and issues only authorized, auditable task updates to autonomous platforms. A task update is never inferred automatically from a single sensor observation, and onboard safety remains local.
 
 ## Engineering doctrine
 
@@ -50,3 +50,13 @@ University work can establish methods, datasets and reproducible results. A late
 ## Instructions for future engineering work
 
 Read this charter, the hub, Alpha reconciliation, relevant ICD and evidence before changing behavior. Preserve feature branches and working files. Do not reduce the ecosystem vision to the current prototype or promote aspirations into achievements. Record a proposed design separately from a measured result. Change this charter only to reflect an explicit owner decision, with a dated rationale; routine implementation work cannot redefine it. This charter grants no permission to merge, push, flash, deploy or publish.
+
+**Persistent memory (owner-directed, 23 October 2026).** After this charter,
+read the [research ideas](research-ideas.md),
+[decisions](decisions.md),
+[experiment ledger](experiment-ledger.md) and
+[current agent handoff](agent-handoff.md). This is the canonical startup
+reference for every future agent, including ChatGPT, OpenCode, Work and other
+coding agents. Update those files at checkpoints and before context
+compaction. They index and constrain work; they do not replace raw evidence,
+and a memory entry never promotes a capability by itself.

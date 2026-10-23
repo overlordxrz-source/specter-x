@@ -16,9 +16,54 @@ The first experiment should compare a stationary calibrated rig with the same ri
 
 ## SPECTER-AIR
 
-A future airborne NODE could provide a different vantage for optical/thermal mapping or communication relay. Payload mass, flight time, vibration, propeller acoustic interference, RF coexistence, rolling shutter, pose accuracy and ground-to-air time alignment are major constraints. Do not assume a chest-motion or CSI experiment tolerates a flying platform.
+**VISION / PLANNED.** AIR is a heterogeneous fleet, not a single aircraft:
+fixed-wing scouts for area coverage and relay altitude, multirotors for hover
+and close inspection, thermal-overwatch nodes, mapping nodes and
+communications-relay nodes. Each node carries calibrated SENSE devices, a
+local clock/pose solution and LINK policy, and consumes the same observation
+contracts as a ground node.
 
-Start with recorded public/authorized aerial datasets or a static elevated rig. Any flight would require a separate reviewed operating plan, qualified operator, site/airspace permissions and local rules. The [FAA Part 107 overview](https://www.faa.gov/newsroom/small-unmanned-aircraft-systems-uas-regulations-part-107) is a US reference; educational status alone does not settle which rules apply. No flight authorization or legal determination is made here.
+| Role | Intended contribution | First honest gate |
+|---|---|---|
+| Fixed-wing scout | Area coverage, elevated relay | Endurance/payload budget; georeferenced imagery against a surveyed route |
+| Multirotor | Hover inspection, local mapping | Pose/vibration characterization; no stable-flight dependency on CORE |
+| Thermal overwatch | Wide-area LWIR context | Thermal calibration/drift; resolution at range |
+| Mapping node | Surface/elevation reconstruction | Ground control points and measured reprojection error |
+| Communications relay | Range extension and degraded-link bridging | Throughput/latency under motion; store-and-forward behavior |
+
+Payload mass, flight time, vibration, propeller acoustic interference, RF
+coexistence, rolling shutter, pose accuracy and ground-to-air time alignment
+are major constraints. Do not assume a chest-motion or CSI experiment
+tolerates a flying platform.
+
+Start with recorded public/authorized aerial datasets or a static elevated
+rig. Any flight requires a separately reviewed operating plan, qualified
+operator, site/airspace permissions and local rules. The [FAA Part 107
+overview](https://www.faa.gov/newsroom/small-unmanned-aircraft-systems-uas-regulations-part-107)
+is a US reference; educational status alone does not settle which rules
+apply. No flight authorization or legal determination is made here.
+
+### Safety, autonomy and degraded-link operation
+
+**PLANNED requirement, not an implemented capability.** Attitude control,
+geofencing, lost-link behavior, battery protection and return/land decisions
+are onboard, safety-critical functions. They must run locally, be tested
+independently of CORE and LINK, and fail safe when the hub is unavailable.
+Stable flight must never depend on cloud or CORE availability. Task updates
+from CORE are authorized inputs with expiry; they cannot override local
+safety limits. Degraded-link behavior (hold, return, land, or continue the
+last authorized task within bounds) is defined per platform and measured
+before any cooperative flight.
+
+### Prior art and inspiration
+
+Collaborative autonomous-aircraft programs — for example DARPA's CODE
+program — study teams of aircraft under human supervision. SPECTER-AIR takes
+inspiration from that problem structure for civilian search-and-rescue,
+firefighting and emergency response. This is not an affiliation, endorsement,
+procurement or claim of equivalent capability; such programs are cited as
+prior art and as a source of operational questions. See
+[sources](sources.md).
 
 ## SPECTER-ORBIT: satellite data and resilient communications
 

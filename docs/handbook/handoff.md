@@ -2,6 +2,10 @@
 
 [Documentation hub](../README.md)
 
+> **Current agent state:** this page is the historical documentation-build
+> handoff. For the branch, owner, blockers and next task, read the
+> [agent handoff index](agent-handoff.md) first.
+
 ## Edition 3 — public main synchronization
 
 The owner asked for a documentation-only synchronization of `main`, with the
