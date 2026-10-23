@@ -4,10 +4,13 @@ Compact by design: tracks travel, video never does. Each TrackReport keeps
 the source unit, sensor and Measurement ids so provenance survives the
 network hop and the HUD can still print SRC: <UNIT>/<SENSOR>.
 """
+
 from __future__ import annotations
 
 import json
+import math
 import time
+import numpy as np
 from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List, Optional
 
@@ -31,7 +34,7 @@ class Message:
 
     def to_json(self) -> str:
         d = asdict(self)
-        return json.dumps(d, separators=(",", ":"))
+        return json.dumps(d, separators=(",", ":"), allow_nan=False)
 
     @classmethod
     def from_json(cls, s: str) -> "Message":
@@ -124,30 +127,121 @@ def decode_message(s: str) -> Message:
         d = json.loads(s)
     except json.JSONDecodeError as e:
         raise ValueError(f"not JSON: {e}")
-    if not isinstance(d, dict) or d.get("schema") != SCHEMA_V1:
-        raise ValueError(f"unsupported schema: {d.get('schema') if isinstance(d, dict) else type(d)}")
+    if not isinstance(d, dict) or type(d.get("schema")) is not int or d.get("schema") != SCHEMA_V1:
+        raise ValueError(
+            f"unsupported schema: {d.get('schema') if isinstance(d, dict) else type(d)}"
+        )
+
+    def validate_json(value):
+        if isinstance(value, dict):
+            for item in value.values():
+                validate_json(item)
+        elif isinstance(value, list):
+            for item in value:
+                validate_json(item)
+        elif isinstance(value, float) and not math.isfinite(value):
+            raise ValueError("nonfinite network payload")
+
+    validate_json(d)
+    def scalar(value):
+        if type(value) not in (int, float) or not math.isfinite(value):
+            raise ValueError("finite numeric field required")
+        return value
+
+    def vector(value, size):
+        if not isinstance(value, list) or len(value) != size:
+            raise ValueError("invalid vector dimension")
+        for item in value:
+            scalar(item)
+
+    def covariance(value):
+        if not isinstance(value, list) or len(value) != 3:
+            raise ValueError("3x3 covariance required")
+        for row in value:
+            vector(row, 3)
+        c = np.asarray(value, float)
+        if not np.allclose(c, c.T, atol=1e-9) or (np.diag(c) < 0).any() or np.linalg.eigvalsh(c).min() < -1e-10:
+            raise ValueError("invalid covariance")
+
+    if (
+        not isinstance(d.get("unit_id"), str)
+        or not d["unit_id"]
+        or type(d.get("seq")) is not int
+        or d["seq"] < 0
+        or type(d.get("t_host")) not in (int, float)
+    ):
+        raise ValueError("explicit valid unit/sequence/timestamp required")
+    if not isinstance(d.get("boot", ""), str):
+        raise ValueError("boot must be a string")
     t = d.get("type")
-    u, seq, th = d.get("unit_id", "?"), int(d.get("seq", 0)), float(d.get("t_host", time.time()))
+    if t in (POSE, TRACK):
+        vector(d.get("position_enu"), 3)
+        covariance(d.get("cov_pos_3x3" if t == POSE else "cov_3x3"))
+    if t == POSE:
+        vector(d.get("velocity_enu"), 3)
+        if d.get("quat_wxyz") is not None:
+            vector(d["quat_wxyz"], 4)
+        if d.get("anchor") is not None:
+            vector(d["anchor"], 3)
+    if t == TRACK:
+        if not 0 <= scalar(d.get("confidence", 0.5)) <= 1:
+            raise ValueError("invalid track confidence")
+        if not isinstance(d.get("measurement_ids", []), list) or not all(isinstance(v, str) for v in d.get("measurement_ids", [])):
+            raise ValueError("invalid parent IDs")
+    if t == HEARTBEAT and scalar(d.get("pos_rmse", 99.0)) < 0:
+        raise ValueError("negative position uncertainty")
+    u, seq, th = (
+        d.get("unit_id", "?"),
+        int(d.get("seq", 0)),
+        float(d.get("t_host", time.time())),
+    )
     boot = str(d.get("boot", ""))
     if t == HEARTBEAT:
-        return Heartbeat(u, seq, th, d.get("mode", "REL"),
-                         float(d.get("pos_rmse", 99.0)), d.get("health", "OK"),
-                         boot=boot)
+        return Heartbeat(
+            u,
+            seq,
+            th,
+            d.get("mode", "REL"),
+            float(d.get("pos_rmse", 99.0)),
+            d.get("health", "OK"),
+            boot=boot,
+        )
     if t == POSE:
-        return PoseStamped(u, seq, th, d.get("position_enu", [0, 0, 0]),
-                           d.get("velocity_enu", [0, 0, 0]),
-                           d.get("cov_pos_3x3", [[25, 0, 0], [0, 25, 0], [0, 0, 25]]),
-                           d.get("mode", "REL"), d.get("anchor"),
-                           d.get("quat_wxyz"), boot=boot)
+        return PoseStamped(
+            u,
+            seq,
+            th,
+            d.get("position_enu", [0, 0, 0]),
+            d.get("velocity_enu", [0, 0, 0]),
+            d.get("cov_pos_3x3", [[25, 0, 0], [0, 25, 0], [0, 0, 25]]),
+            d.get("mode", "REL"),
+            d.get("anchor"),
+            d.get("quat_wxyz"),
+            boot=boot,
+        )
     if t == TRACK:
-        return TrackReport(u, seq, th, int(d.get("track_id", 0)),
-                           d.get("position_enu", [0, 0, 0]),
-                           d.get("cov_3x3", [[4, 0, 0], [0, 4, 0], [0, 0, 4]]),
-                           d.get("source_unit", u), d.get("source_sensor", "fusion"),
-                           d.get("measurement_ids", []),
-                           float(d.get("confidence", 0.5)), d.get("label", "contact"),
-                           boot=boot)
+        return TrackReport(
+            u,
+            seq,
+            th,
+            int(d.get("track_id", 0)),
+            d.get("position_enu", [0, 0, 0]),
+            d.get("cov_3x3", [[4, 0, 0], [0, 4, 0], [0, 0, 4]]),
+            d.get("source_unit", u),
+            d.get("source_sensor", "fusion"),
+            d.get("measurement_ids", []),
+            float(d.get("confidence", 0.5)),
+            d.get("label", "contact"),
+            boot=boot,
+        )
     if t == ALERT:
-        return Alert(u, seq, th, d.get("kind", "man-down"),
-                     d.get("detail", {}), d.get("severity", "high"), boot=boot)
+        return Alert(
+            u,
+            seq,
+            th,
+            d.get("kind", "man-down"),
+            d.get("detail", {}),
+            d.get("severity", "high"),
+            boot=boot,
+        )
     raise ValueError(f"unknown message type: {t!r}")

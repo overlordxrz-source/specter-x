@@ -4,9 +4,11 @@ ClockSync records per-peer offset estimates (peer_t - local_t at receipt) and
 rejects stale messages past max_age_s. Offsets are exposed for the session
 log so a drifting unit shows up instead of silently warping fusion.
 """
+
 from __future__ import annotations
 
 import time
+import math
 from collections import deque
 from dataclasses import dataclass, field
 from typing import Deque, Dict
@@ -32,4 +34,8 @@ class ClockSync:
 
     def is_stale(self, peer_t: float, local_t: float | None = None) -> bool:
         local_t = time.time() if local_t is None else local_t
-        return (local_t - peer_t) > self.max_age_s
+        return (
+            not math.isfinite(peer_t)
+            or not math.isfinite(local_t)
+            or not (-self.max_age_s <= local_t - peer_t <= self.max_age_s)
+        )

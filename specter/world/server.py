@@ -123,6 +123,7 @@ def catalog_result(roots):
                     kind="replay" if replay else "evidence",
                     bytes=size,
                     path=p.resolve(),
+                    root=root,
                 )
             )
         if limit_truncated or state["scan_truncated"]:
@@ -206,6 +207,11 @@ class Handler(BaseHTTPRequestHandler):
     def item(self, key, kind):
         for item in self.server.items:
             if item["id"] == key and item["kind"] == kind:
+                resolved = item["path"].resolve()
+                if resolved != item["path"] or not resolved.is_relative_to(
+                    item["root"]
+                ):
+                    raise ValueError("catalog path changed or escaped approved root")
                 return item
         raise ValueError("unknown catalog item")
 
@@ -220,7 +226,7 @@ class Handler(BaseHTTPRequestHandler):
                     {
                         **self.server.catalog,
                         "items": [
-                            {k: v for k, v in i.items() if k != "path"}
+                            {k: v for k, v in i.items() if k not in ("path", "root")}
                             for i in self.server.items
                         ],
                     }

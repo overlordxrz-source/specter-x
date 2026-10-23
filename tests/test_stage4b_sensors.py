@@ -105,7 +105,8 @@ def test_senxor_unverified_and_sim():
     assert c.shape == (120, 160) and c.dtype == np.float32
     assert (m.sensor, m.kind) == ("thermal", "thermal_frame")
     assert m.value["sim"] is True and m.value["verified"] is False
-    assert m.confidence <= 0.3 and "UNVERIFIED" in (m.provenance.notes or "")
+    assert m.confidence is None and m.covariance is None
+    assert "UNVERIFIED" in (m.provenance.notes or "")
     assert m.hud_tag.startswith("SRC: THERMAL conf")
     c2 = frame_dict_to_celsius({"temperature": c})
     np.testing.assert_array_equal(c, c2)

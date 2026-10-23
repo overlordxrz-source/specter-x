@@ -3,10 +3,12 @@
 Each line: {"t_host", "session", "seq", "event", "detail", "measurement"?}
 where "measurement" is a full Measurement dict (provenance included).
 """
+
 from __future__ import annotations
 
 import json
 import os
+import re
 import time
 import uuid
 from collections import deque
@@ -17,34 +19,48 @@ from specter.fusion.measurement import Measurement
 
 
 class EventLog:
-    def __init__(self, directory: str | os.PathLike, session: Optional[str] = None) -> None:
+    def __init__(
+        self, directory: str | os.PathLike, session: Optional[str] = None
+    ) -> None:
         self.dir = Path(directory)
         self.dir.mkdir(parents=True, exist_ok=True)
         stamp = time.strftime("%Y%m%d-%H%M%S")
         self.session = session or f"{stamp}-{uuid.uuid4().hex[:6]}"
+        if not re.fullmatch(r"[A-Za-z0-9_-]{1,128}", self.session):
+            raise ValueError("session must be a simple local identifier")
         self.path = self.dir / f"{self.session}.jsonl"
-        self._f = open(self.path, "a", buffering=1, encoding="utf-8")
+        # Sessions are immutable identities; resuming needs a separate protocol.
+        self._f = open(self.path, "x", buffering=1, encoding="utf-8")
         self._seq = 0
-        self.recent: Deque[str] = deque(maxlen=6)   # for the HUD ticker
+        self.recent: Deque[str] = deque(maxlen=6)  # for the HUD ticker
         self.counts: dict = {}
 
-    def log(self, event: str, detail: Optional[dict] = None,
-            measurement: Optional[Measurement] = None) -> dict:
-        self._seq += 1
+    def log(
+        self,
+        event: str,
+        detail: Optional[dict] = None,
+        measurement: Optional[Measurement] = None,
+    ) -> dict:
         rec = {
             "t_host": time.time(),
             "session": self.session,
-            "seq": self._seq,
+            "seq": self._seq + 1,
             "event": event,
             "detail": detail or {},
         }
         if measurement is not None:
             rec["measurement"] = measurement.to_dict()
-        self._f.write(json.dumps(rec, separators=(",", ":")) + "\n")
+        encoded = json.dumps(rec, separators=(",", ":"), allow_nan=False)
+        self._f.write(encoded + "\n")
+        self._seq += 1
         self.counts[event] = self.counts.get(event, 0) + 1
         tag = ""
         if measurement is not None:
-            c = "" if measurement.confidence is None else f" {measurement.confidence:.2f}"
+            c = (
+                ""
+                if measurement.confidence is None
+                else f" {measurement.confidence:.2f}"
+            )
             tag = f" {measurement.label}{c}"
         self.recent.append(time.strftime("%H:%M:%S") + f" {event}{tag}")
         return rec

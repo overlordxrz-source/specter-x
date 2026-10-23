@@ -10,6 +10,7 @@ filter keeps a relative frame from UWB + IMU and reports mode "REL" so the
 HUD can say so honestly. Every pose carries covariance; uncertainty is
 reported as RMSE = sqrt(trace(P_pos)) — never a fake-precise point.
 """
+
 from __future__ import annotations
 
 import math
@@ -86,9 +87,18 @@ class PoseEKF:
             self._t = t
             self._started = True
 
-    def predict(self, dt: float, accel_enu: Optional[np.ndarray] = None,
-                t: Optional[float] = None) -> UnitPose:
-        dt = max(float(dt), 1e-6)
+    def predict(
+        self,
+        dt: float,
+        accel_enu: Optional[np.ndarray] = None,
+        t: Optional[float] = None,
+    ) -> UnitPose:
+        dt = float(dt)
+        next_t = self._t + dt if t is None else float(t)
+        if not math.isfinite(dt) or dt < 0 or not math.isfinite(next_t):
+            raise ValueError("prediction requires finite nonnegative dt and time")
+        if self._started and next_t < self._t:
+            raise ValueError("prediction time cannot move backwards")
         F = np.eye(6)
         F[:3, 3:] = np.eye(3) * dt
         u = np.zeros(6)
@@ -99,11 +109,8 @@ class PoseEKF:
         self.x = F @ self.x + u
         G = np.vstack([np.eye(3) * 0.5 * dt * dt, np.eye(3) * dt])
         self.P = F @ self.P @ F.T + (G @ G.T) * self.accel_noise**2
-        if t is not None:
-            self._ensure_started(t)
-            self._t = t
-        else:
-            self._ensure_started(self._t)
+        self._ensure_started(next_t)
+        self._t = next_t
         self._refresh_mode()
         return self.pose()
 

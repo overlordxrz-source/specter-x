@@ -9,6 +9,7 @@ hAcc/vAcc converted to a 3x3 covariance in m^2 (diagonal). No position is
 ever emitted without its accuracy: fix_type 0 (no fix) yields confidence 0
 and a large covariance, never a fake-precise point.
 """
+
 from __future__ import annotations
 
 import math
@@ -213,7 +214,8 @@ class Neom9nDriver:
         while True:
             i = self._buf.find(UBX_SYNC)
             if i < 0:
-                self._buf.clear()
+                # Keep a possible first sync byte across arbitrary chunks.
+                self._buf[:] = b"\xb5" if self._buf.endswith(b"\xb5") else b""
                 break
             if i > 0:
                 del self._buf[:i]
@@ -233,9 +235,16 @@ class Neom9nDriver:
                 pvt = parse_nav_pvt(payload)
                 m = pvt_to_measurement(pvt, sensor_id=self.sensor_id)
                 # stamp frame index into a fresh provenance (frozen dataclass)
-                object.__setattr__(m, "provenance", Provenance(
-                    sensor_id=self.sensor_id, source=SENSOR,
-                    algorithm=ALGORITHM_UBX, frame_index=self._frame_index))
+                object.__setattr__(
+                    m,
+                    "provenance",
+                    Provenance(
+                        sensor_id=self.sensor_id,
+                        source=SENSOR,
+                        algorithm=ALGORITHM_UBX,
+                        frame_index=self._frame_index,
+                    ),
+                )
                 out.append(m)
         return out
 

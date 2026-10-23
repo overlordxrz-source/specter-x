@@ -338,3 +338,21 @@ def test_world_concurrent_source_switches_are_serialized(store, raw):
     store.close()
     with pytest.raises(RuntimeError):
         store.load(raw)
+
+
+def test_history_is_exact_masked_source_data(store, raw):
+    import csv
+    import io
+    fields = next(csv.reader([raw.read_text().strip()]))
+    fields[23] = '1'  # explicit hardware-invalid first word in synthetic fixture
+    output = io.StringIO()
+    csv.writer(output).writerow(fields)
+    raw.write_text(output.getvalue())
+    expected = next(iter(CsiReplay(raw))).to_dict()['value']
+    store.load(raw)
+    d = wait(store)
+    point = d['series'][0]
+    assert point['amplitudes'] == expected['amplitudes']
+    assert any(v is None for v in point['amplitudes'])
+    assert point['sig_len'] == expected['sig_len_bytes']
+    assert point['phy_rate'] == expected['phy_rate_code']

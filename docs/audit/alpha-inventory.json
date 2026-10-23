@@ -1,0 +1,1073 @@
+{
+  "root": "/Users/overlord/Documents/Codex/2026-10-22/referenced-chatgpt-conversation-this-is-an/work/full-audit/alpha",
+  "files": 152,
+  "lines": 26379,
+  "failures": 0,
+  "scope": "All source/config/test files under listed code roots; excludes build/cache, raw runs and prose. Static syntax is not semantic review.",
+  "entries": [
+    {
+      "path": ".github/workflows/hardware-tests.yml",
+      "sha256": "b8e9b01de2b59448c3111d856ab9d64bb386ed77b4a99682d8b2be82452a6953",
+      "lines": 40,
+      "syntax": "NOT_CHECKED",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": ".github/workflows/pytest.yml",
+      "sha256": "d8b2c082804377515de00f6c131ec930df108fc3de7ae5a1aa36271d9377b431",
+      "lines": 37,
+      "syntax": "NOT_CHECKED",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "firmware/esp32-csi/softap_csi/main/app_main.c",
+      "sha256": "dff0e41322b18fbc579622ae7130c6f2ad86c1a2e687c4a95964ba8e5f458804",
+      "lines": 602,
+      "syntax": "NOT_CHECKED",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "firmware/esp32-csi/softap_csi/main/csi_output.c",
+      "sha256": "55e76dd3e6520d1105f52ff70f9f0250acda36fed2f4492b5b3c482854090912",
+      "lines": 152,
+      "syntax": "NOT_CHECKED",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "firmware/esp32-csi/softap_csi/main/csi_output.h",
+      "sha256": "031917d3f7b8e0d0d5f7abf92930a1417caa5500b5aafbe0588a2a85efb8d3ae",
+      "lines": 66,
+      "syntax": "NOT_CHECKED",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "firmware/esp32-csi/softap_csi/main/dq_ring.c",
+      "sha256": "33c0943773a8b3c558f93214f34034c3a7e4976c8f6d4ff14bb899af6e6accf0",
+      "lines": 59,
+      "syntax": "NOT_CHECKED",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "firmware/esp32-csi/softap_csi/main/dq_ring.h",
+      "sha256": "a17f677a2f8e83e8e3ef373fe193c6f89d569c398d5647e934762430c1f8ce3c",
+      "lines": 87,
+      "syntax": "NOT_CHECKED",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "firmware/esp32-csi/softap_csi/main/idf_component.yml",
+      "sha256": "eb371d0a8b403c3d4efb6fc5b6fd37b9eb037d93b968a0d395690e468ec5fc1a",
+      "lines": 5,
+      "syntax": "NOT_CHECKED",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "285edf532872b3584c9d87629f98454e599d91bfe552f9e4b7ab2d9cd6cb6aba",
+      "lines": 32,
+      "syntax": "NOT_CHECKED",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "requirements-ci.txt",
+      "sha256": "3a98fece9f618f8967a9da7835ff3e12a686e6880fc33d6618810bbd89d28462",
+      "lines": 14,
+      "syntax": "NOT_CHECKED",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "requirements-pi.txt",
+      "sha256": "2e8dd8b203595955dac4a83a983f3704da54206a07f57bd99d3b6c0b269aab00",
+      "lines": 13,
+      "syntax": "NOT_CHECKED",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "requirements.txt",
+      "sha256": "5c8f0afe1036468e4d1184904b75611da3d5f1e2acf822e26fe706a5c3a6fd36",
+      "lines": 13,
+      "syntax": "NOT_CHECKED",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/__init__.py",
+      "sha256": "91447944015cec709e8aa7655f7e9d64e1e4508e7023a57fe3746911c0fc6fed",
+      "lines": 1,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/app.py",
+      "sha256": "0190e286817d8c1d944ee5797ce276cbd868ab29e7801818fc032eb1ff8a623e",
+      "lines": 381,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/calibration/__init__.py",
+      "sha256": "adb80e085f9b1c52203a5d708053b432d5c8c4d168c8a4b9f537477db5024832",
+      "lines": 15,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/calibration/rig.json",
+      "sha256": "40593309c3e2475412f8d9cc79b997fb68621aad20312b278869df8083bc73bb",
+      "lines": 39,
+      "syntax": "PASS_JSON",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/events/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "lines": 0,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/events/log.py",
+      "sha256": "2e2f4eb169135884a7d4bfc250b1a77c95a31ef1d6b020b7b0921eca385daad5",
+      "lines": 90,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/fusion/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "lines": 0,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/fusion/coordinate_frames.py",
+      "sha256": "c79f8549c722ede8520ed002585a37304ab199c0c85f046df8696e9626ee4936",
+      "lines": 189,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/fusion/measurement.py",
+      "sha256": "871b6dadc8fd25423ff9dabce342958441ea57e79bc3bf4751a695d198e41032",
+      "lines": 204,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/fusion/team.py",
+      "sha256": "40cdc80144e0590fa822a1709c7332d736b0c5311c8b41edc9e8f6e296e7dd66",
+      "lines": 227,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/fusion/tracking.py",
+      "sha256": "1069fd8adc2e85c3b0c9f01a1d7e2139440948dcde00bd54179805ec27eacca9",
+      "lines": 65,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/hud/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "lines": 0,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/hud/csi_views.py",
+      "sha256": "4d66e2719352ee4a3614ea94ac3dcce46b2427dd116039b68ba29b5198e2b0b1",
+      "lines": 405,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/hud/pod.py",
+      "sha256": "d3741bb315ab8591a86f7b24592a2b7c1754a76d8fbf7d530062046fde5a7377",
+      "lines": 232,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/hud/renderer.py",
+      "sha256": "4c8ffbf90435fed4d4ed5a334e6c3932f4db3dc9662950d66d0236aee40c0808",
+      "lines": 347,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/hud/team_overlay.py",
+      "sha256": "dd7f78df0cf2a7130712480fa5650782b36e6a8f9e4643ccf312a5fce7c723f6",
+      "lines": 206,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/hud/theme.py",
+      "sha256": "d497f8e39ab98365d57bb7be08885a8097c1979209fd57cd9953e353b6f2fa94",
+      "lines": 180,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/hw/__init__.py",
+      "sha256": "f535a691016664494eb6a690e1caf4a45af108ba2cfce51baa173de272e82935",
+      "lines": 1,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/hw/pinmap.py",
+      "sha256": "10e9a6ad9c7c4cae4cb077ca95d2775e9868fc8e2ea0c6d8ebbdc6d03449ba31",
+      "lines": 121,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/hw/pinmap.yaml",
+      "sha256": "f3ce66ac1e71719219cd72a183e03d62a81f6dcb94feb0ff0ab9447cd2ed6c25",
+      "lines": 58,
+      "syntax": "NOT_CHECKED",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/hw/usb.py",
+      "sha256": "8de1d6ae1494b9f6eeb60a93414b74e9333704dfdaa98f46ae1c4b7feb6e187f",
+      "lines": 89,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/localization/__init__.py",
+      "sha256": "fb442cc0b26bbf91fbcbd92cb742b70c7f766b2c12fc4ffa89a72458e7f6f849",
+      "lines": 7,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/localization/ekf.py",
+      "sha256": "46493760a1239ad8d48261c8da70cdffae48adc4836771fdefb04d83a5ca7bef",
+      "lines": 201,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/ml/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "lines": 0,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/ml/pose/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "lines": 0,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/ml/pose/estimator.py",
+      "sha256": "1e4039d37fc3cda2583ef9c072b0464445310ef8b835d09d367ca4d07f238505",
+      "lines": 122,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/net/__init__.py",
+      "sha256": "13746c2073c56a6128429166e25b2fe3b46b435bfbbb4e850237da53ee60bcad",
+      "lines": 11,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/net/clock.py",
+      "sha256": "c5ee3c0fe02931453a5d432d23a8ab6085b2fb044669bb73184ea4ab4d25b76e",
+      "lines": 35,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/net/messages.py",
+      "sha256": "86bf0b35d6cde67d5c8c065a0a6a333d2104734b4cc955305c6ca331aa4dd04a",
+      "lines": 153,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/net/security.py",
+      "sha256": "5f6399b317c6eac9703bb267a5bf26b489c3150ea3ce4be20fb733d088505fc6",
+      "lines": 97,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/net/transport.py",
+      "sha256": "9baa2a1e1260a94258021985a9e6dc63d84a3ee12bbcda8458f0427e1c981e38",
+      "lines": 169,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "lines": 0,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/base.py",
+      "sha256": "9e92d4304423e225e4881faa67115f03463968f94498e38a57a508a35efee647",
+      "lines": 40,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/di188/__init__.py",
+      "sha256": "632e68ea64e43ed898da0b74815dc0d5764203b1e89d8a72cd7de133543f1199",
+      "lines": 32,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/di188/calibration.py",
+      "sha256": "7839144433bff2e16c38d71a3e004ce60183b6b149fda841afcfc802a4693ef4",
+      "lines": 227,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/di188/dashboard.py",
+      "sha256": "2fac6315d921fb479cb7db66a0e3306be0540b7b5094f08709db634f311f5d85",
+      "lines": 495,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/di188/driver.py",
+      "sha256": "d35f076149b920993e93104843a4d9793ddfe56aef42595860bd2ea867ada567",
+      "lines": 667,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/di188/measure.py",
+      "sha256": "e5dfaa75000eef560a5cf5c72512ad69a2f671d4466cd3f288f1fb73fc90c776",
+      "lines": 397,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/di188/recorder.py",
+      "sha256": "cb46430f4c21e3249c45c55043e70efbdef988f9c1953d5cdf7bd46b211065eb",
+      "lines": 115,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/di188/stability.py",
+      "sha256": "13b04d633fd732445d8dd5cd1bc7256bd6451f68305cfe257aae8314947e87db",
+      "lines": 269,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/di188/stats.py",
+      "sha256": "88df8148593416c1a3ecbf41edfaa688662c4844a88f90d865fdb4da2d9f119e",
+      "lines": 236,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/esp32/__init__.py",
+      "sha256": "0e8f0c8c65cd7add78869a959e37b7af55a6e9722553bd66f4b20fb1fe07f240",
+      "lines": 26,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/esp32/acquisition.py",
+      "sha256": "ee5dfb0a226f0d8f2a762a944895a558fc81f75e97b7bf31645f2dc0ae70cec5",
+      "lines": 480,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/esp32/analysis.py",
+      "sha256": "63074f2125ed1a87ae5b58c23c5c1c60033136bd1d7b0bb52972092461188371",
+      "lines": 983,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/esp32/csi.py",
+      "sha256": "4a74c43259a1805749760e958babfdb8da2dcf749b4a67621e6b534d0607547c",
+      "lines": 118,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/esp32/csi_analysis.py",
+      "sha256": "ea68f9e516686051b22ba8bf013ff17920f819153e7fe0b1669d4cca16b19683",
+      "lines": 364,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/esp32/diagnostics.py",
+      "sha256": "8879bbb0c2c4ae122ec5b61079ac87f02d0bc4d066677306c967a17c1955ba78",
+      "lines": 144,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/esp32/dispatcher.py",
+      "sha256": "5e8cb7c5e3b0a9e55dc4eee5208017e3467fd655183e6370c5c87a06f9b370b8",
+      "lines": 432,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/esp32/experiment.py",
+      "sha256": "2892508567339129026cfb7d29037f9eef57f3ffc5ec15fcc15205e8057f1ea1",
+      "lines": 632,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/esp32/firmware_status.py",
+      "sha256": "6879a77236aedacb7b7dcead84ec516122dab83c38336bbc0e1d57b36bd9454b",
+      "lines": 93,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/esp32/presence.py",
+      "sha256": "57b6695db64509ab2a3649c40ee6d34f55180fe1e8862478d177c9b46aaaf94d",
+      "lines": 676,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/esp32/presence_synthetic.py",
+      "sha256": "44af1ebbeaab828791060c7660444a6fa9620650241d78a05c01610ceccb9021",
+      "lines": 161,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/esp32/protocol.py",
+      "sha256": "a8687d67439b3be4489e059f242c7bd895b097b37ba690674f1a87450ef27ec9",
+      "lines": 164,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/esp32/reader.py",
+      "sha256": "1d7b4a73675418d6fcfcff117f478e6091a022ef08983f2fb3790492e0b42fa5",
+      "lines": 327,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/esp32/simulator.py",
+      "sha256": "b60068f580dc0bd8a686326625bad63dafe630e0910e23dc3fb39d39008196cb",
+      "lines": 118,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/esp32/supervisor.py",
+      "sha256": "993b6e92d5c4cb3e124ac6856ee21f82b87d03d94197f8c5c764ba8c1ebdb1df",
+      "lines": 446,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/esp32/synthetic_link.py",
+      "sha256": "e518f607bfb760946d5964fdc63d31116f2a1ac03e1708b683cf1d77ea991214",
+      "lines": 186,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/experimental/__init__.py",
+      "sha256": "9ad73eb843c751b6f6a35b989d762e2031734fb79047915569c7f63270d11718",
+      "lines": 25,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/experimental/acoustic.py",
+      "sha256": "18a05271c1d1b8ba294a44239569653adb78fb6094d078483c5373c4eaf8a52d",
+      "lines": 81,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/experimental/event_camera.py",
+      "sha256": "5f23404361233731055cdd2710732710b179e711d9a69b3917d3520885441354",
+      "lines": 80,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/experimental/gas.py",
+      "sha256": "e16cedecf37a82f85a5dd6748122ed8a8444aaed40fd46072bc23a27617c30ab",
+      "lines": 82,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/experimental/lora.py",
+      "sha256": "42c28983f86a0b21898a4ce095e2a87ab0a5257104b9f3f584a5e96575beef71",
+      "lines": 61,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/experimental/vitals.py",
+      "sha256": "01cdebd27b97d8b6658bd1ac8382d67af2d7aed1851e953ad90f342bf3ead763",
+      "lines": 75,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/experimental/vlm.py",
+      "sha256": "14e00cc93ff4a1177782f72f4c7b6b60df62a22101aed16d9bec258d65b3c593",
+      "lines": 62,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/gnss/__init__.py",
+      "sha256": "3b5d6abe1d890009447e07ec19d82411b432ba2aba2834274ed0687a67564f20",
+      "lines": 20,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/gnss/neom9n.py",
+      "sha256": "33ab5771733dc74959d233ee8460a2bf46c29a3ea55b5c46e25f46c071a25c7f",
+      "lines": 300,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/imu/__init__.py",
+      "sha256": "4f3063a41ae448404a1cc9eec68721914ae85f5a66361c02591a407a2ee4285c",
+      "lines": 68,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/imu/bno085.py",
+      "sha256": "880a98e15681bc5df00d661cec6f46a5bbed36443ff96e1412150461e95dd54e",
+      "lines": 92,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/imu/lsm9ds1.py",
+      "sha256": "5f5a1825ae79c238868426c6827f19c2eddd33e1803afc7638b68e9549c801f7",
+      "lines": 217,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/nightvision/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "lines": 0,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/nightvision/camera.py",
+      "sha256": "12c6b0dee6ca48c05104d9f1b7c6714c1cd3e05f204ae455fd5493ffd57e567c",
+      "lines": 222,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/radar/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "lines": 0,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/radar/tlv.py",
+      "sha256": "505bb2b647163a9784f43d1b22de5d7d15a2e110882eea5d94edd1889f16d4ba",
+      "lines": 60,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/stubs.py",
+      "sha256": "8b616dceccf52f80aa184d7c6ec3b0cf67b401e3751eb54d2c43f9c8e04e2730",
+      "lines": 81,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/thermal/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "lines": 0,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/thermal/interface.py",
+      "sha256": "dd6f6c8bfdbb11483a4579b9fc74a115891843306fa71c4e33f97be6990563ef",
+      "lines": 61,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/thermal/senxor.py",
+      "sha256": "3cef6ab7af8f74bfe7ec70888ff55d2805f876f84c49de2c94bc5ddaa22c6c15",
+      "lines": 96,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/thermal/tc001.py",
+      "sha256": "556bf081173b03610adf22f4c20471f899ed676334accd8fd1a1d07dc9eeb728",
+      "lines": 32,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/uwb/__init__.py",
+      "sha256": "035e68a81f13625ad8d3f08bedff411d10ed5a6a824b17ad2f1d6ccfca4e4411",
+      "lines": 33,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/uwb/dw1000.py",
+      "sha256": "a6255a7e627831ae657b512ae1537785d2b6c3fd305e3f102852d913c64929da",
+      "lines": 237,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sensors/wifi_csi/__init__.py",
+      "sha256": "a5583526b758b24baffe9a3f361836edc959ad1da7ddbb8328d466be2018b91b",
+      "lines": 3,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sim/__init__.py",
+      "sha256": "dc2a55d9d079fc67ca8650746dc1eba6ac34b2b100e64412cd82e96602c638e3",
+      "lines": 17,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "specter/sim/team.py",
+      "sha256": "0b37049380f0de4066f236178cedb87a6249524e525cb3e246d629665f631f1e",
+      "lines": 171,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/firmware_format_harness.c",
+      "sha256": "f2134c9ae12cf76c892d27a2ede659ef86a5031f39e3212e51a3b4ddd0a2d36a",
+      "lines": 95,
+      "syntax": "NOT_CHECKED",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/firmware_host_stub/freertos/FreeRTOS.h",
+      "sha256": "a6de086f7c317a2e9ccd5e2749238e62692d717cf5f43784d5c9b883d330c8af",
+      "lines": 7,
+      "syntax": "NOT_CHECKED",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/firmware_host_stub/freertos/queue.h",
+      "sha256": "13e11ad31290660aef8aa90e22f1ac3df991774a382d46a932064177095a68bb",
+      "lines": 2,
+      "syntax": "NOT_CHECKED",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_acquisition_windows.py",
+      "sha256": "294f85bebef3968830e29b2b5c5e10e57429def45c33a884013bf86e823d7fb0",
+      "lines": 136,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_adversarial_gates.py",
+      "sha256": "4349d297d3ba7885176be123b72664d8187da696a5c6ec56a0dd7a5d440bbf74",
+      "lines": 458,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_alpha001_acceptance_real.py",
+      "sha256": "bfa47fd17f59934034a9b42868474143d36adbe8812256a807dd83bb0ad7a3d7",
+      "lines": 124,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_alpha001_daq.py",
+      "sha256": "87a6d539f63cc00073dd905ddf58857a6ee9eada457a2ea2125fcad0649cc9e9",
+      "lines": 371,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_alpha002c_forensic.py",
+      "sha256": "44751c3d528e412f64f279e83f7a02654870d957454c00461278e23bb20a9db2",
+      "lines": 94,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_alpha003_presence.py",
+      "sha256": "996b88c00e874ffa1c69a97e6a672d0d2efce187244d984c7e697e9090836624",
+      "lines": 191,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_alpha003_screening_readiness.py",
+      "sha256": "2807b55a32aa9fd67dec722a2d778af0104d4b6ba67336e9780ccdc966dbbd9e",
+      "lines": 151,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_analysis_leakage.py",
+      "sha256": "9cb1e5dab94c16d1201357d2d3090c1bb22a20fb8238f8d64a9dc07067b13fbf",
+      "lines": 224,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_coordinate_frames.py",
+      "sha256": "7f18af750f6c6abde9d083db7bd4596a222ab51a1cf97a94ce243c55c1f69fc5",
+      "lines": 79,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_csi_analysis_bench.py",
+      "sha256": "e818d984e1139c2008d79dad3b0393e6005257e52332ea013b2f062178b4bdf8",
+      "lines": 261,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_di188_calibration.py",
+      "sha256": "c44ee8054147156803b7c0db6b16657bc5a4da039a25b789bc637832a67f1700",
+      "lines": 60,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_di188_dashboard.py",
+      "sha256": "75cec6cd249346f652c09f3dd464738fcce1f6943f271aa7ca592554e0fdc4ec",
+      "lines": 137,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_di188_monitor.py",
+      "sha256": "2b327ea42a56008f2a9e4c495578781369fc6f3aeca33ea636283335231bf738",
+      "lines": 148,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_di188_protocol.py",
+      "sha256": "d570eac52005bf8b3c8e7772d8769664dbd3dce57eea977e06b300a973ec228e",
+      "lines": 188,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_di188_reliability.py",
+      "sha256": "9783507e51e781d1acd228e5144fee3fb344994e1001e2533479689cb50eac6e",
+      "lines": 290,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_esp32_dispatcher.py",
+      "sha256": "cc7b29c623c0fc2776a66d62eb51eb8470bb830094d0a1e98ac4328889939753",
+      "lines": 333,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_esp32_integration.py",
+      "sha256": "ecc0263b62d41975c3298764c9615e7303f9d49da03669edcc1f59b9a5e215ee",
+      "lines": 314,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_esp32_supervisor.py",
+      "sha256": "333db151d7683d1d50409baeaafb73db16fcd5a34b4cd1e46d15122319f86059",
+      "lines": 300,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_firmware_contract.py",
+      "sha256": "0372e4db617c1e4613e7a031e25613023c4ee275a2253f79cb19f3d6f1e74015",
+      "lines": 285,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_firmware_format_native.py",
+      "sha256": "68618714fc534c848df04622d8cf667d7e337c90f3ed80557410ebafad56b621",
+      "lines": 123,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_hud_csi_view.py",
+      "sha256": "6c60647e7b74b734e15aac5725ede699af95fe46c702fe9e17a070954bfe5093",
+      "lines": 347,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_lab_preflight.py",
+      "sha256": "d20b8d359fb4b36df3239b13e4f8c34bf91f4710256bf93a19d877e7860e6a36",
+      "lines": 315,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_measurement.py",
+      "sha256": "dd20838c42dbb524ed5a15fca32437579b8709de93bb8e9b9f0ab78ac93ea97d",
+      "lines": 97,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_motion_payload_filter.py",
+      "sha256": "c5a9cca0cd54280eadfbd3d128220a36960d9fed345e68bf4f52ed1a21a8b3f9",
+      "lines": 102,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_motion_v2_prereg.py",
+      "sha256": "a103e12d9ffe77709fceaac8f49f04044533b2209f0b9b3b71cdc5dd5fd20eb6",
+      "lines": 330,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_pipeline.py",
+      "sha256": "1746d15629e42a7ffc86c3b180e9192d4c9326d670900f214efa65e231ded627",
+      "lines": 48,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_pipeline_positive_control.py",
+      "sha256": "8171a23e0a695611225fb89be8640e05c2edcfa975546b431c54b452b5b70296",
+      "lines": 153,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_pod.py",
+      "sha256": "87c3b7a43e25834391cf95c5fb7d1f4c64004b4f45678de370ce9cc73bda4806",
+      "lines": 56,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_stage4b_experimental.py",
+      "sha256": "3ea5fb4d4c79b07fc2b8c958330d74943e10f2088e1e418b606726d2a96a25e5",
+      "lines": 77,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_stage4b_fusion.py",
+      "sha256": "122d04e0018466adbfb371bad9b192559a2878eeb986bf3c2d94c8403b54d860",
+      "lines": 93,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_stage4b_hud.py",
+      "sha256": "a689d356d32dcd81beabe11a68850b542a76f2829e2949e769e6c95523c6b98f",
+      "lines": 73,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_stage4b_net.py",
+      "sha256": "8ecb06f3b4c1c3c6d0ff77da5cfcb2ae10af2a9286e5bf4849f540876b11befc",
+      "lines": 146,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_stage4b_sensors.py",
+      "sha256": "976c099b4b4ac599bfb660f9e359de1f417d7926868992e0713313435a5ffa85",
+      "lines": 113,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tests/test_stage4b_uwb_ekf.py",
+      "sha256": "011abe49977d079359c9165b225ac49863d5fe4346b32196f41f053b609270db",
+      "lines": 155,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tools/alpha002c_independent_recompute.py",
+      "sha256": "6e67f2656fe1a9ab36a5033d4fad88d4cea4c1ed81cfd4bf8530394ef539cc45",
+      "lines": 165,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tools/alpha002c_motion_v2.py",
+      "sha256": "5bff97d7b2e26498c03d4c23a22a635d3edf811e8f5a9e11382d7abdd4fa55d8",
+      "lines": 574,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tools/alpha002c_replay.py",
+      "sha256": "3485a46cb932b3bbc5de678632c25a0289ed01c02429ff3d4544542d31be2d45",
+      "lines": 144,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tools/alpha003_presence_analyze.py",
+      "sha256": "76937f5e619b114c41720be10a445f1be8205a341f71abc37c350169575ebac8",
+      "lines": 128,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tools/alpha003_presence_bench.py",
+      "sha256": "f5cb098189cdf866ac5e0374545e054aac9d0fee7e38b304e3cb82d2a3b8d4e4",
+      "lines": 121,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tools/bench_verify.py",
+      "sha256": "1af1f3173ecefa2bab284ef885b03d3c45c97a01866b15e9ebd6a0501ea4bed0",
+      "lines": 169,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tools/di188.py",
+      "sha256": "b6ecf966705df9ea0d377be0a85d2ba3b15f4d8554ba41f3e28b994a6e184d67",
+      "lines": 358,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tools/esp32_console.py",
+      "sha256": "e9c3a143e926f370a6c39c8eed797b4798ac43051a0ba66d5dcd22ec20dc7e82",
+      "lines": 86,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tools/esp32_csi_baseline.py",
+      "sha256": "4e2d7e10a377cff7764fbc20df042ccf13739a01a6bca28b49403a560c16cbbd",
+      "lines": 178,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tools/esp32_csi_motion.py",
+      "sha256": "af17a9f8afb84e4ecf2d2c961c796acf5640a43a978ff2d7335b822ff76802ea",
+      "lines": 666,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tools/esp32_csi_poll_sweep.py",
+      "sha256": "353a32d756b25d0e29a7efed9db7045f99d65355fcab7cd6c6d3c944d2fe3dff",
+      "lines": 195,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tools/esp32_csi_sweep.py",
+      "sha256": "7703c18deca090aa9616465a9aa98177a678ba5bfd40b4bf53b68bba93d587d5",
+      "lines": 216,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tools/esp32_csi_visualize.py",
+      "sha256": "ec81075268cf78a25f761b65b5676023e67ea509c09deed6d6ae13b6c6970377",
+      "lines": 197,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tools/esp32_dual_capture.py",
+      "sha256": "7739e1a532627ec74f42fd1125d61a40f3d73423abdbae6ac891b4829551300a",
+      "lines": 247,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tools/esp32_lab_preflight.py",
+      "sha256": "e1aec0a60a1621c1ce6d060215b7be4810e587174cff365ef0312e283bf81e6c",
+      "lines": 705,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tools/esp32_usb_health.py",
+      "sha256": "8d7faa98276ea821470d271437512fc666d6b7f009fed02879b8cb40e3679def",
+      "lines": 194,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tools/hud_shots.py",
+      "sha256": "5d7ace614c742b31a800bdcd1864beca5c8c0a59b1e27f191adfdc44068df7fc",
+      "lines": 256,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tools/lab_credentials.py",
+      "sha256": "3fb989c14a3ecc58ee77ac6831ffc5ad386621e0e13bd6f909d4745a89c5be27",
+      "lines": 189,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tools/mutation_check.py",
+      "sha256": "b28b413f0c33a02a787389f42012d1a1c561025c165a57a655fd9949f1604280",
+      "lines": 228,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tools/transport_integrity.py",
+      "sha256": "30c5b3e1548a6f21c11358e58fc0ca8b60b390523d559c25df2ea576297e24eb",
+      "lines": 118,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    }
+  ]
+}

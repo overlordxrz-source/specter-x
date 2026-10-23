@@ -44,6 +44,12 @@ async function until(fn, ms = 10000) {
     await page
       .getByRole("button", { name: "Open session", exact: false })
       .click();
+    await page.locator("#session-search").fill("no-such-capture-control");
+    check(
+      "Recording search excludes nonmatching files",
+      (await page.locator("#session-list [data-session]").count()) === 0,
+    );
+    await page.locator("#session-search").fill("phase0-short");
     await page
       .locator("#session-list [data-session]")
       .filter({ hasText: "phase0-short.raw.csi" })
@@ -63,6 +69,31 @@ async function until(fn, ms = 10000) {
         (await page.locator("#record-count").innerText()).split(" / ")[0] ===
         (await page.locator("#record-count").innerText()).split(" / ")[1],
     );
+    await page.locator("#packet-history").waitFor();
+    await until(
+      async () =>
+        (await page.locator("#packet-history").getAttribute("width")) === "160",
+    );
+    check(
+      "History retains bounded actual packet window",
+      (await page.locator("#packet-history").getAttribute("width")) === "160",
+    );
+    await page
+      .locator("#packet-history")
+      .hover({ position: { x: 100, y: 60 } });
+    check(
+      "History hover exposes real metadata",
+      (await page.locator("#history-readout").innerText()).includes("PHY"),
+    );
+    await page
+      .locator("#packet-history")
+      .click({ position: { x: 100, y: 60 } });
+    await page.locator("#inspection[open]").waitFor();
+    check(
+      "History opens source evidence",
+      (await page.locator("#inspection-body").innerText()).includes("sha256"),
+    );
+    await page.locator("#close-inspection").click();
     await page.screenshot({ path: path.join(out, "world-overview-1512.png") });
     check(
       "Unavailable sources visible",
@@ -123,6 +154,17 @@ async function until(fn, ms = 10000) {
     await page
       .getByRole("button", { name: "Pause replay", exact: true })
       .click();
+    await page.locator("#page-title").click();
+    const beforeStep = await page.locator("#record-count").innerText();
+    await page.keyboard.press("ArrowRight");
+    await until(
+      async () =>
+        (await page.locator("#record-count").innerText()) !== beforeStep,
+    );
+    check(
+      "Keyboard stepping changes the selected record",
+      (await page.locator("#record-count").innerText()) !== beforeStep,
+    );
     await page.locator("#speed").selectOption("2");
     check(
       "Playback speed interaction",

@@ -4,9 +4,11 @@ Thresholds follow common occupational guidance (CO 35 ppm 8-h TWA danger
 ramp; CO2 1000 ppm stuffy / 5000 ppm dangerous) — advisory only, this
 prototype is not certified safety gear and the HUD says so.
 """
+
 from __future__ import annotations
 
 import time
+import math
 from dataclasses import dataclass
 from typing import List, Optional
 
@@ -24,6 +26,8 @@ CO2_WARN_PPM, CO2_DANGER_PPM = 1000.0, 5000.0
 
 
 def danger_level(co_ppm: float, co2_ppm: float) -> str:
+    if not all(math.isfinite(v) and v >= 0 for v in (co_ppm, co2_ppm)):
+        return "UNKNOWN"
     if co_ppm >= CO_DANGER_PPM or co2_ppm >= CO2_DANGER_PPM:
         return "DANGER"
     if co_ppm >= CO_WARN_PPM or co2_ppm >= CO2_WARN_PPM:
@@ -31,26 +35,32 @@ def danger_level(co_ppm: float, co2_ppm: float) -> str:
     return "OK"
 
 
-def gas_measurement(co_ppm: float, co2_ppm: float,
-                    *,
-                    sensor_id: str = "gas-0",
-                    frame_index: Optional[int] = None,
-                    sim: bool = False) -> Measurement:
-    if co_ppm < 0 or co2_ppm < 0:
-        raise ValueError("concentrations must be non-negative")
+def gas_measurement(
+    co_ppm: float,
+    co2_ppm: float,
+    *,
+    sensor_id: str = "gas-0",
+    frame_index: Optional[int] = None,
+    sim: bool = False,
+) -> Measurement:
+    if danger_level(co_ppm, co2_ppm) == "UNKNOWN":
+        raise ValueError("concentrations must be finite and non-negative")
     return Measurement(
         sensor=SENSOR,
         kind="gas",
         t_host=time.time(),
         frame_id=FRAME,
         value={
-            "co_ppm": float(co_ppm), "co2_ppm": float(co2_ppm),
-            "danger": danger_level(co_ppm, co2_ppm), "sim": bool(sim),
+            "co_ppm": float(co_ppm),
+            "co2_ppm": float(co2_ppm),
+            "danger": danger_level(co_ppm, co2_ppm),
+            "sim": bool(sim),
         },
         confidence=0.6,
         covariance=np.diag([2.0**2, 50.0**2]),
         provenance=Provenance(
-            sensor_id=sensor_id, source=SENSOR,
+            sensor_id=sensor_id,
+            source=SENSOR,
             algorithm=ALGORITHM + ("-sim" if sim else ""),
             frame_index=frame_index,
             notes="EXPERIMENTAL advisory only — not certified safety gear",

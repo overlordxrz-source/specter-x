@@ -143,6 +143,10 @@ def validate(d):
             raise ContractError("covariance shape/finite/symmetry")
         if np.linalg.eigvalsh(cov).min() < -1e-10:
             raise ContractError("covariance must be positive semidefinite")
+        if (np.diag(cov) < 0).any():
+            raise ContractError(
+                "variance cannot be negative, including within PSD tolerance"
+            )
     else:
         raise ContractError("invalid uncertainty kind")
     e = d["evidence"]

@@ -8,9 +8,10 @@ HMAC stops forgery but not replay: a captured datagram resent within the
 clock window would verify. ReplayGuard closes that: every message carries a
 boot id (ordered per sender boot) and a per-boot sequence number, and the
 receive path accepts only a new boot id or a strictly greater seq — checked
-after verify() and before decode. Residual risk (receiver restart clears the
+after authentication and message validation. Residual risk (receiver restart clears the
 in-memory table) is stated in the README, not hidden.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -40,9 +41,10 @@ def generate_boot_id() -> str:
 
 def sign(message_json: str, key: bytes) -> str:
     """Wrap a message JSON string in a signed envelope JSON string."""
-    sig = hmac.new(key, message_json.encode(), hashlib.sha256).hexdigest()
-    return json.dumps({"sig": sig, "msg": json.loads(message_json)},
-                      separators=(",", ":"))
+    message = json.loads(message_json)
+    canonical = json.dumps(message, separators=(",", ":"), allow_nan=False)
+    sig = hmac.new(key, canonical.encode(), hashlib.sha256).hexdigest()
+    return json.dumps({"sig": sig, "msg": message}, separators=(",", ":"))
 
 
 def verify(envelope_json: str, key: bytes) -> str:
@@ -76,9 +78,14 @@ class ReplayGuard:
         self._last: Dict[str, Tuple[str, int]] = {}
 
     def check(self, unit_id: str, boot: str, seq: int) -> bool:
-        try:
-            seq = int(seq)
-        except (TypeError, ValueError):
+        if (
+            not isinstance(unit_id, str)
+            or not unit_id
+            or not isinstance(boot, str)
+            or not boot
+            or type(seq) is not int
+            or seq < 0
+        ):
             return False
         boot = str(boot or "")
         prev = self._last.get(str(unit_id))
