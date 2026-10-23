@@ -1,0 +1,30 @@
+# Alpha 003 pre-data freeze manifest
+# Generated: 2026-10-23T03:08:43.258578+00:00
+# Base commit: 40fb1a0
+# No Alpha 003 data exists. Do not edit a listed file after data starts without a dated amendment.
+# Screening seed: 20261024
+# Confirmatory seeds: 20261025 20261026 20261027 20261028 20261029 20261030 20261031
+# Alpha 002-C replication protocol is included only to show it is unchanged.
+# Verify: shasum -a 256 -c docs/design/alpha003-freeze-v1.sha256
+
+f311f14e4e582866b57d901e8c12506f3b82ff1237cc8793d2f9d9087ebced36  docs/design/alpha003-human-presence-feasibility.md
+de41ee39faab28d41b28f3dff0cc9f4e61d7ad979b3f124a5b69845edbedbf59  docs/design/alpha003-presence-preregistration-v1.md
+d560fcb3f2abd00755abdbda370e6bb738567e0fe2b3a84d1b1eeb0659754a35  docs/design/alpha003-screening-v1.md
+b19e82f03560a332d550512256ab8eb7698f6e17b54f55556bda8e22d1b6e374  docs/design/alpha003-readiness-review.md
+29245f55c4f4bbc637220c22e461bcc3402de0d1c5ec23cd5d37322d78a7a5da  docs/checkpoints/024-alpha003-preparation.md
+57b6695db64509ab2a3649c40ee6d34f55180fe1e8862478d177c9b46aaaf94d  specter/sensors/esp32/presence.py
+44af1ebbeaab828791060c7660444a6fa9620650241d78a05c01610ceccb9021  specter/sensors/esp32/presence_synthetic.py
+5e8cb7c5e3b0a9e55dc4eee5208017e3467fd655183e6370c5c87a06f9b370b8  specter/sensors/esp32/dispatcher.py
+ee5dfb0a226f0d8f2a762a944895a558fc81f75e97b7bf31645f2dc0ae70cec5  specter/sensors/esp32/acquisition.py
+ea68f9e516686051b22ba8bf013ff17920f819153e7fe0b1669d4cca16b19683  specter/sensors/esp32/csi_analysis.py
+f5cb098189cdf866ac5e0374545e054aac9d0fee7e38b304e3cb82d2a3b8d4e4  tools/alpha003_presence_bench.py
+76937f5e619b114c41720be10a445f1be8205a341f71abc37c350169575ebac8  tools/alpha003_presence_analyze.py
+af17a9f8afb84e4ecf2d2c961c796acf5640a43a978ff2d7335b822ff76802ea  tools/esp32_csi_motion.py
+e1aec0a60a1621c1ce6d060215b7be4810e587174cff365ef0312e283bf81e6c  tools/esp32_lab_preflight.py
+996b88c00e874ffa1c69a97e6a672d0d2efce187244d984c7e697e9090836624  tests/test_alpha003_presence.py
+a09f5ccacd25f4f75754c646e79059a601b65cf2b2c99a141c1b8eaa5e639a50  docs/design/alpha002c-replication-protocol-v1.md
+
+# Confirmatory design: 7 sessions minimum; session-level exact sign test.
+# 3 sessions are exploratory only; 3-cluster bootstrap is not confirmatory.
+# Screening design: 1 session, 6 blocks x 3 conditions x 20 s.
+# Primary posture: standing. Sitting is a separate stage.

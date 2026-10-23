@@ -10,6 +10,12 @@ benchmark `tools/alpha003_presence_bench.py`; recorded-session runner
 **Alpha 002-C replication protocol:** unchanged at
 `docs/design/alpha002c-replication-protocol-v1.md`.
 
+**Pre-data amendment 1 (2026-10-23):** the original 3-session stage is
+**exploratory only**. A confirmatory presence claim requires **7 sessions**
+and a session-level exact sign test; see
+`docs/design/alpha003-readiness-review.md`. The separate one-session
+screening is in `docs/design/alpha003-screening-v1.md`.
+
 ## 1. Questions and estimands
 
 - **H1 (movement):** in held-out sessions, trials with a moving person are
@@ -252,3 +258,32 @@ result with independent replication pending. Its replication protocol stays
 frozen and separate. Alpha 003 does not pool Alpha 002-C data, does not
 change its endpoints and does not reinterpret its `stationary`/`hand`
 labels as `empty`/`stationary`/`moving`.
+
+## Amendment 1 — statistical readiness and empty-room procedure (pre-data)
+
+**Date:** 2026-10-23. **No Alpha 003 data exist.** This amendment supersedes
+the original 3-session confirmatory interpretation and the 3-session
+bootstrap gate.
+
+1. A 3-session run is **exploratory only**; it cannot support a presence
+   claim. Its bootstrap CI is descriptive and its within-session permutation
+   is not a generalisation test.
+2. Confirmatory presence requires **7 independent sessions** on different
+   days. With 6 sessions the session-level exact sign-test floor is
+   1/64 = 0.0156 > 0.01; with 7 it is 1/128 = 0.0078.
+3. Primary confirmatory test: per-session balanced accuracy for empty vs
+   stationary; all 7 sessions > 0.5; one-sided exact sign test. If any
+   session is ≤ 0.5, no confirmatory presence claim (6/7 p = 0.0625).
+4. Supporting gates: pooled balanced accuracy ≥ 0.80; empty FPR ≤ 0.10;
+   full model beats RSSI-only by ≥ 0.05; rate/PHY gates clear; posture
+   recall applies only to the posture stage.
+5. The primary confirmatory claim is **standing** presence. Sitting is a
+   separate posture-generalisation stage.
+6. The empty-room procedure, dorm controls, cue/pre-check procedure and
+   duration are specified in `docs/design/alpha003-readiness-review.md`.
+7. The one-session screening is separately preregistered in
+   `docs/design/alpha003-screening-v1.md` with seed `20261024`. It cannot
+   produce a presence claim and is not pooled with confirmatory data.
+8. Seeds: screening `20261024`; confirmatory `20261025`–`20261031`.
+9. All protocol/analysis/code hashes are frozen before data in the
+   Alpha 003 freeze manifest.

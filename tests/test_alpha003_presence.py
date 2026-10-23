@@ -17,7 +17,7 @@ if REPO not in sys.path:
 
 from specter.sensors.esp32.presence import (  # noqa: E402
     FEATURE_SETS, attach_iq_from_raw, differential_phase, evaluate,
-    leave_one_session_out, load_session, phase_features,
+    exact_sign_test, leave_one_session_out, load_session, phase_features,
     stationary_recall_by_posture, trial_features, trial_qc)
 from specter.sensors.esp32.presence_synthetic import (  # noqa: E402
     PresenceSyntheticLink)
@@ -155,6 +155,15 @@ def test_posture_recall_is_reported_separately():
     r = stationary_recall_by_posture(preds)
     assert r["standing"]["n"] == 2 and r["standing"]["recall"] == 0.5
     assert r["sitting"]["n"] == 1 and r["sitting"]["recall"] == 1.0
+
+
+def test_session_level_sign_test_requires_seven_sessions():
+    assert exact_sign_test([0.8] * 3)["p_one_sided"] == 1 / 8
+    assert exact_sign_test([0.8] * 6)["p_one_sided"] == 1 / 64
+    seven = exact_sign_test([0.8] * 7)
+    assert seven["p_one_sided"] == 1 / 128
+    assert seven["min_attainable_p"] == 1 / 128
+    assert exact_sign_test([0.8] * 6 + [0.4])["p_one_sided"] == 1 / 16
 
 
 def test_load_session_maps_walking_to_moving(tmp_path):

@@ -32,6 +32,8 @@ still frozen at `docs/design/alpha002c-replication-protocol-v1.md`.
 |---|---|
 | `docs/design/alpha003-human-presence-feasibility.md` | physics, hardware inventory, what each feature can/cannot measure, staged plan, component requirements |
 | `docs/design/alpha003-presence-preregistration-v1.md` | planned 3-condition, multi-session protocol; endpoints, gates, confounds, exclusions, stop rules |
+| `docs/design/alpha003-readiness-review.md` | practical dorm setup, empty-room procedure, duration, statistical amendment, pre-data freeze plan |
+| `docs/design/alpha003-screening-v1.md` | separate one-session, 6-block × 3 × 20 s screening; no claim |
 | `specter/sensors/esp32/presence.py` | raw-IQ attachment, amplitude/differential-phase features, trial QC, session-independent nearest-centroid evaluation, bootstrap and permutation null, confound ablations |
 | `specter/sensors/esp32/presence_synthetic.py` | synthetic empty/stationary/moving fixture with drift, PHY/RSSI variation and known truth |
 | `tools/alpha003_presence_bench.py` | synthetic-only benchmark; explicitly not physical evidence |
@@ -80,7 +82,7 @@ still frozen at `docs/design/alpha002c-replication-protocol-v1.md`.
 - Trial QC: 30 s window, 270 payload frames, gap/uncertainty/clock/late/
   label checks.
 
-Full suite: **411 passed, 1 skipped** (the unrelated DI-188 hardware test).
+Full suite: **412 passed, 1 skipped** (the unrelated DI-188 hardware test).
 
 ### Synthetic smoke benchmark — not physical evidence
 
@@ -116,7 +118,40 @@ reported. No accuracy number here is a presence claim.
 - Drift, posture, environment, RSSI/PHY, traffic rate, temporal correlation
   and false positives are explicit controls, not post-hoc explanations.
 
-## What this checkpoint proves
+## Readiness review and pre-data amendment
+
+The original 3-session confirmatory interpretation was removed before data.
+Three sessions give three independent test units; a three-cluster bootstrap
+is unstable and a within-session permutation does not test generalisation
+to new sessions.
+
+- **3 sessions = exploratory only.**
+- **Confirmatory = 7 sessions minimum**, different days, 12 blocks × 3 ×
+  30 s each. Primary test: per-session balanced accuracy for empty vs
+  stationary, all seven sessions > 0.5, one-sided exact sign test
+  (p = 1/128 = 0.0078); pooled accuracy ≥ 0.80, empty FPR ≤ 0.10, full
+  model beats RSSI-only by ≥ 0.05, rate/PHY gates clear.
+- **Primary posture = standing.** Sitting is a separate posture stage.
+- **Smallest next experiment:** one screening session, 6 blocks × 3
+  conditions × 20 s, seed `20261024`, standing only, 15 s lead-in, 15 s
+  settle. Estimated 30–40 min on site; no presence claim.
+- **Confirmatory cost:** estimated 45–60 min/session; seven sessions
+  ≈ 5–7 h total.
+- **Empty trials:** human leaves; phone/ESP32/laptop positions, traffic and
+  acquisition configuration stay unchanged; door closed; 15 s settle;
+  payload rate checked during the empty window.
+- **Dorm controls:** roommate absent for the whole session; door state
+  logged; no other people, fans, notifications or moving furniture; cue
+  speaker fixed; one voice at a time.
+- **Pre-check:** device/USB preflight plus a 10 s same-port capture; fail
+  closed on payload, gap, uncertainty, clock, late or more than the first
+  startup torn line.
+- **Freeze:** protocol, screening protocol, analysis code, CLIs and tests
+  are hashed in `docs/design/alpha003-freeze-v1.sha256` before data.
+
+Full suite after the readiness changes: **412 passed, 1 skipped**.
+
+
 
 It proves that the project now has a runnable, testable offline foundation
 for the Alpha 003 question, and a preregistered plan that separates movement

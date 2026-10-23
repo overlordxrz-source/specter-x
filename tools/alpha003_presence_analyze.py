@@ -33,6 +33,7 @@ def _summary(r):
         "per_class_recall": {k: round(v, 4)
                              for k, v in r["per_class_recall"].items()},
         "posture_stationary_recall": r.get("stationary_recall_by_posture"),
+        "session_sign_test": r.get("session_sign_test"),
         "auc": (round(r["auc"], 4) if "auc" in r else None),
         "null": ({k: (round(v, 4) if isinstance(v, float) else v)
                   for k, v in r["null"].items()} if "null" in r else None),
@@ -47,8 +48,12 @@ def main() -> int:
     ap.add_argument("--permutations", type=int, default=100)
     ap.add_argument("--bootstrap", type=int, default=500)
     ap.add_argument("--trial-s", type=float, default=30.0)
+    ap.add_argument("--min-payload", type=int, default=None,
+                    help="default 9 payload frames/s times --trial-s")
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
+    min_payload = (args.min_payload if args.min_payload is not None
+                   else max(1, int(round(9.0 * args.trial_s))))
 
     data = []
     excluded = []
@@ -63,7 +68,8 @@ def main() -> int:
                 f"{path}: labels {sorted(unknown)} are not Alpha 003 "
                 f"conditions {CONDITIONS}; refusing to relabel")
         for t in trials:
-            problems = trial_qc(t, requested_s=args.trial_s)
+            problems = trial_qc(t, requested_s=args.trial_s,
+                                min_payload=min_payload)
             if problems:
                 excluded.append({"session": path, "index": t.get("index"),
                                  "label": t.get("label"),

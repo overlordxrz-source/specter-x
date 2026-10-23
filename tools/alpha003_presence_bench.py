@@ -31,6 +31,7 @@ def _summary(r):
         "per_class_recall": {k: round(v, 4)
                              for k, v in r["per_class_recall"].items()},
         "posture_stationary_recall": r.get("stationary_recall_by_posture"),
+        "session_sign_test": r.get("session_sign_test"),
         "auc": (round(r["auc"], 4) if "auc" in r else None),
         "null": ({k: (round(v, 4) if isinstance(v, float) else v)
                   for k, v in r["null"].items()} if "null" in r else None),

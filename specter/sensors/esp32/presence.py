@@ -23,6 +23,7 @@ No file here changes the Alpha 002-C analysis or its replication protocol.
 from __future__ import annotations
 
 import json
+import math
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
@@ -577,6 +578,42 @@ def _bootstrap(preds, classes, n_boot=1000, seed=0):
             "method": "session bootstrap"}
 
 
+def session_level_metrics(predictions: Sequence[dict],
+                          classes: Sequence[str]) -> Dict[str, dict]:
+    """Per-session out-of-fold metrics, the unit for a session-level claim."""
+    out = {}
+    sessions = sorted({p["session_id"] for p in predictions})
+    for sid in sessions:
+        rows = [p for p in predictions if p["session_id"] == sid]
+        m = _aggregate(rows, classes)
+        out[sid] = {
+            "n": len(rows),
+            "balanced_accuracy": m["balanced_accuracy"],
+            "empty_false_positive_rate": m["empty_false_positive_rate"],
+            "per_class_recall": m["per_class_recall"],
+        }
+    return out
+
+
+def exact_sign_test(values: Sequence[float],
+                    threshold: float = 0.5) -> Dict[str, float]:
+    """One-sided exact sign test over independent sessions.
+
+    The smallest attainable p with n sessions is 1/2^n. This is the
+    session-level test; a within-session label permutation is not a
+    substitute for it.
+    """
+    vals = [float(v) for v in values if np.isfinite(float(v))]
+    n = len(vals)
+    if n == 0:
+        return {"n": 0, "above": 0, "threshold": threshold,
+                "p_one_sided": float("nan"), "min_attainable_p": float("nan")}
+    k = sum(1 for v in vals if v > threshold)
+    p = sum(math.comb(n, i) for i in range(k, n + 1)) / (2 ** n)
+    return {"n": n, "above": k, "threshold": threshold,
+            "p_one_sided": float(p), "min_attainable_p": 1.0 / (2 ** n)}
+
+
 def evaluate(trials: Sequence[dict], classes: Sequence[str],
              features: Sequence[str], *, n_perm: int = 0,
              seed: int = 0, n_boot: int = 1000,
@@ -609,6 +646,9 @@ def evaluate(trials: Sequence[dict], classes: Sequence[str],
     obs["folds"] = "leave-one-session-out"
     obs["predictions"] = preds
     obs["stationary_recall_by_posture"] = stationary_recall_by_posture(preds)
+    obs["session_level"] = session_level_metrics(preds, classes)
+    obs["session_sign_test"] = exact_sign_test(
+        [v["balanced_accuracy"] for v in obs["session_level"].values()])
     if n_perm:
         rng = np.random.default_rng(seed + 1)
         by_session = {}
