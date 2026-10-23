@@ -39,6 +39,34 @@ SENSOR_LABELS = {
 }
 
 
+#: Versioned observation contract. Bumped only by an explicit schema change.
+OBSERVATION_SCHEMA_V1 = "specter.observation.v1"
+
+#: Evidence ladder. A claim may never be reported above the level it was
+#: actually obtained at.
+EVIDENCE_LEVELS = (
+    "simulated",              # synthetic fixture or explicit test source
+    "software_verified",      # produced/checked by code, no hardware involved
+    "hardware_measured",      # a real sensor produced the bytes
+    "experimentally_validated"  # a physical experiment established the claim
+)
+
+#: Allowed validity flags. "valid" means contract-complete, not scientifically
+#: established; these flags carry the caveats downstream.
+VALIDITY_FLAGS = frozenset({
+    "uncalibrated",       # no calibration_version applies yet
+    "signal_domain",      # value is a signal feature, not a spatial coordinate
+    "not_spatial",        # explicit: must never be read as position/pose
+    "raw_unavailable",    # raw bytes were not retained for this observation
+    "clock_unsynced",     # sensor clock offset not yet estimated
+    "stale",              # delivered after its useful window
+    "frame_mismatch",     # frame_id disagrees with the registered sensor
+    "calibration_mismatch",
+    "null_control",       # synthetic negative control
+    "positive_control",   # synthetic positive control
+})
+
+
 @dataclass(frozen=True)
 class Provenance:
     """Where a measurement came from and how it was produced."""
@@ -87,6 +115,19 @@ class Measurement:
     confidence: Optional[float] = None   # scalar in [0,1]
     covariance: Optional[list] = None    # NxN, in frame_id units
     id: str = field(default_factory=lambda: uuid.uuid4().hex[:12])
+    # ---- FRONTIER-001 observation contract (additive, defaults keep old
+    # call sites valid) ---------------------------------------------------
+    schema_version: str = OBSERVATION_SCHEMA_V1
+    measurement_type: Optional[str] = None   # e.g. "csi_lltf_amplitude"
+    units: Optional[str] = None              # e.g. "adc_counts", "pixel"
+    calibration_version: Optional[str] = None
+    evidence_level: str = "software_verified"
+    valid: bool = True
+    validity_flags: tuple = ()
+    raw_ref: Optional[dict] = None           # RawEvidence.to_dict()
+    uncertainty: Optional[dict] = None       # Uncertainty.to_dict()
+    seq: Optional[int] = None                # per-sensor monotonic sequence
+    dropped_before: int = 0                  # frames known lost before this one
 
     def __post_init__(self) -> None:
         if not self.sensor:
@@ -108,6 +149,24 @@ class Measurement:
         if self.provenance.source != self.sensor:
             raise ValueError(
                 f"provenance.source ({self.provenance.source}) != sensor ({self.sensor})"
+            )
+        if not isinstance(self.schema_version, str) or not self.schema_version:
+            raise ValueError("schema_version must be a non-empty string")
+        if self.evidence_level not in EVIDENCE_LEVELS:
+            raise ValueError(
+                f"evidence_level must be one of {EVIDENCE_LEVELS}, "
+                f"got {self.evidence_level!r}"
+            )
+        flags = tuple(self.validity_flags or ())
+        unknown = set(flags) - VALIDITY_FLAGS
+        if unknown:
+            raise ValueError(f"unknown validity_flags: {sorted(unknown)}")
+        self.validity_flags = flags
+        if self.seq is not None and (not isinstance(self.seq, int) or self.seq < 0):
+            raise ValueError(f"seq must be a non-negative int, got {self.seq!r}")
+        if not isinstance(self.dropped_before, int) or self.dropped_before < 0:
+            raise ValueError(
+                f"dropped_before must be a non-negative int, got {self.dropped_before!r}"
             )
 
     @property

@@ -52,3 +52,46 @@ def test_parents_survive_roundtrip():
 def test_validation(bad):
     with pytest.raises(ValueError):
         make(**bad)
+
+
+def test_contract_fields_default_without_changing_old_call_sites():
+    m = make()
+    assert m.schema_version == "specter.observation.v1"
+    assert m.valid is True
+    assert m.validity_flags == ()
+    assert m.evidence_level == "software_verified"
+    assert m.seq is None
+    assert m.dropped_before == 0
+    assert m.measurement_type is None
+    assert m.units is None
+
+
+def test_contract_fields_survive_roundtrip():
+    m = make(
+        measurement_type="csi_lltf_amplitude",
+        units="adc_counts",
+        calibration_version="uncalibrated/csi-signal-v1",
+        evidence_level="hardware_measured",
+        validity_flags=("signal_domain", "not_spatial"),
+        raw_ref={"uri": "run.raw", "sha256": "ab", "format": "esp32-csi-text"},
+        uncertainty={"kind": "none", "value": None, "units": "n/a"},
+        seq=7,
+        dropped_before=2,
+    )
+    m2 = Measurement.from_json(m.to_json())
+    assert m2.to_dict() == m.to_dict()
+    assert m2.validity_flags == ("signal_domain", "not_spatial")
+    assert m2.evidence_level == "hardware_measured"
+    assert m2.seq == 7 and m2.dropped_before == 2
+
+
+@pytest.mark.parametrize("bad", [
+    dict(evidence_level="certified"),
+    dict(validity_flags=("made_up",)),
+    dict(seq=-1),
+    dict(dropped_before=-1),
+    dict(schema_version=""),
+])
+def test_contract_fields_reject_invalid_values(bad):
+    with pytest.raises(ValueError):
+        make(**bad)
