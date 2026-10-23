@@ -2,10 +2,11 @@
 
 [Hub](../README.md) · **Current handoff · 23 October 2026.**
 
-This is the short handoff for a new agent. Read it after the North Star and
-the relevant memory entries; open the linked evidence before making a claim.
-The older [documentation handoff](handoff.md) records how the handbook was
-built and remains historical.
+**Canonical startup reference for every future agent — ChatGPT, OpenCode,
+Work and any other coding agent.** Read it after the North Star and the
+relevant memory entries; open the linked evidence before making a claim. The
+older [documentation handoff](handoff.md) records how the handbook was built
+and remains historical.
 
 ## Startup ritual
 
@@ -25,14 +26,19 @@ state, and do not overwrite uncommitted work.
 
 | Item | State |
 |---|---|
-| Documentation branch / worktree | `docs/main-handbook-sync` in the documentation worktree. This memory update is documentation-only. |
+| Documentation branch / worktree | `docs/main-handbook-sync` in the documentation worktree. The memory update is a **docs-only PR to `main`**, pending authorization; not merged. |
+| CI fix branch / PR | `fix/github-actions-ci`; **PR #2**, base `feature/alpha002-esp32-supervisor`, ready for review and green, not merged. Only CI/config/test-marker files. |
 | Alpha code / evidence branch | `feature/alpha002-esp32-supervisor` in the main research worktree. Latest verified Alpha handoff: `e7af1ad`; Alpha 002-C forensic record: `a3c540d`. |
 | Alpha 002-C | **IN PROGRESS — exploratory positive, independent replication pending.** One 20-trial session, 20/20 valid; p = 1/1024, d_z = 1.69, CI [1.34, 2.91]. Original INVALID and corrected PASS preserved. Not confirmatory. |
-| Alpha 003 | **PLANNED — protocols and offline code only; no human session.** Screening: 6 blocks × 3 × 20 s, seed `20261024`. Confirmatory: 7 sessions, session-level exact sign test. No presence claim. |
+| Alpha 003 | **PLANNED — protocols and offline code only; no human session.** Screening: 6 blocks × 3 × 20 s, seed `20261024`. Confirmatory: 7 sessions, session-level exact sign test. No presence claim. Frozen preregistration at `e7af1ad`. |
 | FRONTIER-001 / SPECTER-WORLD | **Work-owned**, separate `specter-x-frontier001` worktree. Read-only from this documentation effort; do not touch, merge or overwrite. |
 | Hardware/firmware | No Alpha 003 hardware run. Do not flash firmware or start a human session without explicit owner authorization. |
 
 ## Next single task
+
+**Integration, not execution.** PR #2 is ready and green against the active
+Alpha branch; the docs-only memory PR targets `main`. Both wait for owner
+authorization. Do not merge either one unilaterally.
 
 **No human session is authorized by this handoff.** The next physical task,
 when authorized, is the one-session Alpha 003 screening in
@@ -43,6 +49,7 @@ also only with authorization.
 
 ## Do not
 
+- Do not merge PR #2 or the docs memory PR without explicit owner authorization.
 - Do not merge the documentation branch with feature/Work branches.
 - Do not touch or modify Work's `specter-x-frontier001` worktree.
 - Do not flash firmware or start human trials without explicit authorization.

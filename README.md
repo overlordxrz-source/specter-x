@@ -16,7 +16,8 @@ walls, medical diagnosis, or certified rescue capability. The authoritative
 statement of intent and engineering doctrine is the
 **[North Star charter](docs/handbook/north-star.md)**.
 
-**Persistent project memory:** read the
+**Persistent project memory (canonical startup reference for ChatGPT, OpenCode,
+Work and other agents):** read the
 [research ideas](docs/handbook/research-ideas.md),
 [decisions](docs/handbook/decisions.md),
 [experiment ledger](docs/handbook/experiment-ledger.md) and

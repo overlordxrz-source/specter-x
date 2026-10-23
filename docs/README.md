@@ -26,7 +26,9 @@ SPECTER-X is the first wearable/AR interface to a vertically integrated, multimo
 
 ## Persistent project memory
 
-Read these before starting work; the repository is canonical, not chat history.
+**This is the canonical startup reference for every future agent — ChatGPT,
+OpenCode, Work and any other coding agent.** Read these before starting
+major work; the repository is canonical, not chat history.
 
 1. [North Star charter](handbook/north-star.md) — stable intent and doctrine.
 2. [Research ideas](handbook/research-ideas.md) — dated VISION/RESEARCH log.

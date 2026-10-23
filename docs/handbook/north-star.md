@@ -55,7 +55,8 @@ Read this charter, the hub, Alpha reconciliation, relevant ICD and evidence befo
 read the [research ideas](research-ideas.md),
 [decisions](decisions.md),
 [experiment ledger](experiment-ledger.md) and
-[current agent handoff](agent-handoff.md). Update those files at checkpoints
-and before context compaction. They index and constrain work; they do not
-replace raw evidence, and a memory entry never promotes a capability by
-itself.
+[current agent handoff](agent-handoff.md). This is the canonical startup
+reference for every future agent, including ChatGPT, OpenCode, Work and other
+coding agents. Update those files at checkpoints and before context
+compaction. They index and constrain work; they do not replace raw evidence,
+and a memory entry never promotes a capability by itself.
