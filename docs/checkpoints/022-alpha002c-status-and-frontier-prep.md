@@ -2,9 +2,9 @@
 
 **Date:** 2026-10-22 (local; session timestamps are 2026-10-23 UTC)
 **Branch:** `feature/alpha002-esp32-supervisor` (parent `6e6afb3`)
-**Status labels:** Alpha 002-C motion = **PASS — single session, disclosed
-analysis correction**; FRONTIER-001 = **PLANNED — preparatory**; long-term
-AIR/CORE/LINK/OS = **VISION / RESEARCH**.
+**Status labels:** Alpha 002-C motion = **EXPLORATORY POSITIVE — single
+session, pending independent replication**; FRONTIER-001 = **PLANNED —
+preparatory**; long-term AIR/CORE/LINK/OS = **VISION / RESEARCH**.
 
 ## Verdict first
 
@@ -26,6 +26,10 @@ feature, test, threshold or exclusion was changed.
 Geometry is **estimated** (visual), not verified: L = 1.50 m, heights
 0.80 m, lateral 0.30 m, longitudinal 0.00 m; derived S distances 0.808 m
 horizontal / 1.137 m slant.
+
+**Forensic status:** this is an exploratory positive result, not an
+independent replication or a confirmatory claim. See checkpoint 023 and
+`docs/design/alpha002c-replication-protocol-v1.md`.
 
 ## Priority
 
