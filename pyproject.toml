@@ -24,6 +24,7 @@ include = ["specter*"]
 
 [tool.setuptools.package-data]
 "specter.calibration" = ["*.json"]
+"specter.platform" = ["*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

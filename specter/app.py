@@ -30,6 +30,14 @@ WINDOW = "SPECTER-X"
 
 def parse_args(argv=None):
     p = argparse.ArgumentParser(prog="specter.app", description="SPECTER-X Stage 1 HUD")
+    p.add_argument("--console", action="store_true", help="read-only FRONTIER diagnostic console; never opens a camera")
+    p.add_argument("--replay", help="raw CSI text or versioned observation JSONL")
+    p.add_argument("--session-dir", help="browse .raw.csi / .observations.jsonl sessions; J selects next")
+    p.add_argument("--console-size", default="1280x800", help="WIDTHxHEIGHT, minimum 800x480")
+    p.add_argument("--replay-limit", type=int, default=4096, help="bounded maximum observations loaded (1..50000)")
+    p.add_argument("--buffer-capacity", type=int, default=256, help="diagnostic ring capacity; evictions counted separately")
+    p.add_argument("--at", type=int, default=0, help="initial replay observation index")
+    p.add_argument("--capture-out", help="exclusive-create deterministic observation capture; never overwrites")
     p.add_argument("--source", default="auto", choices=["auto", "picamera", "opencv", "synthetic"])
     p.add_argument("--device", type=int, default=0, help="OpenCV camera index")
     p.add_argument("--width", type=int, default=1920)
@@ -62,6 +70,9 @@ def parse_args(argv=None):
 
 def main(argv=None) -> int:
     a = parse_args(argv)
+    if a.console:
+        from specter.platform.console import run_console
+        return run_console(a)
     logging.basicConfig(level=logging.DEBUG if a.verbose else logging.INFO,
                         format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 

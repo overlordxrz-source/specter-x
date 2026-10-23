@@ -1,0 +1,12 @@
+{
+  "f8e3cd0f992a5ec12abb6245a385592356c00baaa5a1b7539e2ca95936a6c1ad": {
+    "origin": "hardware",
+    "reference": "Committed phone_station_lltf fixture: exact row, inherited from Alpha",
+    "revision": "6e6afb3"
+  },
+  "f0323be3d79af1bd5f29fd21b483323c90eeb7be3f90c8e89c980e92d8432b2c": {
+    "origin": "hardware",
+    "reference": "Checkpoint 019 phase0-short.raw.csi, recorded acquisition only",
+    "revision": "699d199"
+  }
+}
