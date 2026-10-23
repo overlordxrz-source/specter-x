@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="specter-token" content="__TOKEN__" />
+    <title>SPECTER-WORLD · Research Command Center</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <a class="brand" href="#overview"
+        ><span class="emblem">S</span
+        ><span>SPECTER<span class="brand-sub">WORLD / DESKTOP</span></span></a
+      >
+      <div class="nav-label">WORKSPACE</div>
+      <nav aria-label="Main navigation">
+        <button data-view="overview" aria-label="Overview" class="active">
+          <span>◫</span>Overview</button
+        ><button data-view="sensing" aria-label="Sensing">
+          <span>∿</span>Sensing</button
+        ><button data-view="spatial" aria-label="Spatial workspace">
+          <span>⌑</span>Spatial workspace</button
+        ><button data-view="research" aria-label="Research & sessions">
+          <span>▤</span>Research & sessions</button
+        ><button data-view="nodes" aria-label="Node network">
+          <span>⌘</span>Node network</button
+        ><button data-view="evidence" aria-label="Evidence & diagnostics">
+          <span>⌕</span>Evidence & diagnostics
+        </button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="nav-label">LOCAL ENVIRONMENT</div>
+        <div class="local-state">
+          <i id="service-dot"></i
+          ><span id="service-label">Connecting to service</span>
+        </div>
+        <p>
+          No hardware transport opened.<br />Research software · uncertified.
+        </p>
+        <button id="shutdown" class="quiet">Shut down service ↗</button>
+      </div>
+    </aside>
+    <div class="shell">
+      <header>
+        <div class="breadcrumbs">
+          SPECTER ECOSYSTEM <span>/</span> <b id="breadcrumb">OVERVIEW</b>
+        </div>
+        <div class="header-right">
+          <span id="mode" class="badge">OFFLINE</span
+          ><span class="local-only">LOCAL ONLY</span
+          ><button id="open-session" class="button">
+            Open session <span>↗</span>
+          </button>
+        </div>
+      </header>
+      <main id="main">
+        <section class="page-heading">
+          <div>
+            <div class="eyebrow">RESEARCH COMMAND CENTER</div>
+            <h1 id="page-title">System overview</h1>
+            <p id="page-description">
+              Evidence first. Every observation, traceable.
+            </p>
+          </div>
+          <div id="source-status" class="source-status">
+            No active recording
+          </div>
+        </section>
+        <div id="notice" role="status" hidden></div>
+        <div id="content"></div>
+      </main>
+      <footer class="transport">
+        <div class="transport-top">
+          <div class="recording-name">
+            <span class="tiny-label">RECORDING</span
+            ><strong id="recording">No session selected</strong>
+          </div>
+          <div class="transport-actions">
+            <button
+              id="previous"
+              title="Previous record"
+              aria-label="Previous record"
+            >
+              ‹</button
+            ><button id="play" class="play" aria-label="Play replay">▶</button
+            ><button id="next" title="Next record" aria-label="Next record">
+              ›</button
+            ><select id="speed" aria-label="Playback speed">
+              <option value="0.25">0.25×</option>
+              <option value="0.5">0.5×</option>
+              <option value="1" selected>1×</option>
+              <option value="2">2×</option>
+              <option value="4">4×</option>
+              <option value="8">8×</option></select
+            ><button id="detach" class="quiet">Detach</button>
+          </div>
+          <div class="record-count" id="record-count">— / —</div>
+        </div>
+        <input
+          id="timeline"
+          type="range"
+          min="0"
+          max="0"
+          value="0"
+          aria-label="Replay observation timeline"
+        />
+        <div class="transport-bottom">
+          <span id="timeline-caption">Open preserved evidence to begin.</span
+          ><span>INSPECTION PLAYBACK · NOT LIVE ACQUISITION</span>
+        </div>
+      </footer>
+    </div>
+    <dialog id="sessions-dialog">
+      <div class="dialog-heading">
+        <div>
+          <div class="eyebrow">EVIDENCE LIBRARY</div>
+          <h2>Open a recording</h2>
+        </div>
+        <button id="close-dialog" aria-label="Close session browser">✕</button>
+      </div>
+      <p>Approved local roots only. Loading never opens a device.</p>
+      <div id="session-list"></div>
+    </dialog>
+    <dialog id="inspection">
+      <div class="dialog-heading">
+        <h2 id="inspection-title">Observation evidence</h2>
+        <button id="close-inspection" aria-label="Close inspector">✕</button>
+      </div>
+      <div id="inspection-body"></div>
+    </dialog>
+  </body>
+</html>

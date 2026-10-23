@@ -1,0 +1,70 @@
+{
+  "base": "1edabbc",
+  "source_milestones": [
+    "dc695c7",
+    "9520377"
+  ],
+  "python_baseline": {
+    "passed": 126,
+    "deselected_hardware": 1
+  },
+  "python_integration": {
+    "passed": 189,
+    "deselected_hardware": 1,
+    "seconds": 2.43
+  },
+  "new_python_cases": 63,
+  "browser_checks_passed": 26,
+  "delayed_response_mutation": "EXPECTED FAILURE: Prior-session READY response never reappears",
+  "protected_main_files_byte_identical": 32,
+  "parser_source": "9520377",
+  "actual_csi": {
+    "source": "phase0-short.raw.csi",
+    "source_sha256": "f0323be3d79af1bd5f29fd21b483323c90eeb7be3f90c8e89c980e92d8432b2c",
+    "independent_count": 7290,
+    "count_matches": true,
+    "sample_indices": [
+      0,
+      3645,
+      7289
+    ],
+    "iq_independent_route": true,
+    "native_ticks_and_raw_line_match": true,
+    "origin": "hardware",
+    "live_verified": false,
+    "load_seconds": 0.5946322079980746,
+    "max_snapshot_seconds_during_load": 0.007370707986410707,
+    "source_missing": 0,
+    "source_counters": {
+      "sig_len_28": 4248,
+      "sig_len_138": 3017,
+      "sig_len_82": 3,
+      "sig_len_117": 10,
+      "sig_len_125": 12,
+      "observations": 7290,
+      "sequence_missing": 0,
+      "malformed": 0,
+      "unsupported_layout": 0,
+      "non_csi": 299
+    },
+    "index_bytes": 15310848,
+    "hardware_access": false,
+    "synthetic_stress": {
+      "records": 50000,
+      "load_seconds": 3.9708273750147782,
+      "max_snapshot_seconds_during_load": 0.011605999956373125,
+      "index_bytes": 104370176,
+      "retention_evictions": 49744,
+      "rows": 80,
+      "series": 160
+    },
+    "source_unchanged": true,
+    "process_peak_rss_bytes": 66174976
+  },
+  "unauthorized_edit": {
+    "origin": "UNATTRIBUTED",
+    "mtime_utc": "2026-10-23T18:41:38.862923Z",
+    "preserved_diff_sha256": "f4740d97ecc04dcbdca7f89ab6aae3c583f27a81e398ab26e06159ab4839f856",
+    "restored_committed_regression": true
+  }
+}
