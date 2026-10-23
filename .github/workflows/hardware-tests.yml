@@ -1,0 +1,40 @@
+name: hardware-tests
+
+# Manual-only workflow for tests that require attached physical hardware
+# (DI-188, ESP32-S3, serial ports, or future instruments).
+#
+# GitHub-hosted runners do not have these devices. This job selects a
+# self-hosted runner labelled `hardware`; if no such runner is registered the
+# job will queue rather than run on a hosted machine. It is never triggered by
+# push or pull_request.
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: Why the hardware suite is being run
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hardware-tests-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  hardware:
+    name: attached-hardware tests
+    runs-on: [self-hosted, hardware]
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-ci.txt
+      - name: Run hardware-marked tests
+        run: python -m pytest -q -m hardware
