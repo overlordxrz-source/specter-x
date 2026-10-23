@@ -29,9 +29,12 @@ except ImportError:
 OUT = os.environ.get("SPECTER_ALPHA001_OUT", "docs/alpha001")
 RUNTIME_S = float(os.environ.get("SPECTER_ALPHA001_SECONDS", "6"))
 
-pytestmark = pytest.mark.skipif(
-    not HAVE_PYSERIAL or not find_di188_ports(),
-    reason="no DI-188 attached (needs the real instrument and pyserial)")
+pytestmark = [
+    pytest.mark.hardware,
+    pytest.mark.skipif(
+        not HAVE_PYSERIAL or not find_di188_ports(),
+        reason="no DI-188 attached (needs the real instrument and pyserial)"),
+]
 
 
 def _wait_for(predicate, timeout=20.0):
