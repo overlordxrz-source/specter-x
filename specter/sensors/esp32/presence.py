@@ -29,6 +29,7 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 import numpy as np
 
 CONDITIONS = ("empty", "stationary", "moving")
+LABEL_ALIASES = {"walking": "moving"}
 PAYLOAD_MIN_SIG_LEN = 33
 ALPHA003_TRIAL_S = 30.0
 ALPHA003_MIN_PAYLOAD = 270       # 9 payload frames/s over 30 s
@@ -195,7 +196,8 @@ def trial_qc(trial: dict, requested_s: float = ALPHA003_TRIAL_S,
         problems.append("late frames")
     if trial.get("valid") is False:
         problems.append("recorder marked trial invalid")
-    if trial.get("label") not in CONDITIONS:
+    if LABEL_ALIASES.get(trial.get("label"), trial.get("label")) \
+            not in CONDITIONS:
         problems.append(f"label {trial.get('label')!r} is not an Alpha 003 "
                         "condition")
     return problems
@@ -354,6 +356,9 @@ def load_session(path: str, raw_path: Optional[str] = None,
     for t in data.get("trials", []):
         d = dict(t)
         d["session_id"] = sid
+        original_label = d.get("label")
+        d["acquisition_label"] = original_label
+        d["label"] = LABEL_ALIASES.get(original_label, original_label)
         d["samples"] = [dict(s) for s in t.get("samples", [])]
         for s in d["samples"]:
             if "t" not in s:

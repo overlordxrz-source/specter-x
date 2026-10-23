@@ -5,6 +5,7 @@ not establish presence detection.
 """
 from __future__ import annotations
 
+import json
 import os
 import sys
 
@@ -16,8 +17,8 @@ if REPO not in sys.path:
 
 from specter.sensors.esp32.presence import (  # noqa: E402
     FEATURE_SETS, attach_iq_from_raw, differential_phase, evaluate,
-    leave_one_session_out, phase_features, stationary_recall_by_posture,
-    trial_features, trial_qc)
+    leave_one_session_out, load_session, phase_features,
+    stationary_recall_by_posture, trial_features, trial_qc)
 from specter.sensors.esp32.presence_synthetic import (  # noqa: E402
     PresenceSyntheticLink)
 
@@ -154,6 +155,17 @@ def test_posture_recall_is_reported_separately():
     r = stationary_recall_by_posture(preds)
     assert r["standing"]["n"] == 2 and r["standing"]["recall"] == 0.5
     assert r["sitting"]["n"] == 1 and r["sitting"]["recall"] == 1.0
+
+
+def test_load_session_maps_walking_to_moving(tmp_path):
+    p = tmp_path / "session.json"
+    p.write_text(json.dumps({"trials": [
+        {"label": "walking", "block": 0, "samples": [{"id": 1}]},
+    ]}))
+    trials = load_session(str(p))
+    assert trials[0]["label"] == "moving"
+    assert trials[0]["acquisition_label"] == "walking"
+    assert trials[0]["session_id"] == "session"
 
 
 def test_trial_qc_rejects_short_or_invalid_trials():

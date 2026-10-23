@@ -80,7 +80,7 @@ still frozen at `docs/design/alpha002c-replication-protocol-v1.md`.
 - Trial QC: 30 s window, 270 payload frames, gap/uncertainty/clock/late/
   label checks.
 
-Full suite: **410 passed, 1 skipped** (the unrelated DI-188 hardware test).
+Full suite: **411 passed, 1 skipped** (the unrelated DI-188 hardware test).
 
 ### Synthetic smoke benchmark — not physical evidence
 
@@ -102,7 +102,8 @@ reported. No accuracy number here is a presence claim.
 ## Preregistration summary
 
 - 12 randomised blocks/session, one trial each of `empty`, `stationary`
-  (balanced standing/sitting), `moving`; 30 s per trial; 15 s settle.
+  (balanced standing/sitting), `moving`; 30 s per trial; 3 s cue lead-in;
+  15 s settle.
 - Minimum 3 sessions, target 4–5; leave-one-session-out.
 - H1 empty vs moving; H2 empty vs stationary (the presence question); H3
   three-class exploratory; H4 phase ablation; H5 posture.

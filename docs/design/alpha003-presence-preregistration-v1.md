@@ -47,6 +47,13 @@ metadata before analysis; the condition label remains `stationary`.
   trial of each condition (36 trials/session).
 - 30 s active window per trial; 0.10 s guard; 15 s room/transition settle;
   door closed during every recorded window.
+- Trial timing: spoken explanation to completion → **3 s lead-in** → 30 s
+  active → `stop`; the 15 s settle precedes the cue. The explanation is part
+  of the inter-trial rest and is recorded.
+- The existing recorder's walking instruction is labelled `walking`; the
+  analysis normalises it to `moving`. Sitting uses a custom spoken cue and
+  the `stationary` label with `posture: sitting`; standing uses the standard
+  `stationary` cue.
 - Order within block randomised by a recorded seed; order differs between
   sessions.
 - **Minimum 3 sessions**, different days/times; target 4–5. A session is one
