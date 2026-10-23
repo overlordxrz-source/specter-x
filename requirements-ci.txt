@@ -1,0 +1,14 @@
+# CI-only dependency set for GitHub Actions.
+#
+# The old workflow installed numpy/OpenCV/pytest by hand and omitted pyserial,
+# which is a declared dependency in requirements.txt and is imported by the
+# fake-serial ESP32 integration tests. Keep this file explicit: automatic CI
+# must be able to run the offline suite without a Mac or attached hardware.
+#
+# OpenCV headless avoids the GUI/X11 libraries on the hosted runner. Do not add
+# test-only stubs here; a missing runtime dependency should fail the install or
+# the test, not be hidden.
+numpy>=1.24
+pyserial>=3.5
+opencv-python-headless>=4.8
+pytest>=7
