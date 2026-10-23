@@ -16,6 +16,7 @@ const fmt = (x, d = 0) =>
 const token = $("meta[name=specter-token]").content;
 let state = null,
   files = [],
+  catalogInfo = { items: [], truncated: false, limit: 512, scan_limit: 20000 },
   page = "overview",
   source = "",
   query = "",
@@ -423,7 +424,10 @@ function render() {
 }
 function sessionButtons() {
   const list = files.filter((f) => f.kind === "replay");
-  return (
+  const truncated = catalogInfo?.truncated
+    ? `<p class="subtle">Catalog limit reached (${fmt(catalogInfo.limit)} items; scan limit ${fmt(catalogInfo.scan_limit)}). Some evidence is not shown; this is not a complete listing.</p>`
+    : "";
+  return truncated + (
     list
       .map(
         (f) =>
@@ -483,6 +487,12 @@ async function openSession(id) {
   const previousState = state;
   generation++;
   switching = true;
+  evidenceId = null;
+  evidenceText = null;
+  const inspector = $("#inspection");
+  if (inspector?.open) inspector.close();
+  const inspectorBody = $("#inspection-body");
+  if (inspectorBody) inspectorBody.innerHTML = "";
   notice(null);
   if (state) {
     state = {
@@ -629,9 +639,13 @@ $("#shutdown").onclick = async () => {
 };
 async function start() {
   try {
-    files = await api("catalog");
+    catalogInfo = await api("catalog");
+    files = catalogInfo.items || [];
     navigate(location.hash.slice(1) || "overview");
     await refresh();
+    if (catalogInfo.truncated) {
+      notice("Evidence catalog is bounded; some items are not listed.");
+    }
   } catch (e) {
     notice(e.message);
   }

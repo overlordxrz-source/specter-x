@@ -1,5 +1,5 @@
 {
-  "base": "daaf081",
+  "base": "7ca4a8a",
   "source_milestones": [
     "dc695c7",
     "9520377"
@@ -9,12 +9,12 @@
     "deselected_hardware": 1
   },
   "python_integration": {
-    "passed": 193,
+    "passed": 195,
     "deselected_hardware": 1,
     "seconds": 2.43
   },
-  "new_python_cases": 67,
-  "browser_checks_passed": 28,
+  "new_python_cases": 69,
+  "browser_checks_passed": 31,
   "delayed_response_mutation": "EXPECTED FAILURE: Prior-session READY response never reappears",
   "protected_main_files_byte_identical": 32,
   "parser_source": "9520377",
@@ -73,8 +73,23 @@
     "explicit_replay_roots": "no implicit parent authorization",
     "stale_inspection_evidence": "delayed controls pass",
     "catalog_bound": "512-item cap test passes",
-    "python_passed": 193,
+    "python_passed": 195,
     "hardware_deselected": 1,
-    "browser_checks_passed": 28
+    "browser_checks_passed": 31
+  },
+  "second_review_remediation": {
+    "base_handoff": "7ca4a8a",
+    "evidence_clear_on_switch": true,
+    "inspection_closed_on_switch": true,
+    "catalog_metadata": {
+      "truncated": true,
+      "limit": 512,
+      "scan_limit": 20000
+    },
+    "clean_source_recovered_records": 0,
+    "boundary_splice_documented": true,
+    "python_passed": 195,
+    "hardware_deselected": 1,
+    "browser_checks_passed": 31
   }
 }

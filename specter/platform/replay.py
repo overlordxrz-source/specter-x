@@ -76,7 +76,7 @@ class CsiReplay:
                     self.counts["malformed"] += 1
                 if outcome.spliced:
                     self.counts["spliced_lines"] += 1
-                if outcome.records:
+                if outcome.records and (outcome.spliced or outcome.malformed):
                     self.counts["recovered_records"] += len(outcome.records)
                 for record_index, rec in enumerate(outcome.records):
                     if rec is None:

@@ -8,11 +8,12 @@ import urllib.error
 import urllib.request
 
 import pytest
+import specter.world.server as world_server
 from specter.platform.replay import CsiReplay, write_capture
 from specter.platform.observation import Observation, ContractError
 from specter.world.store import WorldStore
 from specter.world.server import (CATALOG_LIMIT, WorldServer,
-                                  approved_roots, catalog)
+                                  approved_roots, catalog, catalog_result)
 from specter.world.ingress import Ingress
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -194,9 +195,25 @@ def test_catalog_stops_at_the_bounded_limit(tmp_path):
     root.mkdir()
     for i in range(CATALOG_LIMIT + 40):
         (root / f"evidence-{i:04d}.md").write_text("x")
-    items = catalog([root])
+    result = catalog_result([root])
+    items = result["items"]
     assert len(items) == CATALOG_LIMIT
+    assert result["truncated"] is True
+    assert result["limit"] == CATALOG_LIMIT
     assert [i["name"] for i in items] == sorted(i["name"] for i in items)
+
+
+def test_catalog_has_a_separate_scan_bound(tmp_path, monkeypatch):
+    root = tmp_path / "flat"
+    root.mkdir()
+    for i in range(80):
+        (root / f"evidence-{i:03d}.md").write_text("x")
+    monkeypatch.setattr(world_server, "SCAN_LIMIT", 32)
+    result = catalog_result([root])
+    assert result["scan_truncated"] is True
+    assert result["truncated"] is True
+    assert result["scan_limit"] == 32
+    assert len(result["items"]) <= 32
 
 
 def test_http_security_and_shutdown_negative_control(raw, store):
@@ -214,6 +231,9 @@ def test_http_security_and_shutdown_negative_control(raw, store):
 
     try:
         assert json.load(request("/api/state"))["status"] == "OFFLINE"
+        cat = json.load(request("/api/catalog"))
+        assert isinstance(cat, dict) and isinstance(cat["items"], list)
+        assert isinstance(cat["truncated"], bool) and cat["limit"] == CATALOG_LIMIT
         with pytest.raises(urllib.error.HTTPError) as exc:
             request("/api/control", {"action": "play", "value": True})
         assert exc.value.code == 403

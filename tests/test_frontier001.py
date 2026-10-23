@@ -221,10 +221,17 @@ def test_replay_recovers_a_record_after_a_torn_prefix(raw):
     assert len(observations) == 1
     assert adapter.counts["malformed"] == 1
     assert adapter.counts["spliced_lines"] == 1
+    assert adapter.counts["recovered_records"] == 1
     d = observations[0].to_dict()
     assert d["evidence"]["raw"]["line"] == 1
     assert "spliced_line" in d["validity"]["flags"]
     assert "torn_line" in d["validity"]["flags"]
+
+
+def test_clean_source_does_not_report_recovered_records(raw):
+    adapter = CsiReplay(raw)
+    list(adapter)
+    assert "recovered_records" not in adapter.counts
 
 
 def test_duplicate_raw_sequence_is_not_silently_replayed(raw):

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 import argparse
+import heapq
 import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -18,6 +19,7 @@ WEB = Path(__file__).with_name("web")
 
 
 CATALOG_LIMIT = 512
+SCAN_LIMIT = 20000
 
 
 def approved_roots(root_args, replay_path=None):
@@ -30,17 +32,34 @@ def approved_roots(root_args, replay_path=None):
     return [Path(root).resolve() for root in root_args]
 
 
-def _catalog_walk(root):
-    """Yield files under root with a bounded, deterministic DFS.
+def _bounded_iter(entries, state):
+    """Yield at most the remaining scan budget; record exhaustion."""
+    for entry in entries:
+        if state["scanned"] >= SCAN_LIMIT:
+            state["scan_truncated"] = True
+            return
+        state["scanned"] += 1
+        yield entry
 
-    Do not materialize ``root.rglob('*')``: a large approved directory must
-    not consume memory before the catalog cap is applied.
+
+def _catalog_walk(root, state):
+    """Yield files under root with bounded memory and a bounded scan.
+
+    Each directory is reduced with ``heapq.nsmallest`` so at most
+    ``CATALOG_LIMIT`` names are retained even for a flat directory with
+    tens of thousands of entries. ``SCAN_LIMIT`` is a separate work bound;
+    reaching it marks the result incomplete instead of silently presenting a
+    partial scan as complete.
     """
     stack = [root]
     while stack:
         directory = stack.pop()
         try:
-            entries = sorted(directory.iterdir(), key=lambda p: p.name)
+            entries = heapq.nsmallest(
+                CATALOG_LIMIT,
+                _bounded_iter(directory.iterdir(), state),
+                key=lambda p: p.name,
+            )
         except OSError:
             continue
         for entry in entries:
@@ -62,17 +81,25 @@ def _catalog_walk(root):
             except OSError:
                 continue
             yield path
+            if len(state.get("items", ())) >= CATALOG_LIMIT:
+                return
+        if state["scan_truncated"]:
+            return
 
 
-def catalog(roots):
+def catalog_result(roots):
+    """Return catalog items plus explicit completeness metadata."""
     items = []
+    state = {"scanned": 0, "scan_truncated": False, "items": items}
+    limit_truncated = False
     for root in roots:
         root = Path(root).resolve()
         if not root.is_dir():
             continue
-        for p in _catalog_walk(root):
+        for p in _catalog_walk(root, state):
             if len(items) >= CATALOG_LIMIT:
-                return items
+                limit_truncated = True
+                break
             try:
                 if not p.resolve().is_relative_to(root):
                     continue
@@ -98,7 +125,24 @@ def catalog(roots):
                     path=p.resolve(),
                 )
             )
-    return items
+        if limit_truncated or state["scan_truncated"]:
+            break
+    # A full cap is treated conservatively as possibly truncated: the
+    # catalog must never claim completeness when more entries may exist.
+    if len(items) >= CATALOG_LIMIT:
+        limit_truncated = True
+    return {
+        "items": items,
+        "limit": CATALOG_LIMIT,
+        "scan_limit": SCAN_LIMIT,
+        "truncated": bool(limit_truncated or state["scan_truncated"]),
+        "limit_truncated": bool(limit_truncated),
+        "scan_truncated": bool(state["scan_truncated"]),
+    }
+
+
+def catalog(roots):
+    return catalog_result(roots)["items"]
 
 
 class WorldServer(ThreadingHTTPServer):
@@ -107,7 +151,8 @@ class WorldServer(ThreadingHTTPServer):
     def __init__(self, address, store, roots):
         super().__init__(address, Handler)
         self.store = store
-        self.items = catalog(roots)
+        self.catalog = catalog_result(roots)
+        self.items = self.catalog["items"]
         self.token = secrets.token_urlsafe(32)
         self.started = time.monotonic()
         self.request_slots = threading.BoundedSemaphore(12)
@@ -172,10 +217,13 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if url.path == "/api/catalog":
                 return self.reply(
-                    [
-                        {k: v for k, v in i.items() if k != "path"}
-                        for i in self.server.items
-                    ]
+                    {
+                        **self.server.catalog,
+                        "items": [
+                            {k: v for k, v in i.items() if k != "path"}
+                            for i in self.server.items
+                        ],
+                    }
                 )
             if url.path == "/api/state":
                 index = int(q["index"][0]) if "index" in q else None

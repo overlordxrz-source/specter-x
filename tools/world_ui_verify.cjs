@@ -242,7 +242,13 @@ async function until(fn, ms = 10000) {
     const catalog = await page.request
       .get(url + "/api/catalog")
       .then((r) => r.json());
-    const faultControls = catalog.some(
+    check(
+      "Catalog exposes completeness metadata",
+      Array.isArray(catalog.items) &&
+        typeof catalog.truncated === "boolean" &&
+        Number.isInteger(catalog.limit),
+    );
+    const faultControls = catalog.items.some(
       (f) => f.name === "synthetic-control.observations.jsonl",
     );
     if (faultControls) {
@@ -392,6 +398,52 @@ async function until(fn, ms = 10000) {
       check(
         "Prior-session evidence response never renders",
         !(await page.locator("#content").innerText()).includes(evidenceMarker),
+      );
+
+      // Existing evidence and the inspector must also disappear immediately
+      // on a session switch, with no delayed network response involved.
+      await openNamed("phase0-short.raw.csi");
+      await until(async () =>
+        (await page.locator("#source-status").innerText()).startsWith("READY"),
+      );
+      await page
+        .getByRole("button", { name: "Research & sessions", exact: true })
+        .click();
+      await page.locator("[data-evidence]").first().click();
+      await until(async () =>
+        !(await page.locator("#content pre").first().innerText()).includes(
+          "Select a report",
+        ),
+      );
+      const oldEvidence = await page.locator("#content pre").first().innerText();
+      await page.getByRole("button", { name: "Overview", exact: true }).click();
+      await page.locator("tbody tr[data-index]").first().click();
+      await page.locator("#inspection[open]").waitFor();
+      // The modal blocks pointer clicks, so drive the session switch through
+      // the DOM; openSession must close it and clear the evidence state.
+      await page.evaluate(() => document.querySelector("#open-session").click());
+      await page.locator("#sessions-dialog[open]").waitFor();
+      await page.evaluate(() => {
+        const button = [...document.querySelectorAll(
+          "#session-list [data-session]",
+        )].find((b) => b.textContent.includes("synthetic-control"));
+        button.click();
+      });
+      await until(async () =>
+        (await page.locator("#source-status").innerText()).startsWith("READY"),
+      );
+      check(
+        "Previous inspection closes on session switch",
+        (await page.locator("#inspection[open]").count()) === 0,
+      );
+      await page
+        .getByRole("button", { name: "Research & sessions", exact: true })
+        .click();
+      const evidenceAfterSwitch = await page.locator("#content pre").first().innerText();
+      check(
+        "Previous evidence clears on session switch",
+        !evidenceAfterSwitch.includes(oldEvidence.slice(0, 40)) &&
+          evidenceAfterSwitch.includes("Select a report"),
       );
     }
     check("No browser runtime exceptions", errors.length === 0);

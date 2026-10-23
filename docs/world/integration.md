@@ -1,6 +1,6 @@
 # FRONTIER / WORLD integration review
 
-23 October 2026. Base `main` / `origin/main`: `daaf081` (the review handoff was merged into this remediation branch; the original integration base was `1edabbc`). Branch `integrate/frontier-world-main`, isolated worktree `$SPECTER_WORLD_WORKTREE`. Source milestones: FRONTIER-001 `dc695c7` and SPECTER-WORLD `9520377`. This is a draft integration for review, not a merge or hardware release.
+23 October 2026. Base `main` / `origin/main`: `7ca4a8a` (latest canonical handoff merged into this remediation branch; the original integration base was `1edabbc`). Branch `integrate/frontier-world-main`, isolated worktree `$SPECTER_WORLD_WORKTREE`. Source milestones: FRONTIER-001 `dc695c7` and SPECTER-WORLD `9520377`. This is a draft integration for review, not a merge or hardware release.
 
 ## Canonical main and conflict decisions
 
@@ -18,11 +18,11 @@ The working copy removed nineteen lines from the browser harness after WORLD com
 
 **Origin remains UNATTRIBUTED.** Filesystem metadata does not identify a writer. The current Codex transcript contains the addition, commit and later discovery, but no removal command in the edit interval. The searched local OpenCode database contained no matching tool record; the read-only bridge inventory does not supply a writer audit for that file. These searches do not exclude other processes or stores. No agent or person is accused, and no author was inferred from timing alone.
 
-The committed delayed-response block is retained. An additional observation now checks that the previous session's READY state never reappears after the delayed response arrives. **28 browser checks pass.** On a separate temporary frontend with the generation guards disabled, the browser harness fails specifically at `Prior-session READY response never reappears`. No production file was mutated for that negative control. This proves that the guard-specific check can fail; it does not establish correctness for every possible race.
+The committed delayed-response block is retained. An additional observation now checks that the previous session's READY state never reappears after the delayed response arrives. **31 browser checks pass.** On a separate temporary frontend with the generation guards disabled, the browser harness fails specifically at `Prior-session READY response never reappears`. No production file was mutated for that negative control. This proves that the guard-specific check can fail; it does not establish correctness for every possible race.
 
 ## Verification on this integration
 
-[Machine-readable results](integration-verification.json) record exact results and protection count. Main baseline: **126 passed, 1 hardware deselected**. Integration: **193 passed, 1 hardware deselected**; all **67 new** FRONTIER/WORLD cases are retained. There are no test failures or new Python warnings. The older 442-test feature-branch result included Alpha code/tests that main does not contain; importing those experiments just to reproduce a count would be an incorrect integration.
+[Machine-readable results](integration-verification.json) record exact results and protection count. Main baseline: **126 passed, 1 hardware deselected**. Integration: **195 passed, 1 hardware deselected**; all **69 new** FRONTIER/WORLD cases are retained. There are no test failures or new Python warnings. The older 442-test feature-branch result included Alpha code/tests that main does not contain; importing those experiments just to reproduce a count would be an incorrect integration.
 
 The local environment has no `pip` module; `uv pip check --python "$SPECTER_X_PYTHON"` verified all eight installed packages compatible. Runtime imports, CLI startup, JS syntax and launcher syntax passed. Browser verification used existing Playwright 1.62.1 and Chromium 149.0.7827.55 on the Mac. No missing application runtime dependencies remained. Main's existing CI installs its own dependency set; its remote result is reported separately on the draft PR.
 
@@ -47,7 +47,7 @@ Addressed the independent review against `daaf081`:
 - `CsiReplay` now uses the canonical `feed_resilient` parser, recovers records from lost-newline splices and torn prefixes, preserves the physical raw-line reference and adds `spliced_line`/`torn_line` quality flags plus `spliced_lines`/`recovered_records` counters. Regression tests cover both cases.
 - `--replay FILE` no longer adds the capture's parent to approved roots. Browsing requires an explicit `--root`; sibling and symlink escape tests remain fail-closed.
 - `inspect()` and evidence responses now use the same request-generation guard as refresh; delayed inspection/evidence controls are in the browser harness.
-- `catalog()` walks a bounded DFS and stops at `CATALOG_LIMIT` before materializing a large tree; a 552-file test confirms the 512-item cap.
+- `catalog()` uses a bounded per-directory heap and a separate `SCAN_LIMIT`; it stops at `CATALOG_LIMIT`, exposes `truncated`/`limit`/`scan_limit` metadata, and the UI states that a partial catalog is not complete. Tests cover the 512-item cap and scan exhaustion.
 - Integration docs use portable environment placeholders and no longer describe a review branch as canonical. The launcher keeps its existing fallback and accepts `SPECTER_X_PYTHON`/`SPECTER_WORLD_CAPTURE` overrides.
 
-Re-run: **193 Python tests passed, 1 hardware deselected; 28 browser checks passed.** The source capture remained read-only and its SHA-256 was unchanged.
+Re-run after the second review: **195 Python tests passed, 1 hardware deselected; 31 browser checks passed.** The source capture remained read-only and its SHA-256 was unchanged.
