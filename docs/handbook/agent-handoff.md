@@ -34,43 +34,48 @@ state, and do not overwrite uncommitted work.
 | Alpha 002-C | **IN PROGRESS — exploratory positive, independent replication pending.** One 20-trial session, 20/20 valid; p = 1/1024, d_z = 1.69, CI [1.34, 2.91]. Original INVALID and corrected PASS preserved. Not confirmatory. |
 | Alpha 003 screening | **PREPARED — software rehearsal complete; no human session and no authorization yet.** Screening endpoints remain frozen at `e7af1ad`; execution checklist at `285bc2c` (`docs/design/alpha003-screening-execution.md`). Readiness: 32 targeted preflight/acquisition/cue tests and `414 passed, 1 deselected` for the automatic suite. |
 | FRONTIER-001 / SPECTER-WORLD | **Work-owned**, separate `specter-x-frontier001` worktree. Read-only from this documentation effort; do not touch, merge or overwrite. |
-| PR #5 review | **REQUEST CHANGES — not merged**, commit **`0929ad6`**, base `main`. Independent Python run: **189 passed, 1 hardware deselected**; 7,290-record replay count and source hash reproduced. Findings below. |
+| PR #5 re-review | **REQUEST CHANGES — not merged**, head **`36bba3f`**, base `main`. Independent re-review: **193 passed, 1 hardware deselected**; 67 targeted; **28 browser checks**; 7,290-record replay and source hash reproduced. Residual findings below. |
 | Hardware/firmware | No Alpha 003 hardware run. Do not flash firmware or start a human session without explicit owner authorization. |
 
-## PR #5 review findings
+## PR #5 re-review findings (`36bba3f`)
 
-**Verdict: REQUEST CHANGES.** The platform separation, local-only binding,
-token/origin checks, provenance model and evidence links are credible, but
-the following need correction or an explicit documented limitation before
-integration:
+**Verdict: REQUEST CHANGES.** The four original issues are substantially
+remediated: resilient splice/torn recovery and quality flags are covered by
+independent probes; `--replay` no longer authorizes its parent; delayed
+inspection/evidence responses are guarded and the browser suite passes;
+catalog traversal stops at 512. Residual evidence and lifecycle issues
+remain:
 
-- **P1 — splice/torn-line loss in `CsiReplay`.** It calls `CsiParser.feed`;
-  a lost newline or torn prefix produces one malformed line and **drops both
-  recoverable records**. Independent probe of two concatenated fixture rows:
-  0 observations, `malformed=1`; `feed_resilient` recovered 2 records
-  (`spliced=True`), and a torn prefix recovered 1. Use the resilient parser
-  or document the unsupported case and count it explicitly.
-- **P2 — implicit parent-directory approval.** `specter.world --replay FILE`
-  adds `FILE.parent` to approved roots; `catalog()` then exposes every
-  sibling `.md`/`.json` through the no-token `/api/evidence` GET. A single
-  capture should not silently authorize unrelated evidence; require explicit
-  `--root` or catalog only the replay file.
-- **P2 — stale inspection/evidence responses.** `refresh()` has a generation
-  guard, but `inspect()` and the evidence fetch do not capture the generation.
-  A late response can display an old observation/report after a session
-  switch. Apply the same guard and regression test.
-- **P2 — catalog is not actually bounded while scanning.** `catalog()` calls
-  `sorted(root.rglob("*"))` before enforcing the 512-item cap, so a large
-  approved root can consume unbounded memory/startup time. Stream and stop at
-  the cap.
-- **P3 — documentation polish.** `docs/README.md` still says “Review branch
-  integration” (change for the integrated state); new WORLD/FRONTIER docs
-  contain absolute local `/Users/overlord/...` paths and the launcher has a
-  sibling checkout fallback; replace with portable placeholders.
+- **P1 — evidence reader persists across session switches.** A browser probe
+  opened a checkpoint in `phase0-short.raw.csi`, switched to
+  `synthetic-control.observations.jsonl`, and found the Research evidence
+  `<pre>` unchanged: old phase0 JSON remained visible. `openSession()` does
+  not clear `evidenceText`/`evidenceId` or close the inspection modal. Clear
+  that state and add a persistent-state (not only delayed-response) browser
+  check.
+- **P2 — silent catalog truncation.** A 537-file approved root returns a
+  512-item catalog with no truncation flag, count or UI/API marker. Evidence
+  users can reasonably mistake the list for the complete set. Expose a
+  bounded/truncated indicator or refuse to present a truncated catalog as
+  complete.
+- **P2 — catalog traversal is not fully bounded.** The new DFS still does
+  `sorted(directory.iterdir())` for each directory. A single very large flat
+  directory is fully materialized and sorted before the global 512 cap is
+  reached; the 552-file test does not exercise that bound. Scan with a
+  bounded selection or document the per-directory limit.
+- **P2/P3 — `recovered_records` is misleading.** A normal one-record source
+  reports `recovered_records=1`; the counter increments for every parsed
+  record, not only records recovered from splices/torn lines. Count only
+  recovered records or rename it, and test a clean source.
+- **P3 — undetectable boundary splice.** A splice exactly between metadata
+  and IQ cannot be detected because the wire format has no checksum. This is
+  documented in `feed_resilient`'s docstring but should also be stated in
+  the user-facing FRONTIER/WORLD verification docs so it is not mistaken for
+  a guaranteed integrity property.
 
-No remote/LAN binding or arbitrary-path API was found; the Host/Origin/token
-tests passed. The browser/Playwright claims were not independently rerun in
-this review. The `.github`, handbook and frozen Alpha files are unchanged.
+No remote/LAN binding or arbitrary-path API was found; sibling, traversal,
+symlink, Host/Origin and token tests pass. The `.github`, canonical handbook
+and frozen Alpha files are unchanged. No merge occurred.
 
 ## Next single task
 
