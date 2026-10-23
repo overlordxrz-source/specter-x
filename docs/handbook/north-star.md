@@ -50,3 +50,12 @@ University work can establish methods, datasets and reproducible results. A late
 ## Instructions for future engineering work
 
 Read this charter, the hub, Alpha reconciliation, relevant ICD and evidence before changing behavior. Preserve feature branches and working files. Do not reduce the ecosystem vision to the current prototype or promote aspirations into achievements. Record a proposed design separately from a measured result. Change this charter only to reflect an explicit owner decision, with a dated rationale; routine implementation work cannot redefine it. This charter grants no permission to merge, push, flash, deploy or publish.
+
+**Persistent memory (owner-directed, 23 October 2026).** After this charter,
+read the [research ideas](research-ideas.md),
+[decisions](decisions.md),
+[experiment ledger](experiment-ledger.md) and
+[current agent handoff](agent-handoff.md). Update those files at checkpoints
+and before context compaction. They index and constrain work; they do not
+replace raw evidence, and a memory entry never promotes a capability by
+itself.

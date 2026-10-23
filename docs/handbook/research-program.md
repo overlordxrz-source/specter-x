@@ -2,6 +2,12 @@
 
 [Hub](../README.md) · **All performance goals here are proposed. No new sensing result is claimed.**
 
+> **Memory pointer (23 October 2026):** dated **VISION/RESEARCH** ideas and
+> their current status live in the [research ideas log](research-ideas.md);
+> architectural/evidence constraints live in the [ADR log](decisions.md).
+> This chapter is the programme analysis, not an idea backlog. Listing an
+> idea does not promote it.
+
 > **Edition 3 reconciliation:** Project intent follows the [canonical charter](north-star.md). Code links below target the Alpha snapshot `933e856`; the `95eae17` [review](alpha-95eae17-review.md) remains the dated record of that earlier state. The Alpha firmware has since been flashed to real hardware and passed a CSI acquisition preflight — see the [verification baseline](verification-baseline.md). *Hardware-validated* there means the acquisition preflight passed. It does not establish motion sensing, sustained unattended reliability, or performance superiority over any alternative.
 
 ## Observability before fusion

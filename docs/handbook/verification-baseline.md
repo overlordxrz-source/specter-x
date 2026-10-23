@@ -2,6 +2,12 @@
 
 [Hub](../README.md) · **Evidence review of `77abdd0`; no hardware or application tests rerun in this documentation task.**
 
+> **Current Alpha gates (23 October 2026):** this baseline is the `933e856`
+> snapshot. For the later Alpha 002-C exploratory result and Alpha 003
+> planning, use the [experiment ledger](experiment-ledger.md). Alpha 002-C is
+> exploratory positive and replication-pending; Alpha 003 is planned/offline.
+> Neither upgrades this baseline's acquisition-only scope.
+
 > **Edition 3 reconciliation:** Project intent follows the [canonical charter](north-star.md). Code links below target the Alpha snapshot `933e856`; the `95eae17` [review](alpha-95eae17-review.md) remains the dated record of that earlier state. The Alpha firmware has since been flashed to real hardware and passed a CSI acquisition preflight — see the [verification baseline](verification-baseline.md). *Hardware-validated* there means the acquisition preflight passed. It does not establish motion sensing, sustained unattended reliability, or performance superiority over any alternative.
 
 ## Capability ledger

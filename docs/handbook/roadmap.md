@@ -4,6 +4,14 @@
 
 > **Edition 3 reconciliation:** Project intent follows the [canonical charter](north-star.md). Code links below target the Alpha snapshot `933e856`; the `95eae17` [review](alpha-95eae17-review.md) remains the dated record of that earlier state. The Alpha firmware has since been flashed to real hardware and passed a CSI acquisition preflight — see the [verification baseline](verification-baseline.md). *Hardware-validated* there means the acquisition preflight passed. It does not establish motion sensing, sustained unattended reliability, or performance superiority over any alternative.
 
+> **Edition 4 memory note (23 October 2026):** the status table below is the
+> 22 October snapshot and is retained as history. Current gates:
+> Alpha 002-C is **IN PROGRESS — exploratory positive, replication pending**;
+> Alpha 003 is **PLANNED — offline/protocol only, no human session**;
+> FRONTIER-001 is Work-owned. See the
+> [experiment ledger](experiment-ledger.md) and
+> [agent handoff](agent-handoff.md). No code or experiment was merged.
+
 ## Current program status (22 October 2026)
 
 | Program | Status | Evidence / boundary |

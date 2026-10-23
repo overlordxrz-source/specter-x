@@ -16,6 +16,14 @@ walls, medical diagnosis, or certified rescue capability. The authoritative
 statement of intent and engineering doctrine is the
 **[North Star charter](docs/handbook/north-star.md)**.
 
+**Persistent project memory:** read the
+[research ideas](docs/handbook/research-ideas.md),
+[decisions](docs/handbook/decisions.md),
+[experiment ledger](docs/handbook/experiment-ledger.md) and
+[current agent handoff](docs/handbook/agent-handoff.md) after the charter.
+A high-confidence sensor result is not new spatial information; missing
+observations remain unknown.
+
 The rule this repository is built around: **provenance first**. Every value on
 screen is a `Measurement` carrying its sensor, host and sensor timestamps,
 confidence/covariance, coordinate frame, and the algorithm and model that

@@ -4,6 +4,12 @@
 
 > **Edition 3 reconciliation:** Project intent follows the [canonical charter](north-star.md). Code links below target the Alpha snapshot `933e856`; the `95eae17` [review](alpha-95eae17-review.md) remains the dated record of that earlier state. The Alpha firmware has since been flashed to real hardware and passed a CSI acquisition preflight — see the [verification baseline](verification-baseline.md). *Hardware-validated* there means the acquisition preflight passed. It does not establish motion sensing, sustained unattended reliability, or performance superiority over any alternative.
 
+> **Edition 4 memory note (23 October 2026):** status lines in this 22 October
+> backlog are historical. Current gates, including Alpha 002-C exploratory
+> replication and Alpha 003 planning, are in the
+> [experiment ledger](experiment-ledger.md) and
+> [agent handoff](agent-handoff.md). Do not treat a stale row as authorization.
+
 Priority 0 blocks an honest next measurement; priority 1 enables integration; priority 2 expands scope. Owners are roles to assign, not promises that another agent is doing the work.
 
 | ID / priority | Work / owner role | Dependency | Concrete acceptance / evidence |

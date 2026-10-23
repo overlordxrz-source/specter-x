@@ -71,6 +71,11 @@ stay in [ICD-04](interfaces.md).
 
 ## Model boundaries
 
+**Memory pointer:** the provenance/double-counting and confidence-vs-spatial
+constraints are recorded in [ADR-002 and ADR-003](decisions.md); the
+[research ideas log](research-ideas.md) tracks the unimplemented fusion
+concepts. They are boundaries, not claims that fusion exists.
+
 - **Raw observation:** bytes, frames, ADC counts or complex CSI plus device metadata.
 - **Measurement:** a typed value in stated units/frame/time with provenance and calibration validity.
 - **Feature:** derived quantity with parent observation IDs, window and preprocessing version.
