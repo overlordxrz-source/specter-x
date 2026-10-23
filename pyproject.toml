@@ -27,3 +27,6 @@ include = ["specter*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    "hardware: requires attached physical hardware; excluded from automatic CI and run only by the manual hardware-tests workflow",
+]
