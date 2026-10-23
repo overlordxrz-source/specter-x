@@ -52,6 +52,24 @@ def _now() -> float:
     return time.time()
 
 
+def _speak(text: str, *, wait: bool) -> None:
+    """Deliver one spoken cue.
+
+    ``wait=True`` blocks until the phrase has finished. The long trial
+    explanation must use this: the old code started the lead-in when the
+    explanation *began*, so "go" could fire while the explanation was still
+    talking (two overlapping voices). ``wait=False`` is only for the short
+    "go" marker, which must not delay the acquisition window.
+    """
+    try:
+        if wait:
+            subprocess.run(["say", text], check=False)
+        else:
+            subprocess.Popen(["say", text])
+    except Exception:
+        pass
+
+
 def _cue(text: str) -> None:
     """Speak a trial cue on the host's speaker.
 
@@ -329,9 +347,9 @@ def cmd_record(args) -> int:
         if not args.cue:
             return
         if ev == "go":
-            subprocess.Popen(["say", "go"])
+            _speak("go", wait=False)
         elif ev == "stop":
-            subprocess.Popen(["say", "stop. relax."])
+            _speak("stop. relax.", wait=True)
 
     jsonl_path = args.out + ".trials.jsonl"
     jf = open(jsonl_path, "w", encoding="utf-8")
@@ -341,7 +359,9 @@ def cmd_record(args) -> int:
                 text = (f"Trial {i} of {len(plan)}. "
                         f"{TRIAL_INSTRUCTIONS.get(p['label'], p['label'])} "
                         f"Starting in {int(args.lead_in)} seconds.")
-                subprocess.Popen(["say", text])
+                # Blocking: finish the explanation, then the recorder waits
+                # the full lead-in before saying "go".
+                _speak(text, wait=True)
             else:
                 print(f"\n>>> trial {i}/{len(plan)} '{p['label']}' "
                       f"for {p['seconds']:.0f}s", flush=True)

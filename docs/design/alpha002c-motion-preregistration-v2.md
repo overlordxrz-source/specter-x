@@ -123,6 +123,25 @@ This amendment changes geometry precision only: the hypothesis, direction,
 primary feature, exact test, thresholds, confound gates, exclusions and
 session length are unchanged.
 
+### Amendment 4 — 3 s lead-in (2026-10-23, before any analysed data)
+
+At the owner's request, the settling/washout before every trial is reduced
+from 8 s to **3 s**. The spoken cue is followed by 3 s of silence, then
+`go`. Scheduled time becomes 20 × 25 s + 20 × 3 s = **560 s ≈ 9.3 min**, and
+the ping budget becomes **≈5,600** pings (leaving ~4,400 of the 9,999 limit).
+The host cue delivery was also corrected so the full explanation finishes
+before the lead-in begins; that is a timing fix, not a measurement parameter.
+
+Rationale and limitation: the spoken explanation itself takes several
+seconds and ends immediately before the 3 s countdown, so the subject still
+has that explanation time to settle. However, 3 s is a shorter washout than
+the original 8 s and may carry more hand-motion or physiological state into
+the start of the next trial. The 0.10 s guard band is unchanged; the
+trial-level features, primary endpoint, exact test, thresholds, confound
+gates and exclusions are unchanged. No session has been analysed under
+either setting; attempts 1–3 were aborted before producing a complete
+session and are preserved as apparatus evidence only.
+
 ## 2. Design
 
 **10 randomised blocks. Each block contains exactly one `stationary` and one

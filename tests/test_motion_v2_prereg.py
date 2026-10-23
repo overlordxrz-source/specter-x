@@ -305,3 +305,26 @@ def test_the_measured_class_is_stricter_than_estimated(tmp_path):
 
     assert run("measured") == "INVALID"
     assert run("estimated") != "INVALID"
+
+
+def test_a_torn_first_line_is_tolerated(tmp_path):
+    """Opening the port mid-record leaves a partial prefix on line 0.
+
+    The frozen rule allows at most the first torn line. The parser still
+    recovers the full record that follows the prefix on that physical line.
+    """
+    raw = _raw_line(1)[:50] + _raw_line(2)
+    raw += b"".join(_raw_line(i) for i in range(3, 8))
+    p = tmp_path / "torn-first.bin"
+    p.write_bytes(raw)
+    s = {"raw": str(p), "malformed": 1, "clock_resets": 0, "late_frames": {}}
+    assert v2.validate_raw(s, []) == []
+
+
+def test_a_second_torn_line_is_rejected(tmp_path):
+    raw = _raw_line(1)[:50] + _raw_line(2)
+    raw += _raw_line(3)[:50] + _raw_line(4)
+    p = tmp_path / "torn-second.bin"
+    p.write_bytes(raw)
+    s = {"raw": str(p), "malformed": 1, "clock_resets": 0, "late_frames": {}}
+    assert any("malformed" in p for p in v2.validate_raw(s, []))

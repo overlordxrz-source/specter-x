@@ -335,16 +335,28 @@ def validate_raw(session, trials):
     parser = CsiParser()
     seen_valid = False
     csi_lines = 0
+    torn = 0
     problems = []
     for i, l in enumerate(lines):
         if not l.startswith("CSI_DATA"):
             continue
         outcome = parser.feed_resilient(l)
+        if outcome.malformed:
+            torn += 1
+            # The frozen rule allows at most the first (startup) torn line:
+            # opening the port mid-record can leave a partial prefix on the
+            # same physical line as the first full record. A torn line before
+            # any valid record is that startup line; a later one is corruption.
+            # See docs/design/alpha002c-analysis-correction-01.md.
+            if torn > 1:
+                problems.append(
+                    f"malformed CSI line {i} after the first torn line")
+            elif seen_valid:
+                problems.append(
+                    f"malformed CSI line {i} after the first record")
         if outcome.records:
             csi_lines += sum(1 for _ in outcome.records)
             seen_valid = True
-        if outcome.malformed and seen_valid:
-            problems.append(f"malformed CSI line {i} after the first record")
     if session.get("malformed") not in (0, 1, None):
         problems.append(f"recorder counted {session.get('malformed')} "
                         "malformed lines")
