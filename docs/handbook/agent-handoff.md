@@ -26,9 +26,10 @@ state, and do not overwrite uncommitted work.
 
 | Item | State |
 |---|---|
-| Documentation branch / worktree | `docs/main-handbook-sync` in the documentation worktree. The memory update is a **docs-only PR to `main`**, pending authorization; not merged. |
-| CI fix branch / PR | `fix/github-actions-ci`; **PR #2**, base `feature/alpha002-esp32-supervisor`, ready for review and green, not merged. Only CI/config/test-marker files. |
-| Alpha code / evidence branch | `feature/alpha002-esp32-supervisor` in the main research worktree. Latest verified Alpha handoff: `e7af1ad`; Alpha 002-C forensic record: `a3c540d`. |
+| `main` | Canonical handbook integrated by **PR #3**, merge commit **`49cb2e5`**. The only pending main-target work is the minimal CI PR #4. |
+| Documentation branch / worktree | `docs/main-handbook-sync` was merged into `main` at `49cb2e5`. The worktree remains available for historical documentation review. |
+| Alpha code / evidence branch | `feature/alpha002-esp32-supervisor` in the main research worktree. **PR #2** integrated the CI repair at merge commit **`4d8e30b`**; the frozen Alpha evidence remains at **`e7af1ad`**, forensic record at `a3c540d`. |
+| CI fix to main | Branch `ci/main-ci-repair`, head **`39fe440`**, open as **PR #4**. It cherry-picks only the six CI/config/test-marker files. GitHub Actions is green (`126 passed, 1 deselected`); **not merged**. |
 | Alpha 002-C | **IN PROGRESS — exploratory positive, independent replication pending.** One 20-trial session, 20/20 valid; p = 1/1024, d_z = 1.69, CI [1.34, 2.91]. Original INVALID and corrected PASS preserved. Not confirmatory. |
 | Alpha 003 | **PLANNED — protocols and offline code only; no human session.** Screening: 6 blocks × 3 × 20 s, seed `20261024`. Confirmatory: 7 sessions, session-level exact sign test. No presence claim. Frozen preregistration at `e7af1ad`. |
 | FRONTIER-001 / SPECTER-WORLD | **Work-owned**, separate `specter-x-frontier001` worktree. Read-only from this documentation effort; do not touch, merge or overwrite. |
@@ -36,9 +37,9 @@ state, and do not overwrite uncommitted work.
 
 ## Next single task
 
-**Integration, not execution.** PR #2 is ready and green against the active
-Alpha branch; the docs-only memory PR targets `main`. Both wait for owner
-authorization. Do not merge either one unilaterally.
+**Integration review only.** PR #4 (`ci/main-ci-repair`) is green and carries
+only the CI repair into `main`; it is **not merged** and awaits owner
+authorization. Do not merge it as part of Alpha work.
 
 **No human session is authorized by this handoff.** The next physical task,
 when authorized, is the one-session Alpha 003 screening in
@@ -49,7 +50,7 @@ also only with authorization.
 
 ## Do not
 
-- Do not merge PR #2 or the docs memory PR without explicit owner authorization.
+- Do not merge PR #4 without explicit owner authorization.
 - Do not merge the documentation branch with feature/Work branches.
 - Do not touch or modify Work's `specter-x-frontier001` worktree.
 - Do not flash firmware or start human trials without explicit authorization.
