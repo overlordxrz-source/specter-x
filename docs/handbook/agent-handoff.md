@@ -39,6 +39,7 @@ state, and do not overwrite uncommitted work.
 | PR #6 integration | **MERGED at `ec52a36`.** Reviewed head **`2818705`**, base `main` `b2ea0ba`. Pre-merge review: 245 passed, 1 hardware deselected; 68 targeted; 37 browser checks; architecture PASS; 7,290-record replay. Post-merge on `main`: same counts, real CSI replay **7,290 observations**, source SHA unchanged. Five P1 legacy blockers were recorded at that point; two are fixed below and three remain unavailable as validated WORLD capabilities. |
 | Team evidence-validity branch | **DRAFT PR #7 — not merged**, branch `fix/team-evidence-validity`, implementation commit **`e7bec52`**, base `main` `35a1156`. Stale/future/unknown-age peer reports are rejected; shared/looped parent evidence cannot add precision. **266 passed, 1 deselected**; 79 focused; architecture **PASS**; probe shows the two team P1 controls fixed and the other three P1s still `true`. |
 | GNSS validity branch | **DRAFT PR #8 — not merged**, branch `fix/gnss-validity-hardening`, implementation commit **`4398638`**, base `main` `68cbc00`. No-fix/invalid/nonfinite/out-of-range/wrong-datum/synthetic/timestamp-invalid reports are rejected before anchor or mode mutation. **290 passed, 1 deselected**; 45 focused; architecture **PASS**; probe no-fix control `false`. |
+| Radar validity branch | **DRAFT PR #9 — not merged**, branch `fix/radar-packet-validation`, implementation commit **`30b6870`**, base `main` `f382ab5`. Strict TI OOB header/TLV bounds, count and finite-point validation plus resynchronizing stream parser; frozen fixture SHA-256 `ea26d5ef…`. **265 passed, 1 deselected**; 23 focused; architecture **PASS**; probe radar control `false`. |
 | Hardware/firmware | No Alpha 003 hardware run. Do not flash firmware or start a human session without explicit owner authorization. |
 
 ## PR #5 final acceptance (`cf05def`)
@@ -159,13 +160,32 @@ Acceptable limitations, not merge blockers:
   regressions. The team P1 controls remain `true` on this base because PR #7
   is unmerged.
 
+## Radar packet validation (`30b6870`, PR #9)
+
+**Status: implemented, draft PR pending independent review; not merged.**
+
+- Frozen TI OOB contract: 40-byte header, 32-byte total-length alignment,
+  8-byte TLV headers, `totalPacketLen` including header, and detected-points
+  type 1 = `numDetectedObj × 16` little-endian float32 values.
+- Rejects impossible/truncated lengths, impossible TLV counts, zero-length or
+  out-of-packet TLVs, duplicate point TLVs, point-count mismatch and nonfinite
+  points. Unknown TLVs are skipped only after boundary validation.
+- `RadarFrameStream` handles fragmented input and resynchronises after a bad
+  prefix. Reference fixture is spec-derived, not hardware evidence, with
+  SHA-256 `ea26d5ef056ced916ee39f3b6120cffa8c6acb335fdff94326cad80b4dd1d8db`.
+- **265 passed, 1 deselected**; 23 focused; architecture **PASS**; probe
+  `radar_impossible_packet_length_accepted: false`.
+- Replacing `parse_frame` with the old body fails **11** radar regressions.
+- Compatibility boundary: non-32-byte-aligned packets and zero-length TLVs are
+  intentionally rejected; unknown TLVs with valid boundaries remain accepted.
+  SDK version/platform and radar calibration remain unverified.
+
 ## Next single task
 
-**PR #7 and PR #8 are drafts awaiting independent review.** Do not merge either
-without owner authorization. After both reviews, the next scoped P1 is the
-radar TLV length/count/finite-value contract, followed by the BNO085 finite
-quaternion check. Keep team fusion gated until its anchor/calibration
-limitations are separately resolved.
+**PR #7, PR #8 and PR #9 are drafts awaiting independent review.** Do not merge
+any without owner authorization. After those reviews, the remaining P1 is the
+BNO085 non-finite quaternion check; team fusion stays gated until its
+anchor/calibration limitations are separately resolved.
 
 **Alpha 003 screening is prepared but not authorized.** Read
 [alpha003-screening-v1.md](https://github.com/overlordxrz-source/specter-x/blob/e7af1ad/docs/design/alpha003-screening-v1.md)
