@@ -174,9 +174,11 @@ def record_session(reader, directory, *, transport, duration_s=60.,
     Reader.read(4096) must return within its transport timeout. An empty
     read means EOF for file input and a timeout for serial. Tests inject a
     deterministic reader/clock; the production serial timeout is 100 ms.
-    Failures preserve partial raw bytes and a FAILED status. They do not
-    produce a completion manifest for derived observations. A disk failure
-    while publishing status remains an exception, never a success result.
+    Failures preserve evidence and terminal FAILED/CANCELLED status. Direct
+    BaseException is re-raised after cleanup/publication; stop requests return
+    CANCELLED. Late failure may retain derived artifacts: terminal status and
+    acceptance gates, not file existence, determine success. If terminal
+    publication is impossible, the error propagates rather than succeeding.
     """
     try:
         duration_s = _positive(duration_s, "duration_s")
