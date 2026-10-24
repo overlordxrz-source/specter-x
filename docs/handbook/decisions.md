@@ -113,3 +113,41 @@ that conflicts with a raw artifact is corrected by a dated note.
 Use the next ADR number. Include status, date, context, decision,
 consequences and links. If a decision is reversed, mark it **superseded**
 and add the replacement; do not delete the old entry.
+
+## ADR-007 — Team evidence must have known age and distinct parents
+
+**Status:** accepted · 24 October 2026
+**Context:** Legacy `TrackReport.t_host` is sender report-creation time, not an
+acquisition timestamp, and the v1 message carries no synchronized clock domain
+or anchor transform. The old fuser stamped every peer track with the local
+fusion time and precision-fused reports even when they shared the same parent
+observation. A stale report therefore looked fresh, and duplicated evidence
+artificially reduced covariance.
+
+**Decision:** `TeamFuser` admits a peer report only when the caller supplies a
+finite established clock mapping (`clock_offset_s = peer_t - local_t`); omitting
+the mapping means age is unknown and the report is not fused. A report is
+eligible only when its mapped local time is within `max_future_s` and
+`max_age_s` of `fuse(t_now)`. `TeamTrack.last_update` is the evidence time, not
+the fusion time. Local and peer inputs must declare the same `frame_id`; no
+anchor shift or calibrated transform is invented.
+
+Precision fusion requires every contribution to carry non-empty, pairwise
+disjoint parent measurement IDs. If parentage is missing, duplicated or looped,
+the newest contribution represents the track with its own covariance and the
+track is marked `fusion_status="shared_evidence"`; contributors and union
+provenance remain visible. `fusion_status="independent"` is reserved for
+disjoint validated evidence.
+
+**Consequences:** Invalid, missing or stale ages fail closed. Shared/looped
+reports cannot gain precision merely by arriving twice. The additive
+`frame_id` defaults to `enu` for older messages but is a declaration, not proof
+of anchor identity; mismatch is rejected, while same-label but differently
+anchored inputs remain a documented limitation. Team fusion remains legacy and
+gated from WORLD until the three remaining audit P1s and its other
+calibration/anchor limitations are addressed. No new hardware or experiment is
+implied.
+
+**Links:** [next work order](../architecture/NEXT_WORK_ORDER.md),
+[audit report](../audit/README.md), [team fuser](../../specter/fusion/team.py),
+[regression tests](../../tests/test_team_evidence_validity.py).

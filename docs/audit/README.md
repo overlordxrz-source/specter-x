@@ -4,10 +4,12 @@
 
 **The repository is not certified “all good.”** This audit found and reproduced
 software faults, fixed the scoped boundary defects below, improved the desktop and
-added an engineering contract. Five executable legacy blockers remain. The whole
-source/config surface is inventoried and syntax-checked where supported, with
-repository suites run; **this is not a completed manual semantic review of every
-line, exhaustive path coverage, hardware certification or scientific replication**.
+added an engineering contract. The audit found five executable legacy blockers;
+the two team evidence-validity blockers are fixed on the 24 October 2026 scoped
+follow-up, and three P1s remain. The whole source/config surface is inventoried
+and syntax-checked where supported, with repository suites run; **this is not a
+completed manual semantic review of every line, exhaustive path coverage,
+hardware certification or scientific replication**.
 Do not interpret this report or green tests as such a claim.
 
 [Engineering contract](../architecture/ENGINEERING_CONTRACT.md) ·
@@ -60,16 +62,29 @@ remain. No delayed-response regression was removed or weakened. A synthetic inva
 first-word fixture exercises masked history slots; a clean fixture is not falsely
 assumed to contain masks.
 
-## Unfixed release blockers: do not expose as validated WORLD capabilities
+## Release blocker status after the 24 October 2026 follow-up
 
-`PYTHONPATH=. python tools/audit_legacy_probes.py` reproduces all five with synthetic
-inputs and no hardware. These are scoped blockers, not proof that all other code is
-correct. The WORLD dependency gate prevents importing these legacy paths.
+`PYTHONPATH=. python tools/audit_legacy_probes.py` keeps the remaining findings
+reproducible with synthetic inputs and no hardware. The WORLD dependency gate
+continues to prevent importing these legacy paths.
+
+### Closed in the scoped team evidence-validity branch
+
+- **Peer from t=1 is not fresh at t=100:** report age now requires an explicit
+  local clock mapping and is rejected when stale, future or unknown.
+- **Same parent on local and peer no longer halves covariance:** non-empty,
+  pairwise-disjoint parent IDs are required for precision fusion; shared,
+  looped or unknown parentage is represented by one contribution and marked
+  `shared_evidence`.
+- See [ADR-007](../handbook/decisions.md) and
+  [the evidence-validity regressions](../../tests/test_team_evidence_validity.py).
+  Team fusion remains legacy and gated; the remaining limitations below still
+  apply.
+
+### Remaining P1 blockers
 
 | Priority / classification | Evidence | Required work order |
 |---|---|---|
-| P1 **VERIFIED BUG**: peer from t=1 becomes fresh at t=100 | `specter/fusion/team.py:119` assigns current fusion time; age filter cannot reject the old input | Validate mapped acquisition ages before association; preserve observation update time. Test stale/future/unsynchronized epochs |
-| P1 **VERIFIED BUG**: same parent on local and peer reports halves covariance | `specter/fusion/team.py:119` / `_merge_one`; identical unit covariance becomes ≈0.5 | Deduplicate shared evidence and define cross-correlation handling before precision fusion; test repeated/looped network reports |
 | P1 **VERIFIED BUG**: no-fix GNSS anchors the EKF and sets GNSS mode | `specter/localization/ekf.py:117` ignores fix validity | Define validity, altitude datum, finite bounds, fix flags and timestamp contract before state mutation; preserve REL on invalid fix |
 | P1 **VERIFIED BUG**: radar header declaring total length 1 is accepted | `specter/sensors/radar/tlv.py:41` returns a frame after early TLV break | Reject inconsistent packet/TLV lengths/counts, finite point values; freeze exact SDK fixture before changing length conventions |
 | P1 **VERIFIED BUG**: NaN quaternion accepted | `specter/sensors/imu/bno085.py:23` normalizes without finite/shape checks | Require finite 4-vector with nonzero norm; validate filter inputs and distinguish heuristic from calibrated orientation uncertainty |
@@ -77,9 +92,10 @@ correct. The WORLD dependency gate prevents importing these legacy paths.
 Additional **UNVERIFIED CONCERNS / source-evidenced limitations** require targeted
 work, not a promise of production readiness:
 
-- Team schema v1 has no anchor identity; `ingest_report` ignores `own_anchor`
-  (`team.py:106`). Its introductory calibrated-transform claim overstates the code.
-  Pose covariance, correlation and calibration are not established by team simulation.
+- Team schema v1 has no anchor identity; `ingest_report` now rejects `own_anchor`
+  rather than pretending to apply a transform. Pose covariance, correlation and
+  calibration are not established by team simulation, and the capability remains
+  gated.
 - `specter/sensors/di188/measure.py:236` iterates `driver.stream()` without a stall
   timeout; cancellation is checked only after a sample. `driver.py:188` does not map
   its port argument to a specific USB descriptor. Mock stalled reads/identity matching

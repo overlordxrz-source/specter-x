@@ -23,7 +23,7 @@ class Message:
     type: str
     unit_id: str
     seq: int
-    t_host: float
+    t_host: float  # sender host/report time; not an acquisition timestamp
     schema: int = SCHEMA_V1
     boot: str = ""  # sender boot id: ordered per boot, see security.generate_boot_id
 
@@ -87,12 +87,13 @@ class TrackReport(Message):
     measurement_ids: List[str] = field(default_factory=list)
     confidence: float = 0.5
     label: str = "contact"
+    frame_id: str = "enu"  # shared frame declaration; no anchor transform exists
 
     def __init__(self, unit_id: str, seq: int, t_host: float, track_id: int,
                  position_enu, cov_3x3, source_unit: str = "",
                  source_sensor: str = "fusion", measurement_ids=(),
                  confidence: float = 0.5, label: str = "contact",
-                 boot: str = "") -> None:
+                 boot: str = "", frame_id: str = "enu") -> None:
         super().__init__(TRACK, unit_id, seq, t_host, boot=boot)
         self.track_id = int(track_id)
         self.position_enu = [float(v) for v in position_enu]
@@ -102,6 +103,9 @@ class TrackReport(Message):
         self.measurement_ids = list(measurement_ids)
         self.confidence = float(confidence)
         self.label = label
+        if not isinstance(frame_id, str) or not frame_id:
+            raise ValueError("track frame_id must be a nonempty string")
+        self.frame_id = frame_id
 
     @property
     def hud_tag(self) -> str:
@@ -188,6 +192,8 @@ def decode_message(s: str) -> Message:
             raise ValueError("invalid track confidence")
         if not isinstance(d.get("measurement_ids", []), list) or not all(isinstance(v, str) for v in d.get("measurement_ids", [])):
             raise ValueError("invalid parent IDs")
+        if not isinstance(d.get("frame_id", "enu"), str) or not d.get("frame_id", "enu"):
+            raise ValueError("track frame_id must be a nonempty string")
     if t == HEARTBEAT and scalar(d.get("pos_rmse", 99.0)) < 0:
         raise ValueError("negative position uncertainty")
     u, seq, th = (
@@ -233,6 +239,7 @@ def decode_message(s: str) -> Message:
             float(d.get("confidence", 0.5)),
             d.get("label", "contact"),
             boot=boot,
+            frame_id=d.get("frame_id", "enu"),
         )
     if t == ALERT:
         return Alert(

@@ -26,6 +26,46 @@ from specter.net.messages import Alert, PoseStamped, TrackReport
 GATE_CHI2_3DOF_95 = 7.815
 
 
+def _vector3(value, where: str) -> np.ndarray:
+    try:
+        vector = np.asarray(value, dtype=float).reshape(-1)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{where} must be a finite 3-vector") from exc
+    if vector.shape != (3,) or not np.isfinite(vector).all():
+        raise ValueError(f"{where} must be a finite 3-vector")
+    return vector
+
+
+def _covariance3(value, where: str) -> np.ndarray:
+    try:
+        covariance = np.asarray(value, dtype=float)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{where} must be a finite 3x3 covariance") from exc
+    if covariance.shape != (3, 3) or not np.isfinite(covariance).all():
+        raise ValueError(f"{where} must be a finite 3x3 covariance")
+    if not np.allclose(covariance, covariance.T, rtol=0.0, atol=1e-10):
+        raise ValueError(f"{where} must be symmetric")
+    if (np.diag(covariance) < 0.0).any():
+        raise ValueError(f"{where} cannot have negative variance")
+    try:
+        smallest = float(np.linalg.eigvalsh(covariance).min())
+    except np.linalg.LinAlgError as exc:
+        raise ValueError(f"{where} is not valid covariance") from exc
+    if smallest < -1e-10:
+        raise ValueError(f"{where} must be positive semidefinite")
+    return covariance
+
+
+def _evidence_ids(ids, where: str) -> list[str]:
+    try:
+        values = list(ids)
+    except TypeError as exc:
+        raise ValueError(f"{where} must be an iterable of IDs") from exc
+    if any(not isinstance(value, str) or not value for value in values):
+        raise ValueError(f"{where} must contain nonempty string IDs")
+    return list(dict.fromkeys(values))
+
+
 def mahalanobis2(a: np.ndarray, ca: np.ndarray, b: np.ndarray, cb: np.ndarray) -> float:
     d = np.asarray(a, float).reshape(3) - np.asarray(b, float).reshape(3)
     s = np.asarray(ca, float).reshape(3, 3) + np.asarray(cb, float).reshape(3, 3)
@@ -68,6 +108,9 @@ class TeamTrack:
     confidence: float = 0.5
     label: str = "contact"
     last_update: float = 0.0
+    # "single" / "independent" / "shared_evidence"; shared evidence is not
+    # precision-fused and therefore retains one source's covariance.
+    fusion_status: str = "single"
 
 
 @dataclass
@@ -79,50 +122,157 @@ class _LocalEntry:
     measurement_ids: List[str]
     confidence: float
     label: str
+    observed_at: float
+    frame_id: str
+
+
+@dataclass
+class _PeerEntry:
+    report: TrackReport
+    position: np.ndarray
+    covariance: np.ndarray
+    observed_at: Optional[float]  # mapped local time; None means unknown
+    frame_id: str
+
+
+@dataclass
+class _Contribution:
+    position: np.ndarray
+    covariance: np.ndarray
+    contributor: Tuple[str, str]
+    measurement_ids: Tuple[str, ...]
+    confidence: float
+    label: str
+    observed_at: float
+    local: bool
 
 
 class TeamFuser:
-    """Fuse local ENU detections with peer TrackReports."""
+    """Fuse local ENU detections with peer TrackReports.
+
+    A peer report carries sender host/report time, not an acquisition time.
+    Its age is therefore unknown unless the caller supplies a clock offset
+    (``peer_time - local_time``) at ingest. Unknown, stale or future reports
+    are never admitted. Anchor transforms are not implemented: local and
+    peer inputs must declare the same shared frame.
+
+    Precision fusion is only allowed when every contribution carries
+    non-empty, pairwise-disjoint parent IDs. Otherwise the newest
+    contribution represents the track with its own covariance and the
+    result is marked ``shared_evidence``. This avoids treating duplicated or
+    looped evidence as independent measurements.
+    """
 
     def __init__(self, unit_id: str, gate: float = GATE_CHI2_3DOF_95,
-                 max_age_s: float = 5.0) -> None:
+                 max_age_s: float = 5.0, max_future_s: float = 1.0,
+                 frame_id: str = "enu") -> None:
+        if not isinstance(unit_id, str) or not unit_id:
+            raise ValueError("unit_id must be a nonempty string")
+        if not math.isfinite(float(gate)) or float(gate) <= 0.0:
+            raise ValueError("gate must be finite and positive")
+        if not math.isfinite(float(max_age_s)) or float(max_age_s) < 0.0:
+            raise ValueError("max_age_s must be finite and nonnegative")
+        if not math.isfinite(float(max_future_s)) or float(max_future_s) < 0.0:
+            raise ValueError("max_future_s must be finite and nonnegative")
+        if not isinstance(frame_id, str) or not frame_id:
+            raise ValueError("frame_id must be a nonempty string")
         self.unit_id = unit_id
         self.gate = float(gate)
         self.max_age_s = float(max_age_s)
+        self.max_future_s = float(max_future_s)
+        self.frame_id = frame_id
         self._locals: List[_LocalEntry] = []
-        self._peers: List[Tuple[TrackReport, np.ndarray, np.ndarray]] = []
+        self._peers: List[_PeerEntry] = []
         self.merged: List[TeamTrack] = []
         self._next_id = 1
 
     # -- inputs ---------------------------------------------------------
     def add_local(self, track_id: int, pos_enu: Sequence[float], cov_3x3,
                   sensor: str, measurement_ids: Sequence[str] = (),
-                  confidence: float = 0.7, label: str = "contact") -> None:
+                  confidence: float = 0.7, label: str = "contact",
+                  *, t_host: Optional[float] = None,
+                  frame_id: Optional[str] = None) -> None:
+        frame = self.frame_id if frame_id is None else frame_id
+        if not isinstance(frame, str) or not frame:
+            raise ValueError("frame_id must be a nonempty string")
+        if frame != self.frame_id:
+            raise ValueError(
+                f"local frame {frame!r} does not match fuser frame {self.frame_id!r}"
+            )
+        if t_host is None:
+            observed_at = time.time()
+        else:
+            observed_at = float(t_host)
+            if not math.isfinite(observed_at) or observed_at < 0.0:
+                raise ValueError("local t_host must be finite and nonnegative")
+        confidence = float(confidence)
+        if not math.isfinite(confidence) or not 0.0 <= confidence <= 1.0:
+            raise ValueError("confidence must be finite in [0, 1]")
         self._locals.append(_LocalEntry(
-            track_id, np.asarray(pos_enu, float).reshape(3),
-            np.asarray(cov_3x3, float).reshape(3, 3), sensor,
-            list(measurement_ids), float(confidence), label))
+            track_id, _vector3(pos_enu, "local position"),
+            _covariance3(cov_3x3, "local covariance"), sensor,
+            _evidence_ids(measurement_ids, "local measurement_ids"),
+            confidence, label, observed_at, frame))
 
     def ingest_report(self, rep: TrackReport,
-                      own_anchor: Optional[Sequence[float]] = None) -> None:
-        """Store a peer report in the local frame (anchor-shift if needed)."""
-        pos = np.asarray(rep.position_enu, float).reshape(3)
-        cov = np.asarray(rep.cov_3x3, float).reshape(3, 3)
-        shift = np.zeros(3)
-        # Anchor-aware: reports carry no anchor field in v1, so same-anchor is
-        # the default; a future schema will carry it and shift here. The hook
-        # takes both anchors explicitly for that upgrade path.
-        _ = own_anchor
-        self._peers.append((rep, pos + shift, cov))
+                      own_anchor: Optional[Sequence[float]] = None,
+                      *, clock_offset_s: Optional[float] = None) -> None:
+        """Store a peer report in the local frame.
+
+        ``clock_offset_s`` is the established mapping ``peer_t - local_t``.
+        Omit it when age is unknown; the report will not be fused. Anchor
+        shifting is not implemented and passing ``own_anchor`` is rejected
+        rather than inventing a transform.
+        """
+        if own_anchor is not None:
+            raise ValueError("anchor transform is not implemented; use a shared frame")
+        if not isinstance(rep, TrackReport):
+            raise TypeError("TrackReport required")
+        frame = getattr(rep, "frame_id", "enu")
+        if not isinstance(frame, str) or not frame:
+            raise ValueError("peer frame_id must be a nonempty string")
+        if frame != self.frame_id:
+            raise ValueError(
+                f"peer frame {frame!r} does not match fuser frame {self.frame_id!r}"
+            )
+        report_time = float(rep.t_host)
+        if not math.isfinite(report_time) or report_time < 0.0:
+            raise ValueError("peer t_host must be finite and nonnegative")
+        if clock_offset_s is None:
+            observed_at = None
+        else:
+            offset = float(clock_offset_s)
+            if not math.isfinite(offset):
+                raise ValueError("clock_offset_s must be finite")
+            observed_at = report_time - offset
+            if not math.isfinite(observed_at) or observed_at < 0.0:
+                raise ValueError("mapped peer time must be finite and nonnegative")
+        self._peers.append(_PeerEntry(
+            rep, _vector3(rep.position_enu, "peer position"),
+            _covariance3(rep.cov_3x3, "peer covariance"), observed_at, frame))
 
     # -- fusion ----------------------------------------------------------
+    def _eligible(self, observed_at: Optional[float], t_now: float) -> bool:
+        if observed_at is None or not math.isfinite(observed_at):
+            return False
+        age = t_now - observed_at
+        return -self.max_future_s <= age <= self.max_age_s
+
     def fuse(self, t_now: Optional[float] = None) -> List[TeamTrack]:
-        t_now = time.time() if t_now is None else t_now
-        n, m = len(self._locals), len(self._peers)
+        t_now = time.time() if t_now is None else float(t_now)
+        if not math.isfinite(t_now) or t_now < 0.0:
+            raise ValueError("t_now must be finite and nonnegative")
+        locals_ = [entry for entry in self._locals
+                   if self._eligible(entry.observed_at, t_now)]
+        peers = [entry for entry in self._peers
+                 if self._eligible(entry.observed_at, t_now)]
+        n, m = len(locals_), len(peers)
         cost = np.full((n, m), np.inf)
-        for i, L in enumerate(self._locals):
-            for j, (_, p, c) in enumerate(self._peers):
-                d2 = mahalanobis2(L.position, L.covariance, p, c)
+        for i, local in enumerate(locals_):
+            for j, peer in enumerate(peers):
+                d2 = mahalanobis2(
+                    local.position, local.covariance, peer.position, peer.covariance
+                )
                 if d2 <= self.gate:
                     cost[i, j] = d2
         matched_l, matched_p = set(), set()
@@ -132,40 +282,97 @@ class TeamFuser:
                 continue
             matched_l.add(i)
             matched_p.add(j)
-            merged.append(self._merge_one([self._locals[i]], [(self._peers[j])], t_now))
-        for i, L in enumerate(self._locals):
+            merged.append(self._merge_one([locals_[i]], [peers[j]]))
+        for i, local in enumerate(locals_):
             if i not in matched_l:
-                merged.append(self._merge_one([L], [], t_now))
-        for j, peer in enumerate(self._peers):
+                merged.append(self._merge_one([local], []))
+        for j, peer in enumerate(peers):
             if j not in matched_p:
-                merged.append(self._merge_one([], [peer], t_now))
-        self.merged = [t for t in merged if t_now - t.last_update <= self.max_age_s]
+                merged.append(self._merge_one([], [peer]))
+        self.merged = [track for track in merged
+                       if self._eligible(track.last_update, t_now)]
         self._locals.clear()
         self._peers.clear()
         return self.merged
 
-    def _merge_one(self, locals_: List[_LocalEntry],
-                   peers: List[Tuple[TrackReport, np.ndarray, np.ndarray]],
-                   t_now: float) -> TeamTrack:
-        infos: List[Tuple[np.ndarray, np.ndarray]] = [
-            (L.position, L.covariance) for L in locals_
-        ] + [(p, c) for (_, p, c) in peers]
-        prec = [np.linalg.inv(c + np.eye(3) * 1e-9) for _, c in infos]
-        p_merged = sum(prec)
-        cov = np.linalg.inv(p_merged)
-        pos = cov @ sum(Pi @ xi for Pi, (xi, _) in zip(prec, infos))
-        contributors = [(self.unit_id, L.sensor) for L in locals_
-                        ] + [(rep.source_unit, rep.source_sensor) for (rep, _, _) in peers]
-        mids = [mid for L in locals_ for mid in L.measurement_ids
-                ] + [mid for (rep, _, _) in peers for mid in rep.measurement_ids]
-        confs = [L.confidence for L in locals_] + [rep.confidence for (rep, _, _) in peers]
-        label = locals_[0].label if locals_ else peers[0][0].label
-        tr = TeamTrack(self._next_id, pos, cov, contributors, mids,
-                       float(np.mean(confs)) if confs else 0.0,
-                       label, t_now)
-        self._next_id += 1
-        return tr
+    @staticmethod
+    def _fusion_status(contributions: Sequence[_Contribution]) -> str:
+        if len(contributions) <= 1:
+            return "single"
+        seen: set[str] = set()
+        for contribution in contributions:
+            ids = set(contribution.measurement_ids)
+            if not ids or seen.intersection(ids):
+                return "shared_evidence"
+            seen.update(ids)
+        return "independent"
 
+    def _merge_one(self, locals_: List[_LocalEntry],
+                   peers: List[_PeerEntry]) -> TeamTrack:
+        contributions = [
+            _Contribution(
+                local.position, local.covariance, (self.unit_id, local.sensor),
+                tuple(local.measurement_ids), local.confidence, local.label,
+                local.observed_at, True,
+            )
+            for local in locals_
+        ] + [
+            _Contribution(
+                peer.position, peer.covariance,
+                (peer.report.source_unit, peer.report.source_sensor),
+                tuple(_evidence_ids(peer.report.measurement_ids, "peer measurement_ids")),
+                peer.report.confidence, peer.report.label,
+                peer.observed_at, False,
+            )
+            for peer in peers
+        ]
+        if not contributions:
+            raise ValueError("cannot merge an empty observation set")
+        status = self._fusion_status(contributions)
+        contributors = [contribution.contributor for contribution in contributions]
+        measurement_ids = list(dict.fromkeys(
+            measurement_id
+            for contribution in contributions
+            for measurement_id in contribution.measurement_ids
+        ))
+        last_update = max(contribution.observed_at for contribution in contributions)
+        if status == "independent":
+            precisions = [
+                np.linalg.inv(contribution.covariance + np.eye(3) * 1e-9)
+                for contribution in contributions
+            ]
+            information = sum(precisions)
+            covariance = np.linalg.inv(information)
+            position = covariance @ sum(
+                precision @ contribution.position
+                for precision, contribution in zip(precisions, contributions)
+            )
+            confidence = float(np.mean(
+                [contribution.confidence for contribution in contributions]
+            ))
+            label = locals_[0].label if locals_ else peers[0].report.label
+        else:
+            selected = max(
+                contributions,
+                key=lambda contribution: (contribution.observed_at, contribution.local),
+            )
+            position = selected.position
+            covariance = selected.covariance
+            confidence = selected.confidence
+            label = selected.label
+        track = TeamTrack(
+            self._next_id,
+            position,
+            covariance,
+            contributors,
+            measurement_ids,
+            confidence,
+            label,
+            last_update,
+            status,
+        )
+        self._next_id += 1
+        return track
 
 # --- man-down ---------------------------------------------------------------
 def tilt_from_vertical_deg(quat_wxyz: Optional[Sequence[float]]) -> Optional[float]:

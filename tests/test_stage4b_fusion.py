@@ -25,7 +25,8 @@ def test_mahalanobis_gating():
 def test_same_contact_merges_with_both_contributors():
     f = TeamFuser("unit-1")
     f.add_local(1, [10.0, 4.0, 0.0], np.eye(3) * 0.25, "thermal", ["m-local"], 0.8)
-    f.ingest_report(_rep("unit-2", [10.2, 4.1, 0.0], 0.25, "thermal", ["m-peer"], 0.7))
+    f.ingest_report(_rep("unit-2", [10.2, 4.1, 0.0], 0.25, "thermal", ["m-peer"], 0.7),
+                    clock_offset_s=0.0)
     (merged,) = f.fuse(t_now=time.time())
     assert ("unit-1", "thermal") in merged.contributors
     assert ("unit-2", "thermal") in merged.contributors
@@ -37,21 +38,23 @@ def test_same_contact_merges_with_both_contributors():
 def test_distant_reports_stay_separate():
     f = TeamFuser("unit-1")
     f.add_local(1, [0.0, 0.0, 0.0], np.eye(3) * 0.04, "thermal", ["a"], 0.9)
-    f.ingest_report(_rep("unit-2", [50.0, 0.0, 0.0], 0.04, "thermal", ["b"], 0.9))
+    f.ingest_report(_rep("unit-2", [50.0, 0.0, 0.0], 0.04, "thermal", ["b"], 0.9),
+                    clock_offset_s=0.0)
     assert len(f.fuse(t_now=time.time())) == 2
 
 
 def test_uncertain_peer_deweighted_in_merge():
     f = TeamFuser("unit-1")
     f.add_local(1, [0.0, 0.0, 0.0], np.eye(3) * 0.01, "thermal", ["a"], 0.9)
-    f.ingest_report(_rep("unit-2", [2.0, 0.0, 0.0], 25.0, "thermal", ["b"], 0.5))
+    f.ingest_report(_rep("unit-2", [2.0, 0.0, 0.0], 25.0, "thermal", ["b"], 0.5),
+                    clock_offset_s=0.0)
     (merged,) = f.fuse(t_now=time.time())
     assert abs(merged.position[0]) < 0.2  # precise local dominates vague peer
 
 
 def test_stale_merged_tracks_pruned():
     f = TeamFuser("unit-1", max_age_s=1.0)
-    f.add_local(1, [0, 0, 0], np.eye(3), "thermal")
+    f.add_local(1, [0, 0, 0], np.eye(3), "thermal", t_host=100.0)
     assert len(f.fuse(t_now=100.0)) == 1
     assert f.fuse(t_now=102.0) == []
 
