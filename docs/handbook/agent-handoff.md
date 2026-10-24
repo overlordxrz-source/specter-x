@@ -2,7 +2,7 @@
 
 **Open independent-review packet:** [PRs #7, #8 and #9 consolidated review handoff](pr7-pr8-pr9-review-handoff.md). These are unreviewed draft PRs; no approval or merge is implied.
 
-**SPECTER-SYNC Phase 0:** [Shrike Lite timing design](../design/specter-sync-phase0.md) is prepared on `research/specter-sync-phase0` at `3fd71a4`. Owner reports the FPGA board physically received; exact board revision is **UNKNOWN**. No power, flashing, external signal or timing measurement has occurred. Software-only checks pass; timing accuracy is not claimed.
+**SPECTER-SYNC:** [Phase 0 design](../design/specter-sync-phase0.md) and [Phase 1 physical bring-up log](../design/shrike-lite-bringup-log-20261024.md). The Shrike Lite is USB-detected (MicroPython RP2040, factory `main.py`/`blink_all.bin` backed up, GPIO4 heartbeat passed). Exact physical board revision remains **UNKNOWN**; the factory loop drives GPIO14/15, Go Configure is not installed, and no custom FPGA bitstream has been built or flashed. Timing accuracy is not claimed.
 
 [Hub](../README.md) · **Current handoff · 24 October 2026.**
 

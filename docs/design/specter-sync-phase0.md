@@ -8,6 +8,12 @@ exists.
 This is an offline design and software-only preparation branch. It is not a
 validated sensor, clock, calibration or field capability.
 
+**Phase 1 hardware checkpoint:** the board is now USB-detected on the owner’s
+Apple Silicon Mac; see the [physical bring-up log](shrike-lite-bringup-log-20261024.md).
+The RP2040 heartbeat passed, factory files were backed up, and the FPGA custom
+path remains gated on physical revision identification and toolchain/electrical
+review.
+
 ## 1. Manufacturer facts and unresolved identity
 
 The manufacturer identifies **Shrike Lite** as an RP2040 microcontroller plus a
