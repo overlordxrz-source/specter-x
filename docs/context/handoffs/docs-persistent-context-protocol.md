@@ -3,8 +3,9 @@
 - **Branch / worktree:** `docs/persistent-context-protocol` in
   `specter-x-context`.
 - **Base commit:** `f2ef96b0cfe48e2e47c9d4ac02b3ac8e3376a2a2` (current main).
-- **Head commit:** see the branch tip / draft PR; the source commit used for the
-  generated Brief is recorded inside `docs/context/CONTEXT_BRIEF.md`.
+- **Source commit:** `d0497f3fcf046442d3b237d5ce6cc92d0e7bbd0f` (contains
+  every hashed source). **Final head:** the branch tip / draft PR; the Brief
+  records its source commit separately.
 - **Owner / task:** owner-directed Persistent Context Protocol implementation;
   no merge/hardware/purchase authorization.
 - **Context receipt:** included below.
@@ -22,15 +23,16 @@
 - **Protected docs changed:** AGENTS, North Star, architecture, decisions,
   hardware inventory, roadmap, agent handoff, context truths, Hark profile.
   Their reviewed hashes are in `docs/context/protected-docs.json`.
-- **Tests / controls:** full offline suite **251 passed, 1 deselected**;
+- **Tests / controls:** full offline suite **253 passed, 1 deselected**;
   architecture **PASS**; context checks **PASS**; context protocol tests
-  **6 passed**; context-free recovery test **PASS** (rejected “all AI inside the
-  wearable” citing ADR-007).
+  **8 passed**; final context-free recovery test **PASS** at Brief source commit
+  `d0497f3` (rejected “all AI inside the wearable” citing ADR-007).
 - **Evidence artifacts:** `docs/context/RECOVERY_TEST.md`,
   `docs/context/CONTEXT_BRIEF.md`, protected/source manifests, CI output.
 - **Known gaps / unknowns:** semantic contradictions cannot be fully checked
   automatically; no live Hark procurement evidence; no ChatGPT-without-repo
-  session was run (procedure documented); independent review still pending;
+  session was run (procedure documented); initial independent review requested
+  changes and the findings were addressed; re-review pending;
   central/headset/distributed hardware remains PLANNED/VISION.
 - **Rollback:** abandon this branch; main and all other branches/worktrees are
   untouched. No hardware, purchase, flash or deployment occurred.
@@ -46,8 +48,8 @@ Context Receipt
 - Agent/session: OpenCode, current task
 - Task / owner request: implement Persistent Context Protocol and draft PR
 - Authorization limit: docs/tooling only; no merge/hardware/purchase
-- Repository commit reviewed: f2ef96b (base); branch uncommitted until commit
-- Context Brief generated commit / source hashes: generated on this branch
+- Repository commit reviewed: d0497f3 source commit; final head in PR
+- Context Brief generated commit / source hashes: d0497f3; hashes in Brief
 - Canonical sources read: AGENTS, North Star, architecture, engineering
   contract, decisions, research ideas, experiment ledger, verification baseline,
   hardware inventory, roadmap, agent handoff, docs hub, work order

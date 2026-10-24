@@ -3,11 +3,13 @@
 **Date:** 24 October 2026. **Test type:** deliberately context-free OpenCode
 subagent with no prior conversation, restricted to the generated
 [Context Brief](CONTEXT_BRIEF.md) and read-only. **Tested Brief source commit:**
-`731b2fbb09d6d07bbc880cbd4f88db4c54c6b0f8`. **Subagent session:**
-`ses_e903f50dcffep6026z7iHbvMzh`.
+`d0497f3fcf046442d3b237d5ce6cc92d0e7bbd0f`. **Subagent session:**
+`ses_e903e2e5cffeeyyYWFhzNHXWMb`.
 
-This is a test artifact, not evidence or capability promotion. The tested Brief
-was generated from the source commit above; its source hashes are in the Brief.
+This is a test artifact, not evidence or capability promotion. The final tested Brief was generated from the source commit above; its source
+hashes are in the Brief. An earlier test at `731b2fb` exposed the “may” wording
+ambiguity; ADR-007 now states the tiering is mandatory and the final test was
+re-run against the corrected Brief.
 
 ## Prompts
 
