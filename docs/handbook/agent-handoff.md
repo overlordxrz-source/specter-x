@@ -35,8 +35,8 @@ state, and do not overwrite uncommitted work.
 | Alpha 003 screening | **PREPARED — software rehearsal complete; no human session and no authorization yet.** Screening endpoints remain frozen at `e7af1ad`; execution checklist at `285bc2c` (`docs/design/alpha003-screening-execution.md`). Readiness: 32 targeted preflight/acquisition/cue tests and `414 passed, 1 deselected` for the automatic suite. |
 | FRONTIER-001 / SPECTER-WORLD | **Work-owned**, separate `specter-x-frontier001` worktree. Read-only from this documentation effort; do not touch, merge or overwrite. |
 | PR #5 final acceptance | **MERGED at `e20ec42`.** Reviewed head was `cf05def`; independent review: **195 passed, 1 hardware deselected**; 69 targeted; **31 browser checks**; 7,290-record replay and source hash reproduced. After merge: **195 passed, 1 deselected**, real CSI replay **7,290 observations**, 31 browser checks PASS. No merge-blocking defects. |
-| Work audit branch | `audit/world-os-hardening` at **`c419216`** remains **separate and unmerged**. It needs its own PR and independent review before any merge. |
-| PR #6 independent review | **APPROVE — not merged**, head **`2818705`**, base `main`. Independent verification: **245 passed, 1 hardware deselected**; 68 targeted; **37 browser checks**; architecture gate **PASS**; real CSI replay **7,290 observations** with unchanged source hash. Five P1 legacy blockers remain explicitly listed; no hardware/firmware/Alpha change and no merge. |
+| Work audit branch | `audit/world-os-hardening` at **`c419216`** is preserved unchanged. Its clean integration branch was merged as PR #6 at **`ec52a36`**; the original branch ref and Work checkout remain untouched. |
+| PR #6 integration | **MERGED at `ec52a36`.** Reviewed head **`2818705`**, base `main` `b2ea0ba`. Pre-merge review: 245 passed, 1 hardware deselected; 68 targeted; 37 browser checks; architecture PASS; 7,290-record replay. Post-merge on `main`: same counts, real CSI replay **7,290 observations**, source SHA unchanged. Five P1 legacy blockers remain explicitly documented and unavailable as validated WORLD capabilities. |
 | Hardware/firmware | No Alpha 003 hardware run. Do not flash firmware or start a human session without explicit owner authorization. |
 
 ## PR #5 final acceptance (`cf05def`)
@@ -79,11 +79,12 @@ modified. The `.github`, canonical handbook and frozen Alpha files remain
 unchanged. PR #5 was merged with owner authorization at **`e20ec42`**; the
 merge is a merge commit, not a fast-forward/squash rewrite.
 
-## PR #6 independent review (`2818705`)
+## PR #6 integration (`2818705`, merged `ec52a36`)
 
-**Verdict: APPROVE on the prepared integration, not merged.** Base `main`
-`b92aa4d`; branch `integrate/world-os-hardening-main`. The audit branch
-remains distinct, and the review did not fix or hide the remaining P1s.
+**Verdict: APPROVE and merged with owner authorization.** Base `main`
+`b2ea0ba`; integration branch `integrate/world-os-hardening-main` at
+`2818705`; merge commit `ec52a36`. The original audit branch
+`audit/world-os-hardening` remains at `c419216` and was not rewritten.
 
 - **Validation/observation:** strict schema, finite numbers, covariance PSD,
   and clock/sequence/drop accounting all reject malformed envelopes. The
@@ -99,10 +100,11 @@ remains distinct, and the review did not fix or hide the remaining P1s.
 - **WORLD:** catalog enums respect scan limits, closed roots reject symlink
   escapes, and UI delayed/session evidence state is guarded; 37 browser checks
   pass.
-- **Architecture:** dependency gate now runs in CI and mutation controls catch
+- **Architecture:** dependency gate runs in CI and mutation controls catch
   direct and indirect blocked imports. This is static, not a sandbox.
-- **Preservation:** no CI, handbook, Alpha evidence or Work branch change;
-  audit/OS hardening remains separate.
+- **Preservation:** no CI, handbook, Alpha evidence or Work branch change.
+  Post-merge `main` passed 245 offline tests (1 hardware deselected), the
+  architecture gate, 37 browser checks and the 7,290-record real CSI replay.
 
 Acceptable limitations, not merge blockers:
 
@@ -117,8 +119,12 @@ Acceptable limitations, not merge blockers:
 
 ## Next single task
 
-**PR #5 is merged at `e20ec42`.** Continue with the separate audit branch only
-through its own PR and independent review.
+**PR #6 is merged at `ec52a36`.** The next recommended scoped work order is
+the existing
+[legacy team evidence validity task](https://github.com/overlordxrz-source/specter-x/blob/ec52a36/docs/architecture/NEXT_WORK_ORDER.md):
+close one P1 at a time, starting with stale/future report eligibility and
+duplicate-parent/cross-correlation handling in `specter/fusion/team.py`.
+Do not enable team fusion in WORLD until that review passes.
 
 **Alpha 003 screening is prepared but not authorized.** Read
 [alpha003-screening-v1.md](https://github.com/overlordxrz-source/specter-x/blob/e7af1ad/docs/design/alpha003-screening-v1.md)
@@ -135,8 +141,10 @@ also only with authorization.
 ## Do not
 
 - Do not merge a PR without owner authorization and an APPROVE/valid gate.
-- Do not include the Work audit branch `audit/world-os-hardening` until its
-  own review is complete.
+- Keep `audit/world-os-hardening` at `c419216` as historical audit provenance;
+  only the reviewed integration at `ec52a36` is canonical on `main`.
+- Do not enable the five P1 legacy paths as validated WORLD capabilities;
+  close them through their own scoped work order and review.
 - Do not merge the documentation branch with feature/Work branches.
 - Do not touch or modify Work's `specter-x-frontier001` worktree.
 - Do not flash firmware or start human trials without explicit authorization.
