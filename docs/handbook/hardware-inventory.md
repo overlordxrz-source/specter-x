@@ -90,8 +90,10 @@ function. It does not revise the historical Alpha snapshot above.
 - Per-pin voltage/current/protection limits beyond manufacturer “3.3 V logic”:
   **UNKNOWN**.
 - Native Apple Silicon support for Renesas Go Configure / ForgeFPGA Workshop:
-  **UNVERIFIED**; the tool is not installed. A Rosetta, VM or separate-host
-  fallback may be required.
+  **UNVERIFIED**; the tool is not installed. The official macOS package is
+  v6.56.001 (572.30 MB) but its release page requires a **Renesas account
+  sign-in**. A Rosetta, VM or separate-host fallback may be required after
+  installation.
 - FPGA oscillator frequency accuracy, drift and temperature behavior:
   **UNKNOWN**; no timing accuracy is claimed.
 - Factory `main.py` drives MCU GPIO14/15, which are internally connected to FPGA

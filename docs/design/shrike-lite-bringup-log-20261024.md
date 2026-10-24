@@ -72,6 +72,41 @@ times at 250 ms intervals. It wrote no files. Log:
 The factory `main.py` was restored by a soft reset; its hash and the bitstream
 hash remained unchanged.
 
+## Go Configure / toolchain investigation
+
+- Official latest macOS release page: Go Configure Software Hub **v6.56.001**.
+  The public download page identifies the macOS asset, but the direct release
+  page and package download require a **Renesas account sign-in** (HTTP 403
+  without a session). No package was downloaded or installed.
+- Therefore package source/signature/architecture verification and
+  ForgeFPGA Workshop native-vs-Rosetta execution remain **blocked on personal
+  sign-in**. Do not bypass macOS Gatekeeper or use a third-party mirror.
+- The vendor target in the Shrike-Lite issue reports is **SLG47910V RevBB**
+  (24-pin QFN, Renesas part family; board docs shorten this to SLG47910).
+  The vendor `.ffpga` project uses `partNumber=67`, `package=26`.
+- Known Go Configure/Shrike output issues:
+  - the file to load must be `FPGA_bitstream_MCU.bin`; other `.bin` files in
+    the build directory may not program the FPGA;
+  - `GPIO16_OUT` and `GPIO16_OE`, plus `OSC_CLK`/`OSC_EN`, must be mapped;
+  - missing `(* top *)` is a documented example failure;
+  - a Windows v6.54 report of a generated bitstream not blinking was closed
+    after maintainers verified v6.54 on board `V1.0-R0.5`; the likely failure
+    was wrong bitstream selection, not the board;
+  - ForgeFPGA has one clock tree, needs synchronized resets, and BRAM/PnR
+    differs from conventional FPGA flows; keep the first design small.
+- Revision compatibility: the vendor `led_blink` README says the FPGA
+  bitstream is shared across boards, but the physical revision and bitstream
+  release compatibility still need to be established from the board
+  silkscreen. The factory `blink_all.bin` matches vendor `v1_4`.
+
+## Read-only heartbeat verifier
+
+`tools/shrike_fpga_verify.py` checks the frozen `main.v` SHA-256, top-level
+module/ports and IO-planner mapping. A negative modified-source copy fails as
+expected. The manifest deliberately leaves `bitstream_sha256` unset until a
+reviewed custom build exists. It never opens a serial port or writes to the
+board.
+
 ## FPGA readiness gate
 
 **Not ready for custom FPGA programming.** Required before proceeding:

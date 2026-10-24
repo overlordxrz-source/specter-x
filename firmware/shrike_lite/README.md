@@ -95,6 +95,7 @@ minimal custom link; it is not a vendor sensor protocol.
 
 ```sh
 python -m pytest -q tests/test_shrike_timing.py
+python tools/shrike_fpga_verify.py
 iverilog -g2012 -o /tmp/shrike_blink.vvp \
   firmware/shrike_lite/fpga/proof_of_life/main.v
 iverilog -g2012 -o /tmp/shrike_event.vvp \
@@ -102,6 +103,10 @@ iverilog -g2012 -o /tmp/shrike_event.vvp \
   firmware/shrike_lite/fpga/event_counter/tb_event_counter.v
 vvp /tmp/shrike_event.vvp
 ```
+
+The verifier checks the frozen heartbeat source hash, top-level ports and
+IO-planner mapping. Pass `--bitstream path/to/FPGA_bitstream_MCU.bin` only after
+a reviewed build; the manifest deliberately has no bitstream hash yet.
 
 ## Future command shapes (do not execute yet)
 

@@ -1,0 +1,20 @@
+{
+  "source": "main.v",
+  "module": "specter_sync_blink",
+  "source_sha256": "33d1f9b7e4c3cac7fd68e950a6b399f705c0d953633b3463fe16808c29fa9e6e",
+  "top_attribute": "(* top *)",
+  "ports": [
+    "input clk",
+    "output led",
+    "output led_en",
+    "output clk_en"
+  ],
+  "io_planner": {
+    "clk": "OSC_CLK",
+    "clk_en": "OSC_EN",
+    "led": "GPIO16_OUT",
+    "led_en": "GPIO16_OE"
+  },
+  "bitstream_name": "FPGA_bitstream_MCU.bin",
+  "bitstream_sha256": null
+}
