@@ -34,54 +34,52 @@ state, and do not overwrite uncommitted work.
 | Alpha 002-C | **IN PROGRESS — exploratory positive, independent replication pending.** One 20-trial session, 20/20 valid; p = 1/1024, d_z = 1.69, CI [1.34, 2.91]. Original INVALID and corrected PASS preserved. Not confirmatory. |
 | Alpha 003 screening | **PREPARED — software rehearsal complete; no human session and no authorization yet.** Screening endpoints remain frozen at `e7af1ad`; execution checklist at `285bc2c` (`docs/design/alpha003-screening-execution.md`). Readiness: 32 targeted preflight/acquisition/cue tests and `414 passed, 1 deselected` for the automatic suite. |
 | FRONTIER-001 / SPECTER-WORLD | **Work-owned**, separate `specter-x-frontier001` worktree. Read-only from this documentation effort; do not touch, merge or overwrite. |
-| PR #5 re-review | **REQUEST CHANGES — not merged**, head **`36bba3f`**, base `main`. Independent re-review: **193 passed, 1 hardware deselected**; 67 targeted; **28 browser checks**; 7,290-record replay and source hash reproduced. Residual findings below. |
+| PR #5 final acceptance | **APPROVE — not merged**, head **`cf05def`**, base `main`. Independent final review: **195 passed, 1 hardware deselected**; 69 targeted; **31 browser checks**; 7,290-record replay and source hash reproduced. No merge-blocking defects. |
 | Hardware/firmware | No Alpha 003 hardware run. Do not flash firmware or start a human session without explicit owner authorization. |
 
-## PR #5 re-review findings (`36bba3f`)
+## PR #5 final acceptance (`cf05def`)
 
-**Verdict: REQUEST CHANGES.** The four original issues are substantially
-remediated: resilient splice/torn recovery and quality flags are covered by
-independent probes; `--replay` no longer authorizes its parent; delayed
-inspection/evidence responses are guarded and the browser suite passes;
-catalog traversal stops at 512. Residual evidence and lifecycle issues
-remain:
+**Verdict: APPROVE.** The final head is mergeable and its GitHub Actions
+run passes. Independently verified:
 
-- **P1 — evidence reader persists across session switches.** A browser probe
-  opened a checkpoint in `phase0-short.raw.csi`, switched to
-  `synthetic-control.observations.jsonl`, and found the Research evidence
-  `<pre>` unchanged: old phase0 JSON remained visible. `openSession()` does
-  not clear `evidenceText`/`evidenceId` or close the inspection modal. Clear
-  that state and add a persistent-state (not only delayed-response) browser
-  check.
-- **P2 — silent catalog truncation.** A 537-file approved root returns a
-  512-item catalog with no truncation flag, count or UI/API marker. Evidence
-  users can reasonably mistake the list for the complete set. Expose a
-  bounded/truncated indicator or refuse to present a truncated catalog as
-  complete.
-- **P2 — catalog traversal is not fully bounded.** The new DFS still does
-  `sorted(directory.iterdir())` for each directory. A single very large flat
-  directory is fully materialized and sorted before the global 512 cap is
-  reached; the 552-file test does not exercise that bound. Scan with a
-  bounded selection or document the per-directory limit.
-- **P2/P3 — `recovered_records` is misleading.** A normal one-record source
-  reports `recovered_records=1`; the counter increments for every parsed
-  record, not only records recovered from splices/torn lines. Count only
-  recovered records or rename it, and test a clean source.
-- **P3 — undetectable boundary splice.** A splice exactly between metadata
-  and IQ cannot be detected because the wire format has no checksum. This is
-  documented in `feed_resilient`'s docstring but should also be stated in
-  the user-facing FRONTIER/WORLD verification docs so it is not mistaken for
-  a guaranteed integrity property.
+- **Stale evidence/inspector reset:** `openSession()` clears
+  `evidenceText`/`evidenceId` and closes the inspector; 31 browser checks
+  include immediate reset without a delayed response.
+- **Visible catalog truncation:** `/api/catalog` exposes `truncated`,
+  `limit` and `scan_limit`; the UI shows “Catalog limit reached … not a
+  complete listing.” A 520-file catalog returned 512 items with a visible
+  marker.
+- **Bounded traversal:** per-directory enumeration uses a 512-item heap and
+  a separate 20,000-entry scan budget. A real 20,500-file flat directory
+  returned 512 items with `scan_truncated=True`, `truncated=True`, and
+  ~1.7 MB peak Python memory; it did not materialize/sort the whole tree.
+- **Recovery accounting:** a clean one-record source reports no
+  `recovered_records`; a full splice reports 2 recovered records and a torn
+  prefix 1, with `spliced_line`/`torn_line` flags and raw-line provenance.
+- **Checksum limitation:** the user-facing FRONTIER/WORLD verification docs
+  now state that a splice exactly between metadata and IQ is undetectable
+  without a checksum.
+- **Access boundaries:** explicit `--root`, no implicit parent approval;
+  sibling, traversal and symlink escape tests pass. No LAN binding or
+  arbitrary-path API was found.
 
-No remote/LAN binding or arbitrary-path API was found; sibling, traversal,
-symlink, Host/Origin and token tests pass. The `.github`, canonical handbook
-and frozen Alpha files are unchanged. No merge occurred.
+Acceptable documented desktop-alpha limitations, not merge blockers:
+
+- The checksum-free CSI format cannot detect a metadata/IQ boundary splice.
+- Catalog results are intentionally capped at 512 items and a 20,000-entry
+  scan; the partial result is now explicitly marked in API and UI.
+- Browser acceptance is local Chromium; Safari and remote-browser CI remain
+  unverified.
+- This is an offline replay desktop; live acquisition remains unverified.
+
+No hardware, firmware, human trial, Alpha checkout or Work checkout was
+modified. The `.github`, canonical handbook and frozen Alpha files remain
+unchanged. PR #5 is approved but **not merged**; merge requires owner action.
 
 ## Next single task
 
-**PR #5 is not ready to merge.** Work should address the REQUEST CHANGES
-findings and re-request review. Do not merge or amend Work's checkout from
-this documentation branch.
+**PR #5 is approved but not merged.** It is ready for owner integration
+review; do not merge or amend Work's checkout from this documentation branch.
 
 **Alpha 003 screening is prepared but not authorized.** Read
 [alpha003-screening-v1.md](https://github.com/overlordxrz-source/specter-x/blob/e7af1ad/docs/design/alpha003-screening-v1.md)
