@@ -3,8 +3,6 @@ import io
 import json
 from pathlib import Path
 import threading
-import types
-import sys
 
 import pytest
 
@@ -50,6 +48,7 @@ def test_fragmented_raw_roundtrips_into_world(tmp_path, line):
     assert status["state"] == "COMPLETE" and reader.closed
     assert status["bytes"] == status["read_bytes"] == len(line)
     assert status["rejected_bytes"] == 0
+    assert status["raw_file_bytes"] == len(line) and status["unaccounted_bytes"] == 0
     assert (directory / "session.raw.csi").read_bytes() == line
     capture = directory / "session.observations.jsonl"
     obs, = list(read_capture(capture))
@@ -176,14 +175,13 @@ def test_close_failure_is_reported_before_finalizing(tmp_path, line):
 
 def test_cli_configures_bounded_exclusive_serial_without_real_device(tmp_path, monkeypatch, line):
     args_seen = []
-    class SerialDouble(Chunks):
-        def __init__(self, *args, **kwargs):
-            args_seen.append((args, kwargs))
-            super().__init__([line, OSError("end of test")])
-    monkeypatch.setitem(sys.modules, "serial", types.SimpleNamespace(Serial=SerialDouble))
+    def open_double(port, baud):
+        args_seen.append((port, baud))
+        return Chunks([line, OSError("end of test")])
+    monkeypatch.setattr("specter.node.csi_capture.open_serial", open_double)
     assert main(["--port", "FAKE_ONLY", "--allow-hardware", "--out",
         str(tmp_path / "session")]) == 2
-    assert args_seen == [(("FAKE_ONLY", 115200), {"timeout": .1, "exclusive": True})]
+    assert args_seen == [("FAKE_ONLY", 115200)]
 
 
 @pytest.mark.parametrize("data", [b"x" * 16385, None])
@@ -197,3 +195,29 @@ def test_parser_failure_after_good_data_has_no_completion_manifest(tmp_path, lin
     assert status["state"] == "FAILED" and reader.closed
     assert (directory / "session.raw.csi").read_bytes() == payload
     assert not (directory / "session.observations.jsonl.manifest.json").exists()
+
+
+def test_read_and_close_failures_are_both_preserved(tmp_path):
+    class BadClose(Chunks):
+        def close(self):
+            raise OSError("close failed too")
+    status = record_session(BadClose([OSError("read failed first")]),
+        tmp_path / "session", transport="file")
+    assert len(status["errors"]) == 2
+    assert "read failed first" in status["error"] and "close failed too" in status["error"]
+
+
+def test_oversized_reader_result_is_counted_as_rejected(tmp_path):
+    status = record_session(Chunks([b"x"*4097]), tmp_path / "session", transport="file")
+    assert status["state"] == "FAILED"
+    assert status["read_bytes"] == status["rejected_bytes"] == 4097
+    assert status["raw_file_bytes"] == status["unaccounted_bytes"] == 0
+
+
+def test_bad_cli_limits_never_call_serial_owner(tmp_path, monkeypatch):
+    def forbidden(*args):
+        pytest.fail("serial owner was called before validating limits")
+    monkeypatch.setattr("specter.node.csi_capture.open_serial", forbidden)
+    with pytest.raises(SystemExit):
+        main(["--port", "FAKE_ONLY", "--allow-hardware", "--max-bytes", "0",
+            "--out", str(tmp_path / "session")])

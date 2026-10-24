@@ -17,6 +17,7 @@ import uuid
 
 from specter.platform.observation import Observation
 from specter.platform.replay import CsiReplay, sha256_file, write_capture
+from .serial_owner import open_serial
 
 MAX_BYTES = 512 * 1024 * 1024
 MAX_READS = 100_000
@@ -37,6 +38,18 @@ def _publish(directory, status):
     temporary = directory / "status.pending"
     temporary.write_text(json.dumps(status, indent=2, allow_nan=False) + "\n")
     temporary.replace(directory / "status.json")
+
+
+def _limits(max_bytes, max_reads):
+    if type(max_bytes) is not int or not 1 <= max_bytes <= MAX_BYTES:
+        raise ValueError("max_bytes outside 1..512 MiB")
+    if type(max_reads) is not int or not 1 <= max_reads <= MAX_READS:
+        raise ValueError("max_reads outside 1..100000")
+
+
+def _fail(status, message):
+    status["errors"].append(message)
+    status.update(state="FAILED", error="; ".join(status["errors"]))
 
 
 def _observations(directory, source, transport, session_id):
@@ -95,10 +108,7 @@ def record_session(reader, directory, *, transport, duration_s=60.,
         stall_s = _positive(stall_s, "stall_s")
         if transport not in {"file", "serial"}:
             raise ValueError("explicit file or serial transport required")
-        if type(max_bytes) is not int or not 1 <= max_bytes <= MAX_BYTES:
-            raise ValueError("max_bytes outside 1..512 MiB")
-        if type(max_reads) is not int or not 1 <= max_reads <= MAX_READS:
-            raise ValueError("max_reads outside 1..100000")
+        _limits(max_bytes, max_reads)
         directory = Path(directory)
         directory.mkdir(parents=True, exist_ok=False)
     except BaseException:
@@ -111,8 +121,10 @@ def record_session(reader, directory, *, transport, duration_s=60.,
         mode="OFFLINE REHEARSAL" if transport == "file" else "ACQUISITION / UNVERIFIED",
         state="RECORDING", reason=None, bytes=0, reads=0,
         read_bytes=0, rejected_bytes=0,
+        ownership=getattr(reader, "ownership", "caller_supplied_reader_unverified")
+            if transport == "serial" else "read_only_file",
         started_monotonic_ns=started, stopped_monotonic_ns=None,
-        live_verified=False, error=None, observations=0,
+        live_verified=False, error=None, errors=[], observations=0,
     )
     raw_path = directory / "session.raw.csi"
     last_data = last_publish = started
@@ -135,14 +147,17 @@ def record_session(reader, directory, *, transport, duration_s=60.,
                 completed = clock()
                 if completed < now:
                     raise ValueError("monotonic clock moved backwards")
-                if not isinstance(chunk, bytes) or len(chunk) > CHUNK_BYTES:
+                if not isinstance(chunk, bytes):
+                    raise ValueError("reader violated bounded bytes contract")
+                status["read_bytes"] += len(chunk)
+                if len(chunk) > CHUNK_BYTES:
+                    status["rejected_bytes"] += len(chunk)
                     raise ValueError("reader violated bounded bytes contract")
                 if not chunk:
                     if transport == "file":
                         status["reason"] = "eof"
                         break
                     continue
-                status["read_bytes"] += len(chunk)
                 if status["bytes"] + len(chunk) > max_bytes:
                     status["rejected_bytes"] += len(chunk)
                     raise ValueError("capture byte limit exceeded")
@@ -163,13 +178,14 @@ def record_session(reader, directory, *, transport, duration_s=60.,
                     _publish(directory, status)
                     last_publish = completed
     except Exception as exc:
-        status.update(state="FAILED", error=f"{type(exc).__name__}: {exc}")
+        _fail(status, f"{type(exc).__name__}: {exc}")
     finally:
         try:
             reader.close()
         except Exception as exc:
-            status.update(state="FAILED", error=f"transport close failed: {exc}")
+            _fail(status, f"transport close failed: {exc}")
         status["stopped_monotonic_ns"] = clock()
+    source = None
     try:
         if status["state"] == "FAILED":
             pass
@@ -193,10 +209,16 @@ def record_session(reader, directory, *, transport, duration_s=60.,
             status["receipts_sha256"] = sha256_file(directory / "receipts.jsonl")
             status["state"] = "COMPLETE"
     except Exception as exc:
-        status.update(state="FAILED", error=f"{type(exc).__name__}: {exc}")
+        _fail(status, f"{type(exc).__name__}: {exc}")
     finally:
         if raw_path.exists():
             status["raw_sha256"] = sha256_file(raw_path)
+            status["raw_file_bytes"] = raw_path.stat().st_size
+            status["unaccounted_bytes"] = (
+                status["read_bytes"] - status["raw_file_bytes"] - status["rejected_bytes"]
+            )
+        if source is not None:
+            status["counters"] = dict(source.counts)
         _publish(directory, status)
     return status
 
@@ -211,6 +233,8 @@ def main(argv=None):
     parser.add_argument("--out", type=Path, required=True, help="new session directory")
     parser.add_argument("--duration", type=float, default=60.)
     parser.add_argument("--stall", type=float, default=5.)
+    parser.add_argument("--max-bytes", type=int, default=MAX_BYTES)
+    parser.add_argument("--max-reads", type=int, default=MAX_READS)
     args = parser.parse_args(argv)
     for value, name in ((args.duration, "duration"), (args.stall, "stall")):
         try:
@@ -221,11 +245,14 @@ def main(argv=None):
         parser.error("output directory already exists")
     if args.baud < 1:
         parser.error("positive baud required")
+    try:
+        _limits(args.max_bytes, args.max_reads)
+    except ValueError as exc:
+        parser.error(str(exc))
     if args.port:
         if not args.allow_hardware:
             parser.error("serial requires explicit --allow-hardware and owner authorization")
-        import serial  # optional pyserial, never imported on offline path
-        reader = serial.Serial(args.port, args.baud, timeout=.1, exclusive=True)
+        reader = open_serial(args.port, args.baud)
     else:
         reader = args.input.open("rb")
     stop = threading.Event()
@@ -235,7 +262,8 @@ def main(argv=None):
     try:
         status = record_session(reader, args.out,
             transport="serial" if args.port else "file",
-            duration_s=args.duration, stall_s=args.stall, stop=stop)
+            duration_s=args.duration, stall_s=args.stall,
+            max_bytes=args.max_bytes, max_reads=args.max_reads, stop=stop)
     finally:
         for sig, handler in old_handlers.items():
             signal.signal(sig, handler)

@@ -54,11 +54,19 @@ claiming a loss-free result. Finalization time is separate from acquisition
 duration and can exceed it. Derived JSONL can be substantially larger than
 raw bytes; these limits are not a total disk quota or power-loss guarantee.
 
-No queue, background reconnect or second reader is created. `exclusive=True`
-is requested from pyserial on supported POSIX hosts, but it cannot prove
-that arbitrary noncooperating software isn't already reading the same device.
-The operator must stop other acquisition owners first; this work never stops
-or probes the Alpha agent's devices/processes.
+No queue, background reconnect or second reader is created. The POSIX owner
+requests pyserial's nonblocking `flock` and `TIOCEXCL`, and fails closed if
+either acquisition fails. Cross-process virtual-terminal tests demonstrate
+that a second **cooperating** owner is rejected and the lock releases on close.
+However, the Mac pseudo-terminal probe accepted `TIOCEXCL` and still allowed
+a raw noncooperating open. The original failing assertion and diagnostic
+result are retained; kernel ioctl success is not an ownership proof.
+See [ownership measurements](../review/node-ownership-20261024.json).
+
+Neither request evicts/proves absence of an already-open reader. USB-driver
+and callout/dial-in alias behavior remain physically unverified. The operator
+must verify the exact device and absence of competing readers before any
+authorized capture; this work never stops another agent's acquisition.
 
 ## Time and provenance
 
@@ -104,15 +112,19 @@ Only after explicit owner authorization and exclusive-device review:
 ```sh
 python -m specter.node.csi_capture \
   --port /dev/cu.REPLACE_WITH_OWNED_PORT --baud 115200 \
-  --allow-hardware --duration 60 --stall 5 \
+  --allow-hardware --duration 15 --stall 5 \
+  --max-bytes 4194304 --max-reads 4096 \
   --out /tmp/specter-csi-new-physical-session
 ```
 
-The `daq` optional dependency supplies pyserial. Verify the actual firmware's
+The [frozen 15-second demonstration plan](../design/node-esp32-first-acquisition-v1.md)
+defines the specific proposed authorization and acceptance gate. The `daq`
+optional dependency supplies pyserial. Verify the actual firmware's
 baud/protocol before use; this command does not change baud on the firmware,
 flash, restart, configure an AP or generate traffic. CDC open behavior and
 DTR/RTS effects are unverified on the actual ESP32 and can disrupt existing
-firmware. No opening/reset test was done here.
+firmware. The owner requests inactive DTR/RTS before opening but cannot
+guarantee OS/USB-driver behavior. No physical opening/reset test was done here.
 
 Acceptance: empty owned bench, fixed traffic/stimulus, one device owner,
 identified firmware/port, bounded capture, byte/frame/loss accounting,
