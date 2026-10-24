@@ -36,6 +36,7 @@ state, and do not overwrite uncommitted work.
 | FRONTIER-001 / SPECTER-WORLD | **Work-owned**, separate `specter-x-frontier001` worktree. Read-only from this documentation effort; do not touch, merge or overwrite. |
 | PR #5 final acceptance | **MERGED at `e20ec42`.** Reviewed head was `cf05def`; independent review: **195 passed, 1 hardware deselected**; 69 targeted; **31 browser checks**; 7,290-record replay and source hash reproduced. After merge: **195 passed, 1 deselected**, real CSI replay **7,290 observations**, 31 browser checks PASS. No merge-blocking defects. |
 | Work audit branch | `audit/world-os-hardening` at **`c419216`** remains **separate and unmerged**. It needs its own PR and independent review before any merge. |
+| PR #6 independent review | **APPROVE — not merged**, head **`2818705`**, base `main`. Independent verification: **245 passed, 1 hardware deselected**; 68 targeted; **37 browser checks**; architecture gate **PASS**; real CSI replay **7,290 observations** with unchanged source hash. Five P1 legacy blockers remain explicitly listed; no hardware/firmware/Alpha change and no merge. |
 | Hardware/firmware | No Alpha 003 hardware run. Do not flash firmware or start a human session without explicit owner authorization. |
 
 ## PR #5 final acceptance (`cf05def`)
@@ -77,6 +78,42 @@ No hardware, firmware, human trial, Alpha checkout or Work checkout was
 modified. The `.github`, canonical handbook and frozen Alpha files remain
 unchanged. PR #5 was merged with owner authorization at **`e20ec42`**; the
 merge is a merge commit, not a fast-forward/squash rewrite.
+
+## PR #6 independent review (`2818705`)
+
+**Verdict: APPROVE on the prepared integration, not merged.** Base `main`
+`b92aa4d`; branch `integrate/world-os-hardening-main`. The audit branch
+remains distinct, and the review did not fix or hide the remaining P1s.
+
+- **Validation/observation:** strict schema, finite numbers, covariance PSD,
+  and clock/sequence/drop accounting all reject malformed envelopes. The
+  source-evidence replay re-signed the same 7,290-record real capture and
+  matched the main `world_verify` route with `hardware_access=false`.
+- **Network/security:** sign/verify canonicalizes, replay state is checked
+  only after authenticated message validation, and a malformed signed packet
+  does not consume a peer sequence slot. Canonicalization is not a
+  cryptographic promise beyond the stated HMAC/replay contract.
+- **Sensors:** the CSI parser rejects malformed records but keeps later valid
+  records; DI-188 split echo, GNSS split frame and gas semantics are covered
+  by negative controls. Sensor path unchanged from the audit branch.
+- **WORLD:** catalog enums respect scan limits, closed roots reject symlink
+  escapes, and UI delayed/session evidence state is guarded; 37 browser checks
+  pass.
+- **Architecture:** dependency gate now runs in CI and mutation controls catch
+  direct and indirect blocked imports. This is static, not a sandbox.
+- **Preservation:** no CI, handbook, Alpha evidence or Work branch change;
+  audit/OS hardening remains separate.
+
+Acceptable limitations, not merge blockers:
+
+- `pyproject.toml` pins no runtime version beyond existing compatibility;
+  active CI confirms behavior.
+- Browser checks are local Chromium only.
+- `audit_legacy_probes.py` reproduces the five known P1s: stale peer
+  freshness, double-counted parent evidence, no-fix GNSS anchoring, impossible
+  radar length, and non-finite quaternion acceptance.
+- These P1s stay blocked from entering `specter.world`; next work remains the
+  scoped fusion work order.
 
 ## Next single task
 
