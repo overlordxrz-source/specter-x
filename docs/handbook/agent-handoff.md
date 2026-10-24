@@ -24,13 +24,13 @@ and remains historical.
 
 Read, in this order:
 
-1. [North Star charter](north-star.md) — identity, doctrine and boundaries.
-2. [Research ideas](research-ideas.md) — relevant **VISION/RESEARCH** entries.
-3. [Decisions](decisions.md) — relevant **accepted** ADRs.
-4. [Experiment ledger](experiment-ledger.md) — latest verified/exploratory gate.
-5. [Context Brief](../context/CONTEXT_BRIEF.md) and
+1. [Context Brief](../context/CONTEXT_BRIEF.md) and
    [Context Protocol](../context/README.md) — compact source-bound recovery;
    produce a Context Receipt before material direction changes.
+2. [North Star charter](north-star.md) — identity, doctrine and boundaries.
+3. [Research ideas](research-ideas.md) — relevant **VISION/RESEARCH** entries.
+4. [Decisions](decisions.md) — relevant **accepted** ADRs.
+5. [Experiment ledger](experiment-ledger.md) — latest verified/exploratory gate.
 6. This handoff — current branch, owner, blockers and next task.
 
 Then inspect the actual repository and worktrees (`git status`,
@@ -219,7 +219,7 @@ also only with authorization.
 
 Feature agents must not routinely edit this canonical handoff. They should use
 the [branch handoff template](../context/BRANCH_HANDOFF_TEMPLATE.md) in the PR
-description or `docs/context/handoffs/<branch>.md`. An integration/owner process
+description or `docs/context/handoffs/<branch-name-with-slashes-replaced-by-dashes>.md`. An integration/owner process
 merges the factual fields into this page after review. Parallel branch handoffs
 are preserved; do not overwrite another branch to resolve a conflict. A branch
 handoff or Context Receipt is not evidence and does not promote a capability.

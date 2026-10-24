@@ -61,7 +61,7 @@ versus the AR headset and distributed nodes, is in the
 
 | Reader / question | Document |
 |---|---|
-| What should every new agent read first? | [Persistent memory](#persistent-project-memory) |
+| What should every new agent read first? | [Context Brief](context/CONTEXT_BRIEF.md), then [persistent memory](#persistent-project-memory) |
 | How does a context-free agent recover the accepted architecture? | [Context Brief](context/CONTEXT_BRIEF.md) and [Context Protocol](context/README.md) |
 | What is the central-compute / headset / distributed-node split? | [ADR-007](handbook/decisions.md) and [compute topology](handbook/architecture.md#compute-topology) |
 | What should Hark ask before procurement? | [Hark procurement context](procurement/HARK_CONTEXT.md) |

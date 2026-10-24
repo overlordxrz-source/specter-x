@@ -93,7 +93,7 @@ record evidence/alternatives and obtain owner approval.
 ## Branch-safe handoff
 
 See [branch handoff](BRANCH_HANDOFF_TEMPLATE.md). Feature branches may write a
-branch-local handoff under `docs/context/handoffs/<branch>.md` or in the PR
+branch-local handoff under `docs/context/handoffs/<branch-name-with-slashes-replaced-by-dashes>.md` or in the PR
 description. Only an integration/owner process updates
 `docs/handbook/agent-handoff.md`, so parallel agents do not create competing
 canonical edits.

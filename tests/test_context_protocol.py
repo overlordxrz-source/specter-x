@@ -41,8 +41,16 @@ def test_adr_sequence_gap_is_rejected():
         cb.parse_adrs(sample)
 
 
-def test_malformed_adr_heading_is_rejected():
-    sample = "## ADR-7 — Bad number\n**Status:** accepted · date\n"
+@pytest.mark.parametrize(
+    "heading",
+    [
+        "## ADR-7 — Bad number",
+        "### ADR-010 — Wrong heading level",
+        "## ADR 010 — Missing hyphen",
+    ],
+)
+def test_malformed_adr_heading_is_rejected(heading):
+    sample = f"{heading}\n**Status:** accepted · date\n"
     with pytest.raises(ValueError, match="malformed ADR heading"):
         cb.parse_adrs(sample)
 

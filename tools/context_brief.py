@@ -42,11 +42,17 @@ PROTECTED_PATHS = (
     "docs/handbook/agent-handoff.md",
     "docs/architecture/ENGINEERING_CONTRACT.md",
     "docs/context/CONTEXT_TRUTHS.md",
+    "docs/context/README.md",
+    "docs/context/CONTEXT_RECEIPT.md",
+    "docs/context/DECISION_CHANGE.md",
+    "docs/context/BRANCH_HANDOFF_TEMPLATE.md",
+    "docs/context/AUTOMATION_LIMITS.md",
+    "docs/context/CHATGPT_RECOVERY.md",
     "docs/procurement/HARK_CONTEXT.md",
 )
 
 ADR_HEADING = re.compile(r"^## (ADR-(\d{3}))\s+—\s+(.+)$", re.MULTILINE)
-ADR_ANY = re.compile(r"^##\s+ADR-.*$", re.MULTILINE)
+ADR_ANY = re.compile(r"^#{1,6}\s+ADR(?:\b|[- ]).*$", re.MULTILINE)
 ADR_STATUS = re.compile(r"\*\*Status:\*\*\s*([^\n]+)")
 VALID_STATUS = ("accepted", "proposed", "superseded")
 

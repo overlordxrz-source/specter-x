@@ -14,9 +14,11 @@ maliciously edited checker. See docs/context/AUTOMATION_LIMITS.md.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 import re
+import subprocess
 import sys
 from urllib.parse import unquote
 
@@ -28,6 +30,8 @@ from tools import context_brief as cb
 LINK = re.compile(r"!?\[[^\]]*\]\(([^)]+)\)")
 HEADING = re.compile(r"^(#{1,6})\s+(.+?)\s*#*\s*$", re.MULTILINE)
 COMMIT_LINE = re.compile(r"^Source commit at generation:.*$", re.MULTILINE)
+BRIEF_COMMIT = re.compile(r"^Source commit at generation: `([0-9a-f]{40})`$", re.MULTILINE)
+BRIEF_SOURCE_ROW = re.compile(r"^\| `([^`]+)` \| `([^`]+)` \| `([0-9a-f]{64})` \|", re.MULTILINE)
 
 REQUIRED = (
     "docs/context/README.md",
@@ -110,7 +114,12 @@ def check_adr_references() -> list[str]:
         cb.ROOT / "docs/procurement/HARK_CONTEXT.md",
     ]
     paths.extend(sorted(cb.CONTEXT.rglob("*.md")))
+    paths.extend(sorted(cb.CONTEXT.glob("*.json")))
     paths.extend(cb.ROOT / relative for relative in cb.PROTECTED_PATHS)
+    try:
+        paths.extend(cb.ROOT / source["path"] for source in cb.load_sources())
+    except (OSError, ValueError, json.JSONDecodeError):
+        pass
     errors = []
     seen = set()
     for path in paths:
@@ -146,6 +155,54 @@ def check_protected() -> list[str]:
             )
     for relative in sorted(set(files) - set(cb.PROTECTED_PATHS)):
         errors.append(f"manifest contains unknown protected path: {relative}")
+    return errors
+
+
+def check_brief_provenance() -> list[str]:
+    if not cb.BRIEF.is_file():
+        return ["generated brief missing"]
+    text = cb.BRIEF.read_text(encoding="utf-8")
+    commit_match = BRIEF_COMMIT.search(text)
+    if not commit_match:
+        return ["generated brief lacks a 40-hex source commit"]
+    commit = commit_match.group(1)
+    try:
+        subprocess.check_output(
+            ["git", "rev-parse", "--verify", f"{commit}^{{commit}}"],
+            cwd=cb.ROOT,
+            text=True,
+            stderr=subprocess.DEVNULL,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return [
+            f"recorded source commit is not available locally: {commit}; "
+            "fetch full history (CI uses fetch-depth: 0)"
+        ]
+    rows = {path: expected for _, path, expected in BRIEF_SOURCE_ROW.findall(text)}
+    try:
+        sources = cb.load_sources()
+        expected_paths = {source["path"] for source in sources}
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        return [f"cannot verify brief provenance: {exc}"]
+    errors = []
+    if set(rows) != expected_paths:
+        errors.append(
+            "generated brief source table does not match sources.json paths: "
+            f"missing={sorted(expected_paths - set(rows))}, extra={sorted(set(rows) - expected_paths)}"
+        )
+    for path, expected in sorted(rows.items()):
+        try:
+            data = subprocess.check_output(
+                ["git", "show", f"{commit}:{path}"],
+                cwd=cb.ROOT,
+                stderr=subprocess.DEVNULL,
+            )
+        except (OSError, subprocess.SubprocessError):
+            errors.append(f"source {path} is absent at recorded commit {commit}")
+            continue
+        actual = hashlib.sha256(data).hexdigest()
+        if actual != expected:
+            errors.append(f"source hash mismatch at recorded commit {commit}: {path}")
     return errors
 
 
@@ -257,7 +314,7 @@ def check_state() -> list[str]:
 
 def check() -> dict:
     errors = []
-    for func in (check_sources, check_adrs, check_adr_references, check_protected, check_brief, check_required, check_links, check_state):
+    for func in (check_sources, check_adrs, check_adr_references, check_protected, check_brief_provenance, check_brief, check_required, check_links, check_state):
         try:
             errors.extend(func())
         except Exception as exc:  # keep the checker itself fail-closed

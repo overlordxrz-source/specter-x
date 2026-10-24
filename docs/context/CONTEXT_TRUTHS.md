@@ -43,7 +43,8 @@ source disagree, stop and produce a Context Receipt; do not silently choose one.
 - **Alpha 002-C:** **IN PROGRESS — exploratory positive, independent replication
   pending.** Not confirmatory or general motion detection.
 - **Alpha 003:** **PLANNED — offline protocol/code and software rehearsal
-  complete; no human session.**
+  complete; no human session.** The canonical handoff may say “PREPARED” for
+  the same rehearsal stage; it is not a capability or authorization change.
 - **FRONTIER-001 / WORLD desktop:** offline observation/replay and inspection
   integrated; 7,290-record real-CSI replay recorded. Persistent live WORLD
   streaming, semantic mapping and calibrated spatial fusion are not validated.
