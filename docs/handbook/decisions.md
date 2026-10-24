@@ -108,6 +108,48 @@ that conflicts with a raw artifact is corrected by a dated note.
 
 ---
 
+## ADR-009 — Radar packets must satisfy the frozen OOB frame contract
+
+**Status:** accepted · 24 October 2026
+**Context:** The legacy TI mmWave parser accepted a frame whose
+`totalPacketLen` was 1, returned after an early TLV break, and did not validate
+the detected-point payload count or finite values. The exact board/SDK
+capture was unavailable, so the offline contract is taken from TI’s documented
+out-of-box-demo UART format and frozen in a spec-derived fixture, not claimed
+as hardware evidence. ADR-007 and ADR-008 are reserved for the pending team
+and GNSS PRs.
+
+**Decision:** The parser accepts a TI OOB frame only when all of the following
+hold:
+
+- the 40-byte header starts with the documented magic word;
+- `totalPacketLen` includes the header, is at least the header size, is at
+  most the engineering buffer bound, and is a multiple of 32 bytes;
+- `numTLVs` fits within the packet’s available 8-byte TLV headers;
+- every TLV has a non-zero payload that ends inside `totalPacketLen`;
+- no TLV silently runs into another, and any residual bytes are less than one
+  32-byte alignment block;
+- detected-points TLV type 1 is present at most once, its length is exactly
+  `numDetectedObj × 16`, and all four float32 values per point are finite;
+- unknown TLVs are skipped only after boundary validation.
+
+Truncated, impossible or internally inconsistent frames return no frame and
+do not allocate from untrusted length fields. `RadarFrameStream` handles
+fragmented input and resynchronises one byte at a time to the next magic word,
+so a malformed prefix does not poison a later valid frame.
+
+**Compatibility:** This intentionally rejects non-32-byte-aligned packets and
+zero-length TLVs. Both are outside the frozen TI OOB contract. Firmware/SDK
+identity, platform/version fields, antenna calibration, point semantics and
+range/Doppler validity remain unverified; the parser does not invent them.
+
+**Links:** [reference fixture](../../tests/fixtures/radar/README.md),
+[parser](../../specter/sensors/radar/tlv.py),
+[regressions](../../tests/test_radar_validity.py),
+[audit](../audit/README.md).
+
+---
+
 ## Adding a decision
 
 Use the next ADR number. Include status, date, context, decision,
