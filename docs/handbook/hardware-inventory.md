@@ -73,3 +73,28 @@ Names and interfaces below are repository design selections, not purchasing conf
 ## Reconciliation procedure when the parts CSV becomes available
 
 Preserve its original file and SHA-256 privately. Import each row with original wording, source date, quantity, exact SKU, sponsor/purchase basis, logistics status and evidence location. Keep carrier IDs, addresses, invoice data and contact history out of public Markdown. Add an asset ID and separate bench readiness. Conflicts become explicit rows with both sources until resolved; the later date alone does not prove delivery. A signed receipt or physical inspection can establish possession. A successful streaming log can establish streaming, not calibration.
+
+## Addendum 24 October 2026 — SPECTER-SYNC / Shrike Lite
+
+This addendum records an owner report, not an inspection or evidence of
+function. It does not revise the historical Alpha snapshot above.
+
+| Item | Logistics evidence | Readiness | Next evidence needed |
+|---|---|---|---|
+| **Vicharak Shrike Lite FPGA board** | **Owner reports physically received 24 October 2026.** No photo, serial, invoice, board marking or revision source has been inspected in this task. | **UNINSPECTED / UNVALIDATED.** Not powered, not connected to external signals, not flashed, no bitstream or firmware run. Exact received **board revision is UNKNOWN**; public hardware trees contain Shrike-Lite design revisions `v1_r0.4` and `v1_r0.5`, while demo bitstreams are filed under `v1_4`. Board is described as RP2040 + Renesas SLG47910 ForgeFPGA, 4 MB QSPI, 23 MCU GPIO, 14 FPGA GPIO, 6-bit FPGA–MCU link, USB-C and 3.3 V I/O, per manufacturer documentation. | Read the physical silkscreen/revision and photograph it; confirm J3/PMOD population and board revision; review electrical limits and per-pin current; verify Apple Silicon Go Configure behavior; run only an authorized USB-powered MCU heartbeat, then an authorized FPGA proof-of-life; record exact firmware/bitstream hashes and raw timing data. |
+
+### Hardware/toolchain unknowns
+
+- Exact received board revision, serial/asset ID and FPGA/RP2040 markings:
+  **UNKNOWN**.
+- Per-pin voltage/current/protection limits beyond manufacturer “3.3 V logic”:
+  **UNKNOWN**.
+- Native Apple Silicon support for Renesas Go Configure / ForgeFPGA Workshop:
+  **UNVERIFIED**; a Rosetta, VM or separate-host fallback may be required.
+- FPGA oscillator frequency accuracy, drift and temperature behavior:
+  **UNKNOWN**; no timing accuracy is claimed.
+- J3 2×6 header population: **UNKNOWN**; the v1_r0.5 PCB source labels it DNP.
+
+Do not treat this receipt entry as a validated SPECTER-SYNC capability. No
+hardware operation, flashing, external signal or timing measurement is
+authorized by the inventory entry.
