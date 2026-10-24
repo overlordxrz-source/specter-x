@@ -25,17 +25,21 @@ def probe():
     merged = repeated.fuse(t_now=1.0)
     ekf = PoseEKF('local')
     no_fix = Neom9nDriver().feed(build_nav_pvt(fix_type=0))[0]
-    pose = ekf.update_gnss(no_fix)
+    try:
+        pose = ekf.update_gnss(no_fix)
+        no_fix_accepted = pose.anchor is not None or pose.mode == 'GNSS'
+    except ValueError:
+        no_fix_accepted = False
     malformed = struct.pack('<8s8I', MAGIC, 1, 1, 1, 1, 1, 0, 1, 0)
     q = quat_measurement([float('nan'), 0, 0, 0])
     return {
-        'scope': 'Synthetic Python inputs only; intentionally diagnoses unfixed legacy behavior.',
+        'scope': 'Synthetic Python inputs only; diagnoses remaining legacy blockers and fixed GNSS validity.',
         'stale_peer_restamped_fresh': bool(stale_tracks and stale_tracks[0].last_update == 100),
         'shared_parent_covariance_halved': bool(len(merged) == 1 and merged[0].covariance[0, 0] < .51),
-        'no_fix_anchors_and_claims_gnss': pose.anchor is not None and pose.mode == 'GNSS',
+        'no_fix_anchors_and_claims_gnss': no_fix_accepted,
         'radar_impossible_packet_length_accepted': parse_frame(malformed) is not None,
         'nonfinite_quaternion_accepted': not np.isfinite(q.value['quat_wxyz']).all(),
-        'action': 'Do not enable these legacy modules as calibrated/live WORLD capabilities. See audit priorities.',
+        'action': 'GNSS no-fix control fixed; four P1s remain on this base. Two team fixes are pending PR #7. Do not expose unchecked legacy modules.',
     }
 
 

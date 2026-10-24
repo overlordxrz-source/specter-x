@@ -38,6 +38,7 @@ state, and do not overwrite uncommitted work.
 | Work audit branch | `audit/world-os-hardening` at **`c419216`** is preserved unchanged. Its clean integration branch was merged as PR #6 at **`ec52a36`**; the original branch ref and Work checkout remain untouched. |
 | PR #6 integration | **MERGED at `ec52a36`.** Reviewed head **`2818705`**, base `main` `b2ea0ba`. Pre-merge review: 245 passed, 1 hardware deselected; 68 targeted; 37 browser checks; architecture PASS; 7,290-record replay. Post-merge on `main`: same counts, real CSI replay **7,290 observations**, source SHA unchanged. Five P1 legacy blockers were recorded at that point; two are fixed below and three remain unavailable as validated WORLD capabilities. |
 | Team evidence-validity branch | **DRAFT PR #7 — not merged**, branch `fix/team-evidence-validity`, implementation commit **`e7bec52`**, base `main` `35a1156`. Stale/future/unknown-age peer reports are rejected; shared/looped parent evidence cannot add precision. **266 passed, 1 deselected**; 79 focused; architecture **PASS**; probe shows the two team P1 controls fixed and the other three P1s still `true`. |
+| GNSS validity branch | **DRAFT PR #8 — not merged**, branch `fix/gnss-validity-hardening`, implementation commit **`4398638`**, base `main` `68cbc00`. No-fix/invalid/nonfinite/out-of-range/wrong-datum/synthetic/timestamp-invalid reports are rejected before anchor or mode mutation. **290 passed, 1 deselected**; 45 focused; architecture **PASS**; probe no-fix control `false`. |
 | Hardware/firmware | No Alpha 003 hardware run. Do not flash firmware or start a human session without explicit owner authorization. |
 
 ## PR #5 final acceptance (`cf05def`)
@@ -134,15 +135,37 @@ Acceptable limitations, not merge blockers:
   `false`; the other three P1s remain `true`.
 - A mutation restoring unconditional age admission and duplicate precision
   fails **8** of the new regressions.
-- Team fusion remains gated from WORLD. Remaining P1s: no-fix GNSS anchoring,
-  impossible radar length and non-finite quaternion acceptance.
+- Team fusion remains gated from WORLD. The no-fix GNSS blocker is handled on
+  the separate GNSS validity branch; radar and quaternion P1s remain.
+
+## GNSS validity branch (`4398638`, PR #8)
+
+**Status: implemented, draft PR pending independent review; not merged.**
+
+- `PoseEKF.update_gnss()` now validates the complete receiver fix before any
+  state mutation: explicit 3D fix type, satellite count, finite/range-checked
+  coordinates, positive accuracy, explicit confidence, finite PSD covariance
+  and explicit WGS84-HAE/MSL altitude datum.
+- No-fix, nonfinite, out-of-range, wrong-datum, synthetic-without-opt-in and
+  stale/future reports raise before changing anchor, mode, position or IDs.
+- The first valid fix may establish the wall-clock epoch; later fixes must be
+  monotonic and within the forward tolerance. Valid physical UBX and explicit
+  NMEA MSL fixes continue to work; synthetic GNSS requires explicit
+  `allow_simulated=True` and uses simulation time.
+- **290 passed, 1 deselected**; 45 focused GNSS controls; architecture gate
+  **PASS**; `audit_legacy_probes.py` reports `no_fix_anchors_and_claims_gnss:
+  false`.
+- A mutation restoring the unchecked `update_gnss` body fails **42** new
+  regressions. The team P1 controls remain `true` on this base because PR #7
+  is unmerged.
 
 ## Next single task
 
-**PR #7 is a draft awaiting independent review.** Do not merge it without owner
-authorization. After review, the next scoped blocker is the no-fix GNSS state
-mutation in `specter/localization/ekf.py`; keep team fusion gated until its
-anchor/calibration limitations are separately resolved.
+**PR #7 and PR #8 are drafts awaiting independent review.** Do not merge either
+without owner authorization. After both reviews, the next scoped P1 is the
+radar TLV length/count/finite-value contract, followed by the BNO085 finite
+quaternion check. Keep team fusion gated until its anchor/calibration
+limitations are separately resolved.
 
 **Alpha 003 screening is prepared but not authorized.** Read
 [alpha003-screening-v1.md](https://github.com/overlordxrz-source/specter-x/blob/e7af1ad/docs/design/alpha003-screening-v1.md)
@@ -161,8 +184,8 @@ also only with authorization.
 - Do not merge a PR without owner authorization and an APPROVE/valid gate.
 - Keep `audit/world-os-hardening` at `c419216` as historical audit provenance;
   only the reviewed integration at `ec52a36` is canonical on `main`.
-- Do not enable the three remaining P1 legacy paths as validated WORLD
-  capabilities; the two team evidence-validity fixes do not unlock team fusion.
+- Do not enable the remaining P1 legacy paths as validated WORLD
+  capabilities; team fusion stays gated even after its evidence-validity fix.
 - Do not merge the documentation branch with feature/Work branches.
 - Do not touch or modify Work's `specter-x-frontier001` worktree.
 - Do not flash firmware or start human trials without explicit authorization.
