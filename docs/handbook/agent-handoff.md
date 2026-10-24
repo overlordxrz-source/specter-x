@@ -112,11 +112,9 @@ Acceptable limitations, not merge blockers:
 - `pyproject.toml` pins no runtime version beyond existing compatibility;
   active CI confirms behavior.
 - Browser checks are local Chromium only.
-- `audit_legacy_probes.py` reproduces the five known P1s: stale peer
-  freshness, double-counted parent evidence, no-fix GNSS anchoring, impossible
-  radar length, and non-finite quaternion acceptance.
-- Two of these P1s are fixed on the team evidence-validity branch below; the
-  other three stay blocked from entering `specter.world`.
+- `audit_legacy_probes.py` now reports the stale-peer and shared-parent
+  controls fixed; it reproduces the three remaining P1s: no-fix GNSS anchoring,
+  impossible radar length and non-finite quaternion acceptance.
 
 ## Team evidence-validity branch (`e7bec52`, PR #7)
 
@@ -163,8 +161,8 @@ also only with authorization.
 - Do not merge a PR without owner authorization and an APPROVE/valid gate.
 - Keep `audit/world-os-hardening` at `c419216` as historical audit provenance;
   only the reviewed integration at `ec52a36` is canonical on `main`.
-- Do not enable the five P1 legacy paths as validated WORLD capabilities;
-  close them through their own scoped work order and review.
+- Do not enable the three remaining P1 legacy paths as validated WORLD
+  capabilities; the two team evidence-validity fixes do not unlock team fusion.
 - Do not merge the documentation branch with feature/Work branches.
 - Do not touch or modify Work's `specter-x-frontier001` worktree.
 - Do not flash firmware or start human trials without explicit authorization.
