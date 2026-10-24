@@ -125,6 +125,10 @@ wider ecosystem; the headset is also the user-interface tier, not the central
 compute tier. Distributed nodes retain the low-latency processing and
 independent safety functions needed when central links are absent, degraded or
 unauthorized.
+**Clarification:** ADR-007 mandates the tiered central/headset/distributed
+topology and rejects the assumption that all AI must fit inside the wearable.
+It does **not** prescribe every workload placement; “may reside” permits central
+placement without making the tier optional.
 **Consequences:** Architecture and procurement must not require all AI compute
 to fit in the headset. Headset power, thermal, display, sensor and local-safety
 constraints remain separate from central training/inference capacity. A network

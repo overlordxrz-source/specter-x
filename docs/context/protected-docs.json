@@ -2,10 +2,10 @@
   "files": {
     "AGENTS.md": "c57c1cbce3a1b9c516a07dc46b65d673f6cf749ae752818f127fdca3facb453b",
     "docs/architecture/ENGINEERING_CONTRACT.md": "2c250cebfb9fea5ed46436a9072645f95e9b56d6849137ecdd630ad3eac8f8d6",
-    "docs/context/CONTEXT_TRUTHS.md": "18637f25ac91d3b0e02e4f7d6d9bc40a2593c9b68c0d72c21111f2617a4e0767",
+    "docs/context/CONTEXT_TRUTHS.md": "c041b953d846b1b7ee198d5597b889a870e63a0890a0c46cff53471a41efc30e",
     "docs/handbook/agent-handoff.md": "571a702ed4a504258f7b110462035de34445296b863204646de8476a36de8e25",
     "docs/handbook/architecture.md": "1808600d430c8b1f3bc9c443c30e5de158d727f5ed33da39e824c719c4383078",
-    "docs/handbook/decisions.md": "07ea2426517434abb4a37291cb2c8169a88ab2baa891b843cd132f69deb6b01f",
+    "docs/handbook/decisions.md": "33595e2e65839dba789fd44c72d7772880be2455e68a054e81dba7eaa2aa5de2",
     "docs/handbook/experiment-ledger.md": "53734f0833eea2de37d46234380e35f4d115da4278efc375b509eb2376ec7813",
     "docs/handbook/hardware-inventory.md": "ba312e82da14047f1287bac7220c6ec0a719aeb39bb853b90cc56e10edb008dc",
     "docs/handbook/north-star.md": "863baf4795dcd9e29ecd0f77862bf1b751dd4a629b5ab4a31efb655f94873c0f",

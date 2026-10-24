@@ -14,7 +14,9 @@ source disagree, stop and produce a Context Receipt; do not silently choose one.
   compute system.** High-performance AI training/inference, persistent WORLD
   history, cross-platform coordination and historical analysis may run on
   **central command infrastructure**: workstation/server GPUs or Jetson AGX
-  Thor-class hardware. See [ADR-007](../handbook/decisions.md).
+  Thor-class hardware. ADR-007 mandates the tiered split; “may” permits central
+  placement but does not make the tier optional. See
+  [ADR-007](../handbook/decisions.md).
 - **SPECTER-X, SPECTER-AIR and SPECTER-GROUND are distributed participants** in
   the wider ecosystem. The headset is also the user-interface tier, not the
   central compute tier. Local nodes retain low-latency processing and
