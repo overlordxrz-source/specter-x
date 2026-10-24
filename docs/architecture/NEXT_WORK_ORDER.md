@@ -1,8 +1,16 @@
 # Next scoped work order: legacy team evidence validity
 
-**PLANNED · offline only.** Read the engineering contract and current handoff first.
-No human session, device operation, merge, push or Alpha change is authorized here.
-This task must not enable team fusion in WORLD.
+**IMPLEMENTED ON A SCOPED BRANCH — pending independent review · offline only.**
+Read the engineering contract and current handoff first. No human session, device
+operation, merge, push or Alpha change is authorized here. This task must not
+enable team fusion in WORLD.
+
+**Delivery note (24 October 2026):** stale/future/unknown-age peer reports are now
+rejected, and shared/looped parent evidence cannot gain independent precision.
+See [ADR-007](../handbook/decisions.md) and
+[the regressions](../../tests/test_team_evidence_validity.py). Team fusion remains
+gated. The recommended next work order is the no-fix GNSS state-mutation
+blocker documented in the audit; this file remains the team-fusion record.
 
 **Outcome:** old or duplicate evidence cannot become a fresh independent spatial
 measurement merely because a fusion cycle ran.
@@ -12,10 +20,10 @@ exact SHA and status. Limit work to `specter/fusion/team.py`, the relevant messa
 contract if necessary, focused tests and an ADR. Preserve all audit regression tests,
 OpenCode's feature checkout, CI, frozen experiments and recordings.
 
-**Starting failures:** `PYTHONPATH=. python tools/audit_legacy_probes.py` demonstrates
-(1) a report stamped t=1 becomes current at t=100 and (2) the same parent on local and
-peer reports shrinks covariance approximately in half. The existing age test only
-checks an empty next cycle; it does not test an old incoming report.
+**Starting failures (both now fixed):** `PYTHONPATH=. python tools/audit_legacy_probes.py`
+demonstrated (1) a report stamped t=1 becoming current at t=100 and (2) the same parent
+on local and peer reports shrinking covariance approximately in half. The original age
+test only checked an empty next cycle; it did not test an old incoming report.
 
 **Design first:** state what report time means, which clock mapping is established,
 what acquisition time/epoch each local and peer input carries, and what to do when
