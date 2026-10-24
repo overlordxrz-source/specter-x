@@ -81,7 +81,7 @@ function. It does not revise the historical Alpha snapshot above.
 
 | Item | Logistics evidence | Readiness | Next evidence needed |
 |---|---|---|---|
-| **Vicharak Shrike Lite FPGA board** | **Have — USB-detected 24 October 2026; owner reports physical receipt and supplied photographs.** USB `SHRIKE`, VID `0x2e8a`, PID `0x0005`, serial `de621c3003395627`; `/dev/cu.usbmodem101`. Owner photos show both 19×1 GPIO headers populated, no populated 2×6 J3, and illegible revision text. v1_r0.4 and v1_r0.5 PCB sources have identical pad/net lists; only the front silkscreen `R0.4`/`R0.5` distinguishes them. Exact physical **revision remains UNKNOWN**. | **RP2040 verified; custom FPGA bitstream built in software; hardware flash NOT performed.** MicroPython `1.26.0-preview` at 125 MHz; transient GPIO4 heartbeat passed and factory `main.py` was restored. Factory `main.py` and `blink_all.bin` backed up (`0e3b259a…`, `cd40b215…`); factory image matches vendor `v1_4`. Go Configure 6.56.01 installed and verified native ARM64; Yosys 0.59 + eda-placer v23 built the F16 heartbeat (`FPGA_bitstream_MCU.bin`, 46,408 bytes, SHA-256 `6931f347…`) with 50 MHz WNS +8585 ps. Not flashed; no external signal, alternate supply or OTP operation. | Focused, high-resolution photo of the `R0.4`/`R0.5` silkscreen (front, below `V1.0`) or explicit acceptance of the electrically identical revision pair; authorize suspending/replacing factory `main.py`; authorize flashing the exact reviewed hash; then observe the F16 heartbeat and later run the F1/F17/F18 timing experiment. |
+| **Vicharak Shrike Lite FPGA board** | **Have — USB-detected 24 October 2026; owner reports physical receipt and supplied photographs.** USB `SHRIKE`, VID `0x2e8a`, PID `0x0005`, serial `de621c3003395627`; `/dev/cu.usbmodem101`. Owner photos show both 19×1 GPIO headers populated, no populated 2×6 J3, and illegible revision text. v1_r0.4 and v1_r0.5 PCB sources have identical pad/net lists; only the front silkscreen `R0.4`/`R0.5` distinguishes them. Exact physical **revision remains UNKNOWN**. | **RP2040 verified; first custom F16 heartbeat PASS (owner visual, ~1 Hz); volatile load; factory restored.** MicroPython `1.26.0-preview` at 125 MHz. Factory `main.py` and `blink_all.bin` backed up (`0e3b259a…`, `cd40b215…`); factory image matches vendor `v1_4`. Go Configure 6.56.01 native ARM64; Yosys 0.59 + eda-placer v23 built the exact F16 image (`FPGA_bitstream_MCU.bin`, 46,408 bytes, SHA-256 `6931f347…`) with 50 MHz WNS +8585 ps. One authorized `shrike.flash(..., 46408)` load; blue D2 blinked ~1 Hz; a separate MCU LED control distinguished D2 from D3. Staged file removed, soft reset, factory hashes restored. No OTP, external signal or persistent startup change. | Focused, high-resolution photo of the `R0.4`/`R0.5` silkscreen; instrument the blink rate if a timing claim is needed; for the future F1/F17/F18 experiment stop/replace factory `main.py` as required. No persistent custom image remains. |
 
 ### Hardware/toolchain unknowns
 
@@ -99,9 +99,11 @@ function. It does not revise the historical Alpha snapshot above.
 - FPGA oscillator frequency accuracy, drift and temperature behavior:
   **UNKNOWN**; no physical timing accuracy is claimed. The bitstream timing
   constraint is 50 MHz with +8.585 ns slack.
-- Custom F16 heartbeat image: **BUILT, NOT FLASHED**; SHA-256
+- Custom F16 heartbeat image: **FLASHED ONCE, PASS (owner visual ~1 Hz);
+  volatile; factory restored**; SHA-256
   `6931f347e6fb521435efda5004a0300e9ccb4aa7fc4e5d71b229c327ce87e267`,
-  46,408 bytes. Physical LED output is unverified.
+  46,408 bytes. Automated camera/LED capture was unavailable; the rate is an
+  owner estimate, not an instrumented measurement.
 - Factory `main.py` drives MCU GPIO14/15, which are internally connected to FPGA
   F18/F17. It does not conflict electrically with the F16 heartbeat, but it
   reflashes `blink_all.bin` at boot and would overwrite a custom image. Stop it
@@ -109,6 +111,7 @@ function. It does not revise the historical Alpha snapshot above.
 - J3 2×6 header population: **UNKNOWN**; owner photos show it unpopulated, and
   both v1_r0.4 and v1_r0.5 PCB sources mark it DNP.
 
-Do not treat this receipt entry as a validated SPECTER-SYNC capability. No
-hardware operation, flashing, external signal or timing measurement is
-authorized by the inventory entry.
+This entry records the single owner-authorized F16 load and rollback. It does
+not authorize further hardware operation, persistent firmware, external
+signals, OTP or a timing measurement. Do not treat the pass as a broader
+SPECTER-SYNC sensing or timing capability.

@@ -31,7 +31,10 @@ Shrike Lite has two independent programming paths:
 Do not use the FPGA OTP programming option. The MCU/SPI bitstream path is the
 only intended path for this work. The exact FPGA image is not committed here;
 it was generated from the reviewed Verilog on 24 October 2026 and its SHA-256
-is recorded in `fpga/proof_of_life/verification.json`.
+is recorded in `fpga/proof_of_life/verification.json`. One owner-authorized
+volatile load produced the approx. 1 Hz F16 heartbeat; the staged image was
+then removed and the factory `main.py`/`blink_all.bin` state restored. No
+persistent custom image is present.
 
 ## macOS / Apple Silicon
 

@@ -1,8 +1,10 @@
 # Shrike Lite physical bring-up log — 24 October 2026
 
-**Status: RP2040 verified online; custom FPGA heartbeat built and hashed, NOT flashed.**
+**Status: RP2040 verified online; first custom F16 heartbeat PASS (owner visual, ~1 Hz); volatile load; factory boot restored.**
 Host: Apple Silicon macOS. Connection: USB-C only. No external signals, no
-alternate supply, no flash erase, no OTP, no custom FPGA bitstream loaded.
+alternate supply, no flash erase, no OTP. The custom image was loaded once
+into volatile FPGA configuration, observed, removed and rolled back; factory
+files and hashes were restored.
 
 ## USB / MCU identity observed
 
@@ -146,9 +148,67 @@ Cross-check against the official KiCad sources:
   the `Shrike-Lite`/J3/J5 area.
 
 The photographic findings are therefore consistent with **both** revisions;
-the physical revision remains **UNKNOWN**. A focused, high-resolution photo of
-the `R0.4`/`R0.5` silkscreen, or the owner's explicit acceptance of the
-electrically identical v1_r0.4/v1_r0.5 evidence, is required before flashing.
+the physical revision remains **UNKNOWN**. The owner authorized this single
+experiment within the v1_r0.4/v1_r0.5 candidate set; no published electrical
+difference affects the F16 LED or OSC pins. A focused silkscreen photo remains
+required before any later revision-specific work.
+
+## First custom F16 heartbeat — PASS
+
+**Date:** 24 October 2026. **Owner authorization:** one bounded volatile load
+using exactly the reviewed image.
+
+- Device: Vicharak Shrike Lite; MicroPython RP2040, USB serial
+  `de621c3003395627`, `/dev/cu.usbmodem101`.
+- Target: `SLG47910V (Rev BB)`.
+- Image: `FPGA_bitstream_MCU.bin`, **46,408 bytes**, SHA-256
+  `6931f347e6fb521435efda5004a0300e9ccb4aa7fc4e5d71b229c327ce87e267`.
+- Method: `shrike.flash('specter_sync_blink.bin', 46408)` after staging the
+  temporary image. No OTP, external wiring, firmware replacement or persistent
+  startup change.
+
+### Preflight and staging
+
+- Host image hash and size matched the reviewed manifest.
+- Device identity, MicroPython build (`1.26.0-preview`) and responsive REPL
+  matched the prior bring-up record.
+- Board factory `main.py` (463 B, `0e3b259a…`) and `blink_all.bin`
+  (46,408 B, `cd40b215…`) matched the backups immediately before programming.
+- Staged image readback matched the exact host SHA-256 and size; the only new
+  filesystem entry was `specter_sync_blink.bin`.
+
+### Programming and observation
+
+- The single `shrike.flash` command reported `FPGA programming done` with no
+  error markers; it was not repeated.
+- Owner-visual observation (automated camera unavailable): the blue FPGA LED
+  **D2** blinked on/off at approximately **1 Hz** for more than 10 seconds.
+- A controlled RP2040 GPIO4/MCU LED pulse was visible on the separate blue
+  **D3** next to the red power LED; the flashing D2 continued unchanged. This
+  distinguishes the FPGA heartbeat from the MCU loop.
+- The blink rate is an owner estimate, not an instrumented measurement. No
+  oscilloscope, photodiode or camera capture was used.
+
+### Rollback
+
+- Temporary `specter_sync_blink.bin` removed.
+- Explicit soft reset executed.
+- Postflight `main.py` and `blink_all.bin` hashes matched the factory backups;
+  no extra file remained.
+- The custom image was volatile and is not present after reset; factory
+  `main.py` reloads `blink_all.bin` at boot.
+
+### Evidence
+
+Local logs and readbacks:
+`runs/shrike_lite_custom_heartbeat_20261024/flash-20261024/` (preflight,
+staging, programming, MCU control, observations, rollback, postflight and
+manifest). The directory is gitignored; the committed manifest records the
+result and hashes.
+
+**Result: PASS**, with the remaining uncertainty limited to approximate visual
+rate, unknown physical PCB revision, and the unresolved CLKBUF inference
+warning. No motion, timing-accuracy or persistent-firmware claim follows.
 
 ## Read-only heartbeat verifier
 
@@ -160,31 +220,31 @@ board.
 
 ## FPGA readiness gate
 
-**Software build ready; programming still gated.** Completed:
+**First F16 heartbeat complete; no persistent custom firmware.** Completed:
 
 1. Go Configure 6.56.01 installed and verified native ARM64.
 2. `SLG47910V (Rev BB)` selected; synthesis, place-and-route and MCU bitstream
    generation succeeded.
 3. Exact source and bitstream hashed; 50 MHz timing constraint added, WNS
    +8585 ps with 0 failing endpoints.
-4. Factory `main.py` and `blink_all.bin` remain backed up and unchanged.
+4. One owner-authorized volatile load observed: blue D2 blinked at ~1 Hz;
+   MCU D3 was separately controlled to distinguish it.
+5. Temporary image removed, soft reset executed, factory `main.py` and
+   `blink_all.bin` hashes restored; no persistent custom image remains.
 
-Still required before custom FPGA programming:
+Still open for later work:
 
-1. Establish the physical revision: capture a clear `R0.4`/`R0.5` silkscreen
-   photo, or explicitly accept the electrically identical v1_r0.4/v1_r0.5
-   evidence above.
-2. Authorize suspending or replacing the factory `main.py`. It calls
-   `shrike.flash("blink_all.bin")` at boot and drives GPIO14/15. For the F16
-   heartbeat, GPIO14/15 do not conflict electrically, but the factory loop
-   would overwrite the custom image; for the future F17/F18 readout it would
-   contend directly.
-3. Authorize loading exactly `FPGA_bitstream_MCU.bin` with SHA-256
-   `6931f347e6fb521435efda5004a0300e9ccb4aa7fc4e5d71b229c327ce87e267`
-   through the vendor `shrike.flash(...)` path, USB-C only, no OTP.
-4. Observe the onboard FPGA LED (F16) for a ~1 Hz heartbeat, record the result,
-   and restore or confirm the factory files afterward.
+1. Establish the physical revision from the `R0.4`/`R0.5` silkscreen; the
+   published candidate layouts are electrically identical for this test.
+2. For the future F1/F17/F18 event-counter experiment, stop or replace the
+   factory `main.py` before loading a custom image. It calls
+   `shrike.flash("blink_all.bin")` at boot and drives GPIO14/15; the F16
+   heartbeat itself has no electrical conflict with those pins.
+3. Instrument the actual blink rate if a timing claim is needed; the owner
+   visual estimate is not a calibrated measurement.
+4. Treat the CLKBUF inference warning as a watch item for higher-speed logic.
 
-No custom FPGA bitstream has been flashed. No external signal or alternate
-supply was used. No physical timing accuracy is claimed. The existing
-Observation v1 boundary remains the only future CORE/WORLD record format.
+No custom FPGA bitstream is present after rollback. No external signal,
+alternate supply or OTP operation was used. No physical timing accuracy is
+claimed. The existing Observation v1 boundary remains the only future
+CORE/WORLD record format.
