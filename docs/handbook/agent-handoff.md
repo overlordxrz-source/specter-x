@@ -1,8 +1,16 @@
 # Agent handoff index
 
+**Persistent Context Protocol:** [Context Brief](../context/CONTEXT_BRIEF.md) ·
+[preflight/receipt](../context/CONTEXT_RECEIPT.md) ·
+[decision change](../context/DECISION_CHANGE.md) ·
+[branch-safe handoff](../context/BRANCH_HANDOFF_TEMPLATE.md). ADR-008 governs
+the process. The generated Brief is an index, not evidence or authorization.
+This is a stable cross-feature pointer only; feature status belongs in the
+[branch handoff](../context/BRANCH_HANDOFF_TEMPLATE.md), not here.
+
 **Open independent-review packet:** [PRs #7, #8 and #9 consolidated review handoff](pr7-pr8-pr9-review-handoff.md). These are unreviewed draft PRs; no approval or merge is implied.
 
-**SPECTER-SYNC:** [Phase 0 design](../design/specter-sync-phase0.md) and [Phase 1 physical bring-up log](../design/shrike-lite-bringup-log-20261024.md). The Shrike Lite is USB-detected (MicroPython RP2040, factory `main.py`/`blink_all.bin` backed up, GPIO4 heartbeat passed). Exact physical board revision remains **UNKNOWN**; the factory loop drives GPIO14/15, Go Configure is not installed, and no custom FPGA bitstream has been built or flashed. Timing accuracy is not claimed.
+**SPECTER-SYNC:** Phase 0 design `docs/design/specter-sync-phase0.md` and Phase 1 bring-up log `docs/design/shrike-lite-bringup-log-20261024.md` exist on the isolated research branch, not on `main`. The Shrike Lite is USB-detected (MicroPython RP2040, factory `main.py`/`blink_all.bin` backed up, GPIO4 heartbeat passed). Exact physical board revision remains **UNKNOWN**; the factory loop drives GPIO14/15, Go Configure is not installed, and no custom FPGA bitstream has been built or flashed. Timing accuracy is not claimed.
 
 [Hub](../README.md) · **Current handoff · 24 October 2026.**
 
@@ -20,17 +28,21 @@ Read, in this order:
 2. [Research ideas](research-ideas.md) — relevant **VISION/RESEARCH** entries.
 3. [Decisions](decisions.md) — relevant **accepted** ADRs.
 4. [Experiment ledger](experiment-ledger.md) — latest verified/exploratory gate.
-5. This handoff — current branch, owner, blockers and next task.
+5. [Context Brief](../context/CONTEXT_BRIEF.md) and
+   [Context Protocol](../context/README.md) — compact source-bound recovery;
+   produce a Context Receipt before material direction changes.
+6. This handoff — current branch, owner, blockers and next task.
 
 Then inspect the actual repository and worktrees (`git status`,
 `git log`, `git worktree list`). Do not rely on this page for a clean/dirty
-state, and do not overwrite uncommitted work.
+state, and do not overwrite uncommitted work. A feature branch's local handoff
+does not override this canonical page until integration review.
 
 ## Current state
 
 | Item | State |
 |---|---|
-| `main` | Canonical handbook plus CI repair. Docs merged at **`49cb2e5`**; CI merged at **`4b09d40`**; this handoff commit is the current main head. |
+| `main` | Canonical documentation/Alpha/CI base at **`f2ef96b`** (24 October 2026). Historical docs merge `49cb2e5`, CI merge `4b09d40`; both remain history. |
 | Documentation branch / worktree | `docs/main-handbook-sync` was merged into `main` at `49cb2e5`. The worktree remains available for historical documentation review. |
 | Alpha code / evidence branch | `feature/alpha002-esp32-supervisor` at **`285bc2c`** in the main research worktree. The CI repair was integrated at `4d8e30b`; frozen Alpha evidence remains at **`e7af1ad`**, forensic record at `a3c540d`. |
 | CI fix to main | **PR #4 merged at `4b09d40`.** Six files only; automatic GitHub Actions is green. |
@@ -203,9 +215,20 @@ The next evidence task is independent replication of Alpha 002-C using the
 frozen [replication protocol](https://github.com/overlordxrz-source/specter-x/blob/e7af1ad/docs/design/alpha002c-replication-protocol-v1.md),
 also only with authorization.
 
+## Branch-safe handoffs
+
+Feature agents must not routinely edit this canonical handoff. They should use
+the [branch handoff template](../context/BRANCH_HANDOFF_TEMPLATE.md) in the PR
+description or `docs/context/handoffs/<branch>.md`. An integration/owner process
+merges the factual fields into this page after review. Parallel branch handoffs
+are preserved; do not overwrite another branch to resolve a conflict. A branch
+handoff or Context Receipt is not evidence and does not promote a capability.
+
 ## Do not
 
 - Do not merge a PR without owner authorization and an APPROVE/valid gate.
+- Do not let a feature branch edit this canonical handoff as its routine status
+  channel; use the branch-safe template.
 - Keep `audit/world-os-hardening` at `c419216` as historical audit provenance;
   only the reviewed integration at `ec52a36` is canonical on `main`.
 - Do not enable the remaining P1 legacy paths as validated WORLD
@@ -221,14 +244,18 @@ also only with authorization.
 
 ## Update triggers
 
-Update this handoff and the relevant memory log when:
+Update this canonical handoff only through the integration/owner process when:
 
-- a distinctive research idea or architectural decision appears;
+- a distinctive research idea or accepted architectural decision appears;
 - a protocol, seed, analysis or evidence gate changes;
 - an experiment passes, fails, is aborted or is invalidated;
 - a device/hardware status or ownership changes;
-- a long agent session is about to be compacted or handed off;
-- a checkpoint is created.
+- a checkpoint is created;
+- a reviewed branch is integrated or an owner changes the current state.
+
+Feature branches use the branch handoff template for intermediate work. Update
+the generated Context Brief and protected-document manifest after any
+intentional protected-document change; run `python tools/check_context.py`.
 
 Keep entries short and link raw evidence. Avoid log spam for ordinary chat.
 

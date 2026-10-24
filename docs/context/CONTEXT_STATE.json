@@ -1,0 +1,48 @@
+{
+  "schema": "specter.context.state/1.0.0",
+  "protocol_version": "1.0.0",
+  "milestone": {
+    "id": "M-CTX-001",
+    "name": "Persistent Context Protocol adoption",
+    "status": "DRAFT PR / IN REVIEW",
+    "summary": "Persistent Context Protocol, ADR-007/008/009, protected-document checks, branch-safe handoff, Hark procurement context and context-free recovery tests are implemented on an isolated docs/tooling branch.",
+    "next_action": "Independent review of docs/persistent-context-protocol; address findings; owner acceptance before any merge. No hardware, purchase or capability promotion."
+  },
+  "unresolved_questions": [
+    {
+      "id": "Q-CTX-001",
+      "question": "Which central-command compute baseline should be evaluated first: a workstation/server GPU or a Jetson AGX Thor-class system?",
+      "status": "open",
+      "owner": "owner + Hark",
+      "note": "No purchase or deployment is implied; define workload, power, cooling, network and support gates first."
+    },
+    {
+      "id": "Q-CTX-002",
+      "question": "What are the headset tether/wireless, power, thermal, optics and local-safety envelopes for the first AR interface?",
+      "status": "open",
+      "owner": "owner + architecture",
+      "note": "The headset is not required to host all AI, but local safety and latency requirements must be explicit."
+    },
+    {
+      "id": "Q-CTX-003",
+      "question": "Which distributed-node safety, timing and communications requirements must survive central-link loss?",
+      "status": "open",
+      "owner": "architecture + future field work",
+      "note": "Local safety cannot depend on central availability; AIR/GROUND/ORBIT remain roadmap."
+    },
+    {
+      "id": "Q-CTX-004",
+      "question": "Which Hark candidate classes have enough interface, calibration, support and compatibility evidence for a procurement review?",
+      "status": "open",
+      "owner": "Hark",
+      "note": "Use docs/procurement/HARK_CONTEXT.md; no SKU, quote or datasheet is a receipt or capability."
+    },
+    {
+      "id": "Q-CTX-005",
+      "question": "Which semantic contradictions and owner-intent decisions require independent review because automation cannot detect them?",
+      "status": "open",
+      "owner": "independent reviewer/owner",
+      "note": "Hash and reference checks are not semantic proofs; see docs/context/AUTOMATION_LIMITS.md."
+    }
+  ]
+}

@@ -106,6 +106,79 @@ start human experiments without explicit authorization.
 that conflicts with a raw artifact is corrected by a dated note.
 **Links:** [agent handoff](agent-handoff.md), [North Star](north-star.md).
 
+
+## ADR-007 — Wearable AR interface with centralized and distributed compute
+
+**Status:** accepted · 24 October 2026 · owner-directed design intent; implementation draft under review
+**Owner directive:** The 24 October 2026 task requires the AR-headset/central-command/distributed-node architecture and rejects the assumption that all AI compute must fit in the wearable. This ADR records that accepted design intent; it does not claim deployment.
+**Context:** Earlier architecture and roadmap language allowed the wearable to
+be read as a complete self-contained compute system. That conflicts with the
+intended AR-headset experience, high-performance central AI, and distributed
+nodes with local safety.
+**Decision:** **SPECTER-X is an AR headset-style interface, not a complete
+self-contained compute system.** Primary high-performance compute may reside
+in centralized command infrastructure, including workstation/server GPUs or
+Jetson AGX Thor-class hardware. Central compute supports cross-platform AI,
+persistent spatial intelligence, coordination and historical analysis.
+SPECTER-X, SPECTER-AIR and SPECTER-GROUND are distributed participants in the
+wider ecosystem; the headset is also the user-interface tier, not the central
+compute tier. Distributed nodes retain the low-latency processing and
+independent safety functions needed when central links are absent, degraded or
+unauthorized.
+**Consequences:** Architecture and procurement must not require all AI compute
+to fit in the headset. Headset power, thermal, display, sensor and local-safety
+constraints remain separate from central training/inference capacity. A network
+outage cannot remove a local safety function. This is accepted design intent,
+not evidence that central command, the headset or distributed nodes are built.
+**Links:** [North Star](north-star.md), [architecture](architecture.md),
+[roadmap](roadmap.md), [Hark procurement context](../procurement/HARK_CONTEXT.md).
+
+## ADR-008 — Persistent Context Protocol
+
+**Status:** accepted · 24 October 2026 · owner-directed design intent; implementation draft under review
+**Owner directive:** The 24 October 2026 task requires a task-specific context preflight, repository-recoverable brief, receipt, protected-document checks, decision-change process and branch-safe handoffs. This ADR records the accepted governance intent; implementation remains a draft under review.
+**Context:** ChatGPT, OpenCode, Work, Hark and future agents can drift when
+chat history, stale handoffs or partial repository reads become the effective
+source of truth.
+**Decision:** Every material task starts from a task-specific context preflight
+and produces a Context Receipt naming the authoritative commit, sources,
+active ADRs, contradictions and unknowns. A generated Context Brief provides a
+compact recovery surface. Protected architectural documents are hash-checked.
+Proposals contradicting an accepted ADR must use the decision-change process
+and obtain owner approval before adoption. Feature agents use branch-safe
+handoffs and do not routinely edit the canonical main handoff.
+**Consequences:** The repository remains canonical; the Brief and Receipt are
+indexes, not new evidence. Automation checks references, hashes, decision IDs
+and stale generated context; it cannot detect semantic contradictions. Human
+or independent-agent review remains required for meaning, scope and owner
+intent.
+**Links:** [Context Protocol](../context/README.md),
+[Context Brief](../context/CONTEXT_BRIEF.md),
+[automation limits](../context/AUTOMATION_LIMITS.md).
+
+## ADR-009 — OS/WORLD ownership and capability-label separation
+
+**Status:** accepted · 24 October 2026 · owner-directed design intent; implementation draft under review
+**Owner directive:** The 24 October 2026 task requires WORLD to be an evidence-grounded persistent spatial-intelligence system, OS to coordinate the ecosystem, and capability labels to remain distinct. This ADR records that accepted design intent; it does not claim a shipped OS or persistent world model.
+**Context:** The ecosystem can be misread as a visualization product with a
+miscellaneous collection of sensors, or as an operating system that already
+exists.
+**Decision:** **SPECTER-OS coordinates the software/device ecosystem** without
+claiming a complete kernel or shipped OS. **SPECTER-WORLD is an evidence-grounded
+persistent spatial-intelligence system**, not merely a visualization
+application; VIEW is a client of WORLD, not a substitute for it. CORE, NODE,
+SENSE, LINK, FUSION and VIEW retain their documented responsibilities.
+Measured, inferred, predicted, simulated, unverified and unknown states are
+independent and must never be conflated. SPECTER-ORBIT, SPECTER-BIO, advanced
+AI and future sensing research remain in the long-term roadmap as VISION or
+RESEARCH until evidenced.
+**Consequences:** A track list, rendered scene or demo does not establish a
+persistent world model. An OS-shaped document does not establish a kernel. A
+high-confidence inference does not become a measurement. Capability promotion
+remains governed by ADR-002/ADR-005 and the experiment ledger.
+**Links:** [North Star](north-star.md), [architecture](architecture.md),
+[research ideas](research-ideas.md), [experiment ledger](experiment-ledger.md).
+
 ---
 
 ## Adding a decision

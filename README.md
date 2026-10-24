@@ -13,6 +13,18 @@ built on a shared software and device foundation — SPECTER-OS — with a
 persistent understanding of space — SPECTER-WORLD — and, further out, AIR,
 GROUND and ORBIT nodes and experimental SPECTER-BIO physiology research.
 
+> **Compute-topology clarification (24 October 2026).** The Raspberry Pi 5,
+> Hailo and "chest compute" entries below describe bench/edge and historical
+> prototype roles. They are **not** the primary high-performance compute tier.
+> SPECTER-X is an **AR headset-style interface**, not a complete self-contained
+> compute system. Primary high-performance compute may reside in central command
+> infrastructure (workstation/server GPUs or Jetson AGX Thor-class hardware);
+> distributed nodes retain low-latency processing and independent safety. See
+> [ADR-007](docs/handbook/decisions.md), the
+> [Context Brief](docs/context/CONTEXT_BRIEF.md) and the
+> [Hark procurement context](docs/procurement/HARK_CONTEXT.md). This README is a
+> historical system overview; the handbook is canonical where wording differs.
+
 The long-term "God's Eye" idea is a coherent, shared picture assembled from
 complementary observations, with blind spots, uncertainty and evidence age
 always visible. It does not mean universal visibility, identification through
@@ -179,7 +191,7 @@ docs/                        Handbook, checkpoints and evidence records
 
 | Role | Part | Link | Stage |
 |---|---|---|---|
-| Compute | Raspberry Pi 5, 8 GB | — | 1 |
+| Bench/edge compute | Raspberry Pi 5, 8 GB (not central command) | — | 1 |
 | Low-light camera | Arducam IMX462 (CSI, libcamera / Picamera2) | CSI-2 | 1 |
 | Display | 7" 1280x800 touchscreen | DSI/HDMI | 1 |
 | Thermal | TOPDON TC001 (256x192; UVC frames are 256x384, thermal words in lower half) | USB UVC | 2 |
@@ -373,7 +385,7 @@ Events in Stage 1: `session_start`, `pose_acquired` (3 consecutive frames with a
 5. **Stage 5: acceleration and field unit.** Hailo-8L pose/detection (HEF models), power and
    thermal budget, battery and enclosure, touchscreen controls, packaged systemd service.
 6. **Stage 6: wearable (helmet + chest + headset, then goggles).** Helmet sensor head
-   (thermal/event/acoustic), chest compute (Pi 5 + AI HAT+ 2 for on-device VLM summaries,
+   (thermal/event/acoustic), chest/bench compute (Pi 5 + AI HAT+ 2 for on-device VLM summaries; not the primary high-performance tier,
    always `AI-SUMMARY` labelled with cited Measurement ids), headset display; LoRa mesh
    fallback for heartbeats and man-down. Long-term form: goggles. EXPERIMENTAL modules
    graduate here only after bench validation.

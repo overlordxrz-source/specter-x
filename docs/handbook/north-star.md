@@ -20,6 +20,20 @@ Our long-term **God’s Eye** concept is a coherent, shared, historical picture 
 | **SPECTER-AIR / GROUND / ORBIT** | Future aerial and terrestrial nodes, satellite-data integration and resilient communications | ORBIT begins with existing data/services; a custom satellite is a separate possible program |
 | **SPECTER-BIO** | Experimental non-contact physiology, radar vital signs and eventual university-level quantum-sensing research | Laboratory research with independent references; no medical or remote life-detection capability established |
 
+**Compute topology clarification (owner-directed, 24 October 2026).**
+SPECTER-X's wearable form factor is an **AR headset-style interface**, not a
+complete self-contained compute system. Primary high-performance compute may
+reside in centralized command infrastructure, including workstation/server
+GPUs or Jetson AGX Thor-class hardware. Central computing supports
+cross-platform AI, persistent spatial intelligence, coordination and
+historical analysis. SPECTER-X, SPECTER-AIR and SPECTER-GROUND are distributed
+participants in the wider ecosystem. The headset is the user-interface tier and
+also a distributed participant for local safety; other distributed nodes retain
+the necessary low-latency processing and independent safety functions. This is accepted
+design intent, not a claim that every subsystem exists. See
+[ADR-007](decisions.md), [architecture](architecture.md) and the
+[Hark procurement context](../procurement/HARK_CONTEXT.md).
+
 CORE, NODE, SENSE, LINK, FUSION and VIEW remain the [technical architecture](architecture.md) boundaries that serve this ecosystem. SPECTER-OS coordinates the software/device foundation; WORLD owns spatial state and history; X is the wearable experience, with future platforms consuming the same evidence contracts. CORE is the runtime and, PLANNED, the edge-AI and mission-coordination hub that assembles validated observations into WORLD, publishes evidence summaries to wearables and issues only authorized, auditable task updates to autonomous platforms. A task update is never inferred automatically from a single sensor observation, and onboard safety remains local.
 
 ## Engineering doctrine

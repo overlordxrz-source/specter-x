@@ -7,8 +7,9 @@
 **Edition 3 · 22 October 2026 · Alpha snapshot `933e856` · hardware preflight passed.**
 
 **Edition 4 memory note · 23 October 2026.** Persistent project memory now
-lives in the repository. Start with the [North Star](handbook/north-star.md),
-then the [research ideas](handbook/research-ideas.md),
+lives in the repository. For a fresh agent, start with the
+[Context Brief](context/CONTEXT_BRIEF.md), then the
+[North Star](handbook/north-star.md), [research ideas](handbook/research-ideas.md),
 [decisions](handbook/decisions.md),
 [experiment ledger](handbook/experiment-ledger.md) and
 [current agent handoff](handbook/agent-handoff.md). This is a
@@ -22,7 +23,7 @@ human session exists. See the [experiment ledger](handbook/experiment-ledger.md)
 and [checkpoint 023](https://github.com/overlordxrz-source/specter-x/blob/a3c540d/docs/checkpoints/023-alpha002c-forensic-validation.md).
 
 
-**Start with the [Canonical Vision and Long-Term Project Charter](handbook/north-star.md).** It is the authoritative North Star for identity, goals and engineering doctrine; this hub and the detailed chapters support it. Read the [Alpha reconciliation](handbook/alpha-95eae17-review.md) for the `95eae17` engineering status, and the [verification baseline](handbook/verification-baseline.md) for what has since been measured on real hardware.
+**Start with the [Context Brief](context/CONTEXT_BRIEF.md) for recovery, then the [Canonical Vision and Long-Term Project Charter](handbook/north-star.md).** It is the authoritative North Star for identity, goals and engineering doctrine; this hub and the detailed chapters support it. Read the [Alpha reconciliation](handbook/alpha-95eae17-review.md) for the `95eae17` engineering status, and the [verification baseline](handbook/verification-baseline.md) for what has since been measured on real hardware.
 
 SPECTER-X is the first wearable/AR interface to a vertically integrated, multimodal spatial-intelligence ecosystem: SPECTER-OS, persistent SPECTER-WORLD, future AIR / GROUND / ORBIT integration and experimental SPECTER-BIO. The “God’s Eye” aspiration means combining complementary observations while showing blind spots, uncertainty and age. It does not mean universal visibility, identification through walls, medical diagnosis or certified rescue capability.
 
@@ -45,11 +46,25 @@ record of how the handbook was built. Update memory when a distinctive idea,
 decision or experiment finding appears, at checkpoints, and before context
 compaction. Memory entries are not evidence; open the linked artifact.
 
+**Persistent Context Protocol (ADR-008):** every material task starts with the
+generated [Context Brief](context/CONTEXT_BRIEF.md) and a
+[Context Receipt](context/CONTEXT_RECEIPT.md); protected documents and ADR IDs
+are checked by `python tools/check_context.py`. Contradicting an accepted ADR
+requires the [decision-change process](context/DECISION_CHANGE.md) and owner
+approval. Feature branches use the
+[branch-safe handoff](context/BRANCH_HANDOFF_TEMPLATE.md), not routine edits to
+the canonical handoff. Procurement context, including central command compute
+versus the AR headset and distributed nodes, is in the
+[Hark profile](procurement/HARK_CONTEXT.md).
+
 ## Start here
 
 | Reader / question | Document |
 |---|---|
 | What should every new agent read first? | [Persistent memory](#persistent-project-memory) |
+| How does a context-free agent recover the accepted architecture? | [Context Brief](context/CONTEXT_BRIEF.md) and [Context Protocol](context/README.md) |
+| What is the central-compute / headset / distributed-node split? | [ADR-007](handbook/decisions.md) and [compute topology](handbook/architecture.md#compute-topology) |
+| What should Hark ask before procurement? | [Hark procurement context](procurement/HARK_CONTEXT.md) |
 | Canonical identity, doctrine and five-plus-year ambition | [North Star charter](handbook/north-star.md) |
 | Dated research ideas and their status | [Research ideas log](handbook/research-ideas.md) |
 | Why an architectural/evidence boundary exists | [Decision record](handbook/decisions.md) |
