@@ -492,19 +492,22 @@ function render() {
 }
 function sessionButtons(search = "") {
   const list = files.filter(
-    f => f.kind === "replay" && (f.name + " " + f.relative).toLowerCase().includes(search.toLowerCase())
+    (f) =>
+      f.kind === "replay" &&
+      (f.name + " " + f.relative).toLowerCase().includes(search.toLowerCase()),
   );
   const truncated = catalogInfo?.truncated
-    ? `<p class="subtle">Catalog limit reached (${fmt(catalogInfo.limit)} items; scan limit ${fmt(catalogInfo.scan_limit)}). Some evidence is not shown; this is not a complete listing.</p>`
+    ? `<p class="subtle">Catalog may be incomplete (${fmt(catalogInfo.limit)} item limit; ${fmt(catalogInfo.scan_limit)} scan limit; ${fmt(catalogInfo.scan_errors || 0)} scan errors). Some evidence is not shown; this is not a complete listing.</p>`
     : "";
-  return truncated + (
-    list
+  return (
+    truncated +
+    (list
       .map(
         (f) =>
           `<button class="session-item" data-session="${f.id}"><span><b>${esc(f.name)}</b><small>${esc(f.group)} / ${esc(f.relative)} · ${fmt(f.bytes / 1024, 1)} KiB</small></span><span>↗</span></button>`,
       )
       .join("") ||
-    '<p class="subtle">No recordings in approved roots. Restart with --root /path/to/recordings or --replay /path/to/capture.raw.csi.</p>'
+      '<p class="subtle">No recordings in approved roots. Restart with --root /path/to/recordings or --replay /path/to/capture.raw.csi.</p>')
   );
 }
 function evidenceButtons() {
@@ -521,7 +524,13 @@ function evidenceButtons() {
 async function refresh() {
   if (busy || switching) return;
   busy = true;
-  const requestGeneration = generation;
+  const requestGeneration = generation,
+    requestSource = source,
+    requestQuery = query;
+  const stale = () =>
+    requestGeneration !== generation ||
+    requestSource !== source ||
+    requestQuery !== query;
   try {
     const nextState = await api(
       "state?" +
@@ -530,13 +539,13 @@ async function refresh() {
           ...(query ? { q: query } : {}),
         }),
     );
-    if (requestGeneration !== generation) return;
+    if (stale()) return;
     state = nextState;
     $("#service-label").textContent = "Local service available";
     $("#service-dot").style.background = "#91a49c";
     render();
   } catch (e) {
-    if (requestGeneration !== generation) return;
+    if (stale()) return;
     $("#service-label").textContent = "Service disconnected";
     $("#service-dot").style.background = "#df8a8d";
     notice(e.message);

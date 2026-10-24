@@ -1,0 +1,23 @@
+{
+  "raw_sha256": "ab8bcbc0eea634f4b36b9dc3c416e240d454e12fe02648a4a093933e49a669e1",
+  "session_sha256": "f59ce80248f2183063d6884724420d14fbd552724b13710fc8dd1453d0f27d1c",
+  "parsed_raw_packets": 17837,
+  "malformed_fragments": 1,
+  "recovered_concatenated_lines": 1,
+  "duplicate_packet_keys": 0,
+  "selected_samples": 11554,
+  "matched_samples": 11554,
+  "unique_sample_assignment": true,
+  "primary_p": 0.0009765625,
+  "primary_dz": 1.6946320189441386,
+  "bootstrap_ci95": [
+    1.3414406478800849,
+    2.9061288846417352
+  ],
+  "frozen_dz_delta": 1.32290629561993e-08,
+  "frozen_ci_delta": [
+    5.255808144255525e-08,
+    2.0753012908159008e-07
+  ],
+  "limitation": "One exploratory session. Arithmetic/provenance match is not independent replication, physical validation, label ground truth or trial authorization."
+}

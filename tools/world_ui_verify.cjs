@@ -129,6 +129,41 @@ async function until(fn, ms = 10000) {
     await until(
       async () => (await page.locator("tbody tr[data-index]").count()) > 0,
     );
+    await page.locator("#record-filter").fill("delayed-filter-control");
+    await until(async () =>
+      (await page.locator("tbody").innerText()).includes("No matching"),
+    );
+    let releaseFilter, filterFetched;
+    const holdFilter = new Promise((r) => (releaseFilter = r));
+    const fetchedFilter = new Promise((r) => (filterFetched = r));
+    await page.route(
+      (u) =>
+        u.pathname === "/api/state" &&
+        u.searchParams.get("q") === "delayed-filter-control",
+      async (route) => {
+        const response = await route.fetch();
+        filterFetched();
+        await holdFilter;
+        await route.fulfill({ response });
+      },
+      { times: 1 },
+    );
+    await page.locator("#record-filter").fill("delayed-filter-control");
+    await fetchedFilter;
+    await page.locator("#record-filter").fill("");
+    const restoredResponse = page.waitForResponse((r) => {
+      const u = new URL(r.url());
+      return u.pathname === "/api/state" && !u.searchParams.has("q");
+    });
+    releaseFilter();
+    await restoredResponse;
+    await until(
+      async () => (await page.locator("tbody tr[data-index]").count()) > 0,
+    );
+    check(
+      "Delayed filter response cannot hide restored rows",
+      (await page.locator("tbody tr[data-index]").count()) > 0,
+    );
     await page.locator("tbody tr[data-index]").first().click();
     await page.locator("#inspection[open]").waitFor();
     check(
@@ -390,7 +425,9 @@ async function until(fn, ms = 10000) {
       await page.locator("tbody tr[data-index]").first().waitFor();
       let releaseInspection, inspectionFetched;
       const inspectionRelease = new Promise((r) => (releaseInspection = r));
-      const inspectionFetchedPromise = new Promise((r) => (inspectionFetched = r));
+      const inspectionFetchedPromise = new Promise(
+        (r) => (inspectionFetched = r),
+      );
       await page.route(
         "**/api/state?index=*",
         async (route) => {
@@ -452,23 +489,29 @@ async function until(fn, ms = 10000) {
         .getByRole("button", { name: "Research & sessions", exact: true })
         .click();
       await page.locator("[data-evidence]").first().click();
-      await until(async () =>
-        !(await page.locator("#content pre").first().innerText()).includes(
-          "Select a report",
-        ),
+      await until(
+        async () =>
+          !(await page.locator("#content pre").first().innerText()).includes(
+            "Select a report",
+          ),
       );
-      const oldEvidence = await page.locator("#content pre").first().innerText();
+      const oldEvidence = await page
+        .locator("#content pre")
+        .first()
+        .innerText();
       await page.getByRole("button", { name: "Overview", exact: true }).click();
       await page.locator("tbody tr[data-index]").first().click();
       await page.locator("#inspection[open]").waitFor();
       // The modal blocks pointer clicks, so drive the session switch through
       // the DOM; openSession must close it and clear the evidence state.
-      await page.evaluate(() => document.querySelector("#open-session").click());
+      await page.evaluate(() =>
+        document.querySelector("#open-session").click(),
+      );
       await page.locator("#sessions-dialog[open]").waitFor();
       await page.evaluate(() => {
-        const button = [...document.querySelectorAll(
-          "#session-list [data-session]",
-        )].find((b) => b.textContent.includes("synthetic-control"));
+        const button = [
+          ...document.querySelectorAll("#session-list [data-session]"),
+        ].find((b) => b.textContent.includes("synthetic-control"));
         button.click();
       });
       await until(async () =>
@@ -481,7 +524,10 @@ async function until(fn, ms = 10000) {
       await page
         .getByRole("button", { name: "Research & sessions", exact: true })
         .click();
-      const evidenceAfterSwitch = await page.locator("#content pre").first().innerText();
+      const evidenceAfterSwitch = await page
+        .locator("#content pre")
+        .first()
+        .innerText();
       check(
         "Previous evidence clears on session switch",
         !evidenceAfterSwitch.includes(oldEvidence.slice(0, 40)) &&

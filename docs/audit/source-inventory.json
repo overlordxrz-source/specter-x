@@ -1,7 +1,7 @@
 {
   "root": "/Users/overlord/sideprojects/specter-x-audit",
-  "files": 117,
-  "lines": 16042,
+  "files": 119,
+  "lines": 16786,
   "failures": 0,
   "scope": "All source/config/test files under listed code roots; excludes build/cache, raw runs and prose. Static syntax is not semantic review.",
   "entries": [
@@ -21,7 +21,7 @@
     },
     {
       "path": "SPECTER-WORLD.command",
-      "sha256": "8bad8550f40b003375fa3715d874bb0270e966b1d20ffb2e02b800d3a726537f",
+      "sha256": "84b990fe0c239915026cc4a4a4fa9975b1dab05e60640f817b32264ae9c39fc4",
       "lines": 20,
       "syntax": "NOT_CHECKED",
       "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
@@ -238,21 +238,21 @@
     },
     {
       "path": "specter/net/messages.py",
-      "sha256": "72959259aab566c30218ec28437bb0f9c8173483d9fb38bd79cabcafcd3a1d4f",
-      "lines": 208,
+      "sha256": "f719e3df0a6ba2574221a3d9e600f1fa97928727869d38f8c530e81ee7258f18",
+      "lines": 247,
       "syntax": "PASS_PYTHON_AST",
       "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
     },
     {
       "path": "specter/net/security.py",
-      "sha256": "cbcc6a0e648a5e08ced2692a27787d2a9ccc8e7516b3ad1503b3433b857e9a16",
+      "sha256": "af3bb0ffcc226098196d2156f3e36d413b8cd17cd9a333f5551509010eb50374",
       "lines": 104,
       "syntax": "PASS_PYTHON_AST",
       "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
     },
     {
       "path": "specter/net/transport.py",
-      "sha256": "66681377a75e5bcb002d3ca16d4cd95dbba52ff431578597263384bd1a0768ae",
+      "sha256": "6a217803da8b4e0c6e3a684f77c9a3d5c6ddf65b47234b5f098c0150a836dc6f",
       "lines": 171,
       "syntax": "PASS_PYTHON_AST",
       "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
@@ -287,8 +287,8 @@
     },
     {
       "path": "specter/platform/replay.py",
-      "sha256": "3fc31f65e4ccfd878221eca987046d482a9df08b1ab33e33017022ba77bf349e",
-      "lines": 221,
+      "sha256": "5351d12e148102e526de16be4f9c9b9ba2ee842b87807de3e4d1db40947a1067",
+      "lines": 233,
       "syntax": "PASS_PYTHON_AST",
       "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
     },
@@ -595,22 +595,22 @@
     },
     {
       "path": "specter/world/server.py",
-      "sha256": "e92c949561eac2fe82276d7b7cc18f4a6adf1d1f8ff5eeedf9cc9837880802f1",
-      "lines": 248,
+      "sha256": "23bc6923f4aec9d0daeb1014dca13094ef8d439d1e1f43d359fab070c146867b",
+      "lines": 343,
       "syntax": "PASS_PYTHON_AST",
       "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
     },
     {
       "path": "specter/world/store.py",
-      "sha256": "c13e07d4c0d15d525fa971ca67d938decaf77c7776c40e666794a9e176178e08",
+      "sha256": "b88118c3afec1d5bc13c5a0a087fe7ed8cbad7e8467c07df8abb527691537a53",
       "lines": 361,
       "syntax": "PASS_PYTHON_AST",
       "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
     },
     {
       "path": "specter/world/web/app.js",
-      "sha256": "95685613d5e94558fbfc58ae3a9ebc63c8cb807ce3f731f15d23e4a5f22e666a",
-      "lines": 731,
+      "sha256": "fe63cd7fae1afe63707020ab865fe3c310ff1035d194c703ba7ac1fe70571397",
+      "lines": 759,
       "syntax": "PASS_NODE_CHECK",
       "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
     },
@@ -623,8 +623,8 @@
     },
     {
       "path": "specter/world/web/style.css",
-      "sha256": "87a4a6252d6e8312b036877718b3815a335b45ffa595f57f1a9d4ff0fe936fdc",
-      "lines": 1167,
+      "sha256": "2060f366e8350aac9e13dad494748ff67cc9de92ded232cad18b6f3fc96146f7",
+      "lines": 1211,
       "syntax": "NOT_CHECKED",
       "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
     },
@@ -650,9 +650,16 @@
       "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
     },
     {
+      "path": "tests/test_audit_alpha_raw.py",
+      "sha256": "3ef3d7ddf96e3b9bc441bde8eda8ccea49718a7b32059a59d83fd6746e88f64f",
+      "lines": 98,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
       "path": "tests/test_audit_hardening.py",
-      "sha256": "90c938be12acb2fc296767cef221840d178a0e8f0bd779a3f8fcdea262e0caa4",
-      "lines": 260,
+      "sha256": "106299213927c3a9ec1a20ea4c0b8823d57e73aa9c415d14b1aa23c66e7c491c",
+      "lines": 282,
       "syntax": "PASS_PYTHON_AST",
       "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
     },
@@ -693,8 +700,8 @@
     },
     {
       "path": "tests/test_frontier001.py",
-      "sha256": "32c25d4ecdb09b23c572119b14df991ea368a14f1eb4178ca3797d6b6e054c6b",
-      "lines": 368,
+      "sha256": "56886b7607ec816b4f546b17de4931d043ac928ed5f41baefce3211d69dd7ab8",
+      "lines": 409,
       "syntax": "PASS_PYTHON_AST",
       "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
     },
@@ -763,8 +770,15 @@
     },
     {
       "path": "tests/test_world.py",
-      "sha256": "227b86bb6b8a152242f7da6a093df9f4c994f3e9490b6c6f00307c0fb3ccc7ee",
-      "lines": 314,
+      "sha256": "005cb0113eb2eac8bba2f28cf6f2c1d0b1629922453d9eacfeb0dbca13c72bb2",
+      "lines": 380,
+      "syntax": "PASS_PYTHON_AST",
+      "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
+    },
+    {
+      "path": "tools/audit_alpha_raw.py",
+      "sha256": "4e10df48f99dd7da18bcb4f97cd9b85e9046bf5757e752cc071c2eb00f3eef51",
+      "lines": 125,
       "syntax": "PASS_PYTHON_AST",
       "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
     },
@@ -812,8 +826,8 @@
     },
     {
       "path": "tools/world_ui_verify.cjs",
-      "sha256": "f18baa8f5f95cdb71f4145ddbff2ce8dd121bfee19b33f1a95938621059617fd",
-      "lines": 383,
+      "sha256": "a163214b9bcb1874269974f97e835cd07393d8825362132106aaaba478e45c7d",
+      "lines": 557,
       "syntax": "PASS_NODE_CHECK",
       "semantic_review": "NOT_CERTIFIED_LINE_BY_LINE"
     },

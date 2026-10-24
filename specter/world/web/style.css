@@ -1165,3 +1165,47 @@ main {
     grid-template-columns: 1fr;
   }
 }
+@media (min-width: 1101px) {
+  header {
+    height: 56px;
+  }
+  main {
+    padding-top: 18px;
+  }
+  .page-heading {
+    margin-bottom: 16px;
+  }
+  h1 {
+    font-size: 26px;
+    margin: 3px 0 5px;
+  }
+  .metric {
+    padding: 10px 16px;
+  }
+  .metric .number {
+    font-size: 23px;
+    margin: 4px 0 2px;
+  }
+  .panel-head {
+    padding: 11px 16px;
+  }
+  .panel-body {
+    padding: 13px 16px;
+  }
+  .signal-chart {
+    height: 130px;
+  }
+  .rssi-chart {
+    height: 95px;
+  }
+  .chart-top {
+    margin-bottom: 8px;
+  }
+  .chart-foot {
+    margin-top: 7px;
+    padding-top: 9px;
+  }
+  #packet-history {
+    height: 120px;
+  }
+}

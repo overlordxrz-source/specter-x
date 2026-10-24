@@ -356,3 +356,25 @@ def test_history_is_exact_masked_source_data(store, raw):
     assert any(v is None for v in point['amplitudes'])
     assert point['sig_len'] == expected['sig_len_bytes']
     assert point['phy_rate'] == expected['phy_rate_code']
+
+
+def test_catalog_does_not_silently_drop_eligible_files_after_irrelevant_names(tmp_path):
+    from specter.world.server import catalog_result
+    for i in range(530):
+        (tmp_path / f'a{i:04}.txt').write_text('not evidence')
+    (tmp_path / 'z-report.md').write_text('eligible')
+    result = catalog_result([tmp_path])
+    assert [item['name'] for item in result['items']] == ['z-report.md']
+    assert not result['truncated']
+
+
+def test_catalog_scan_limit_is_visible_and_streaming(tmp_path, monkeypatch):
+    import specter.world.server as server
+    monkeypatch.setattr(server, 'SCAN_LIMIT', 3)
+    for i in range(10):
+        (tmp_path / f'{i}.txt').write_text('ignored')
+    def forbidden(_):
+        raise AssertionError('Path.iterdir can materialize an unbounded directory on supported Python versions')
+    monkeypatch.setattr(Path, 'iterdir', forbidden)
+    result = server.catalog_result([tmp_path])
+    assert result['scan_truncated'] and result['truncated']

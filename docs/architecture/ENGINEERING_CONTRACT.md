@@ -4,7 +4,7 @@
 [canonical charter](../handbook/north-star.md); it does not change project identity
 or frozen experimental gates. Applies equally to OpenCode, Codex and human work.
 Architecture constraints reduce avoidable rework; no model is exempt from evidence.
-[Work order](WORK_ORDER.md) · [audit](../audit/README.md) · [documentation hub](../README.md).
+[Work-order template](WORK_ORDER.md) · [Next scoped task](NEXT_WORK_ORDER.md) · [audit](../audit/README.md) · [documentation hub](../README.md).
 
 ## Intended system and current boundary
 
@@ -100,7 +100,9 @@ Current bounds: 512 MiB source guard, default 250,000 indexed records (maximum
 1,000,000), 80 queried rows, 160 signal-history records, 256 registry history entries,
 12 concurrent HTTP requests and 4 KiB request bodies. SQLite overhead can exceed its
 index-file threshold; these are guardrails, not hard process-memory guarantees.
-No full-recording array should be created in a frontend polling path.
+Catalog enumeration streams at most 20,000 entries and sorts only the bounded
+result; incomplete scans and scan errors stay visible. No full-recording array
+should be created in a frontend polling path.
 
 ## WORLD desktop design
 
