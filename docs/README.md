@@ -66,6 +66,7 @@ compaction. Memory entries are not evidence; open the linked artifact.
 | Should we write our own firmware? | [First-party ESP-IDF strategy](handbook/firmware-strategy.md) |
 | What must a component implement? | [Interface control document](handbook/interfaces.md) |
 | What should engineering do next? | [Prioritized backlog](handbook/backlog.md) |
+| What did the independent PR review and first NODE workflow establish? | [Local bench foundation checkpoint](review/README.md) |
 | What happens in 30 days, 90 days, a year and beyond? | [Gated roadmap](handbook/roadmap.md) |
 | How can each modality help, and where does it fail? | [Sensor and fusion research program](handbook/research-program.md) |
 | How will we establish results? | [Experiments, benchmarks, simulation and replay](handbook/validation.md) |

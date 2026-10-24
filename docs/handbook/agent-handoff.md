@@ -1,5 +1,15 @@
 # Agent handoff index
 
+**Local bench candidate — 24 October 2026, not integrated into main:**
+`review/bench-foundation-20261024`, base `f2ef96b`. See the
+[independent PR #7–#9 review](../review/pr7-pr9-independent-review-20261024.md)
+and [NODE recording-to-WORLD workflow](../architecture/bench-device-workflow.md).
+The review requests GNSS/radar changes; passing old suites did not close all
+validity gaps. The separate candidate adds IMU finite-vector validation and
+an offline-tested capture owner; it does not edit the pending PRs or operate
+hardware. The owner confirms no camera/range/thermal sensor is in hand yet.
+Physical NODE acceptance and any second-sensor integration remain pending.
+
 **Open independent-review packet:** [PRs #7, #8 and #9 consolidated review handoff](pr7-pr8-pr9-review-handoff.md). These are unreviewed draft PRs; no approval or merge is implied.
 
 **SPECTER-SYNC:** [Phase 0 design](../design/specter-sync-phase0.md) and [Phase 1 physical bring-up log](../design/shrike-lite-bringup-log-20261024.md). The Shrike Lite is USB-detected (MicroPython RP2040, factory `main.py`/`blink_all.bin` backed up, GPIO4 heartbeat passed). Exact physical board revision remains **UNKNOWN**; the factory loop drives GPIO14/15, Go Configure is not installed, and no custom FPGA bitstream has been built or flashed. Timing accuracy is not claimed.
