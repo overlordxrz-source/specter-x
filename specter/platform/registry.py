@@ -39,6 +39,7 @@ class StreamState:
     buffer_evictions: int = 0
     last_seq: int | None = None
     last_epoch: str | None = None
+    clock_contract: tuple | None = None
     last_playback_ns: int | None = None
     rate_hz: float | None = None
     last: Observation | None = None
@@ -78,6 +79,10 @@ class Registry:
             st.state = "ERROR"
             raise ContractError("duplicate/out-of-order observation")
         ac = d["acquisition"]
+        contract = (ac["domain"], ac["tick_hz"], ac["wrap_bits"])
+        if st.last_epoch == ep and st.clock_contract != contract:
+            st.state = "ERROR"
+            raise ContractError("clock contract changed within epoch")
         t = (
             None
             if ac["unwrapped_ticks"] is None
@@ -97,6 +102,7 @@ class Registry:
             st.times.clear()
             st.rate_hz = None
         st.last_epoch = ep
+        st.clock_contract = contract
         st.last_seq = d["seq"]
         st.last_playback_ns = playback_ns
         st.received += 1

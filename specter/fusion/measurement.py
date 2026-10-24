@@ -4,6 +4,7 @@ Core principle: every detection carries provenance (which sensor, when, how
 confident, in which coordinate frame, produced by which algorithm). The HUD
 renders Measurements only, so nothing unsourced can reach the screen.
 """
+
 from __future__ import annotations
 
 import json
@@ -56,9 +57,9 @@ class Provenance:
 def _to_jsonable(obj: Any) -> Any:
     """Convert numpy types / tuples into plain JSON types (recursively)."""
     if isinstance(obj, np.ndarray):
-        return obj.tolist()
+        return _to_jsonable(obj.tolist())
     if isinstance(obj, (np.floating,)):
-        return float(obj)
+        return _to_jsonable(float(obj))
     if isinstance(obj, (np.integer,)):
         return int(obj)
     if isinstance(obj, (np.bool_,)):
@@ -90,6 +91,10 @@ class Measurement:
             raise ValueError("Measurement.sensor is required (provenance principle)")
         if not self.frame_id:
             raise ValueError("Measurement.frame_id is required")
+        if not math.isfinite(self.t_host) or (
+            self.t_sensor is not None and not math.isfinite(self.t_sensor)
+        ):
+            raise ValueError("measurement timestamps must be finite")
         if self.confidence is not None:
             c = float(self.confidence)
             if not (0.0 <= c <= 1.0):
@@ -101,6 +106,12 @@ class Measurement:
                 raise ValueError(f"covariance must be square, got shape {cov.shape}")
             if not np.allclose(cov, cov.T, atol=1e-9):
                 raise ValueError("covariance must be symmetric")
+            if (
+                not np.isfinite(cov).all()
+                or (np.diag(cov) < 0).any()
+                or np.linalg.eigvalsh(cov).min() < -1e-10
+            ):
+                raise ValueError("covariance must be finite and positive semidefinite")
             self.covariance = cov.tolist()
         if self.provenance.source != self.sensor:
             raise ValueError(
@@ -124,7 +135,7 @@ class Measurement:
         return _to_jsonable(d)
 
     def to_json(self) -> str:
-        return json.dumps(self.to_dict(), separators=(",", ":"))
+        return json.dumps(self.to_dict(), separators=(",", ":"), allow_nan=False)
 
     @classmethod
     def from_dict(cls, d: dict) -> "Measurement":

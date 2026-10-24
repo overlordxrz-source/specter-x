@@ -346,6 +346,9 @@ class WorldStore:
                             index=i,
                             tick=d["acquisition"]["ticks"],
                             rssi=v.get("rssi_dbm"),
+                            amplitudes=(v.get("amplitudes") if d["kind"] == "csi_lltf_amplitude" else None),
+                            sig_len=v.get("sig_len_bytes"),
+                            phy_rate=v.get("phy_rate_code"),
                         )
                     )
             return result

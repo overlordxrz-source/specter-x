@@ -3,12 +3,13 @@
 Real path: one multicast group (default 239.10.10.10:5007, TTL 2 = team LAN).
 Every datagram is an HMAC-signed envelope (see security.py); unsigned input
 is dropped before it can reach fusion. Replays are dropped by ReplayGuard
-after verify() and before decode: only a new boot id or a strictly greater
+after verify() and message validation: only a new boot id or a strictly greater
 seq per sender is admitted. In CI / single-host sims the socket falls back
 to loopback broadcast so `python -m specter.sim.team` works with no network
 at all. Zenoh / ROS 2 DDS can replace this module later — the message API
 above it does not change.
 """
+
 from __future__ import annotations
 
 import json
@@ -120,8 +121,8 @@ class UdpMulticastTransport:
     def receive(self, clock=None) -> List[Message]:
         """Return verified, fresh, non-replayed, non-self messages.
 
-        Drops, in order: rogue/corrupt (verify), replays and old seq
-        (ReplayGuard, before decode), self copies, stale (clock).
+        Validate authenticated messages before consuming sequence state.
+        Drop self copies, replays and stale messages before delivery.
         """
         raw: List[bytes] = []
         if self.hub is not None:
@@ -130,8 +131,8 @@ class UdpMulticastTransport:
             raw.extend(self._local)
             self._local.clear()
         if self._sock is not None:
-            deadline = time.time() + self.timeout_s
-            while time.time() < deadline:
+            deadline = time.monotonic() + self.timeout_s
+            while time.monotonic() < deadline:
                 try:
                     data, _ = self._sock.recvfrom(MAX_DATAGRAM)
                     raw.append(data)
@@ -143,15 +144,16 @@ class UdpMulticastTransport:
         for env in raw:
             try:
                 inner = security.verify(env.decode(), self.key)
-                header = json.loads(inner)  # light header peek: replay before decode
+                m = decode_message(inner)  # validate before consuming replay state
+                header = json.loads(inner)
                 sender = str(header.get("unit_id", "?"))
                 if sender == self.unit_id:
                     continue  # our own loopback copy
-                if not self._replay.check(sender, str(header.get("boot", "")),
-                                          header.get("seq", 0)):
+                if not self._replay.check(
+                    sender, str(header.get("boot", "")), header.get("seq", 0)
+                ):
                     continue  # replayed or superseded datagram
-                m = decode_message(inner)
-            except ValueError:
+            except (ValueError, TypeError, AttributeError, OverflowError, RecursionError):
                 continue  # rogue / corrupt / malformed: drop silently
             if clock is not None:
                 if clock.is_stale(m.t_host):

@@ -1,5 +1,7 @@
 # SPECTER-X documentation hub
 
+**Engineering entry point:** [Agent contract](architecture/ENGINEERING_CONTRACT.md) · [Work-order template](architecture/WORK_ORDER.md) · [Repository audit and release blockers](audit/README.md). These local audit-branch changes do not promote hardware or sensing readiness.
+
 **FRONTIER-001 and SPECTER-WORLD integration:** [FRONTIER-001](frontier001/README.md) and [SPECTER-WORLD desktop](world/README.md) · [integration and verification](world/integration.md). These are offline software/replay milestones, not new sensing claims. Canonical project memory below remains authoritative.
 
 **Edition 3 · 22 October 2026 · Alpha snapshot `933e856` · hardware preflight passed.**

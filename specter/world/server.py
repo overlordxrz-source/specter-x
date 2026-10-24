@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 import argparse
-import heapq
+import os
 import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -43,46 +43,39 @@ def _bounded_iter(entries, state):
 
 
 def _catalog_walk(root, state):
-    """Yield files under root with bounded memory and a bounded scan.
+    """Stream entries without materializing a directory or discarding names.
 
-    Each directory is reduced with ``heapq.nsmallest`` so at most
-    ``CATALOG_LIMIT`` names are retained even for a flat directory with
-    tens of thousands of entries. ``SCAN_LIMIT`` is a separate work bound;
-    reaching it marks the result incomplete instead of silently presenting a
-    partial scan as complete.
+    Catalog IDs are stable for this service instance, not across filesystem
+    enumeration orders. The global scan budget also bounds the directory stack.
     """
     stack = [root]
     while stack:
         directory = stack.pop()
         try:
-            entries = heapq.nsmallest(
-                CATALOG_LIMIT,
-                _bounded_iter(directory.iterdir(), state),
-                key=lambda p: p.name,
-            )
+            with os.scandir(directory) as entries:
+                for raw in _bounded_iter(entries, state):
+                    entry = Path(raw.path)
+                    try:
+                        if entry.is_symlink():
+                            resolved = entry.resolve()
+                            if not resolved.is_relative_to(root) or resolved.is_dir():
+                                continue
+                            path = resolved
+                        elif entry.is_dir():
+                            stack.append(entry)
+                            continue
+                        else:
+                            path = entry
+                        if not path.is_file():
+                            continue
+                    except OSError:
+                        state["scan_errors"] += 1
+                        continue
+                    yield path
+                    if len(state.get("items", ())) >= CATALOG_LIMIT:
+                        return
         except OSError:
-            continue
-        for entry in entries:
-            try:
-                if entry.is_symlink():
-                    resolved = entry.resolve()
-                    if not resolved.is_relative_to(root):
-                        continue
-                    if resolved.is_dir():
-                        continue
-                    path = resolved
-                elif entry.is_dir():
-                    stack.append(entry)
-                    continue
-                else:
-                    path = entry
-                if not path.is_file():
-                    continue
-            except OSError:
-                continue
-            yield path
-            if len(state.get("items", ())) >= CATALOG_LIMIT:
-                return
+            state["scan_errors"] += 1
         if state["scan_truncated"]:
             return
 
@@ -90,7 +83,7 @@ def _catalog_walk(root, state):
 def catalog_result(roots):
     """Return catalog items plus explicit completeness metadata."""
     items = []
-    state = {"scanned": 0, "scan_truncated": False, "items": items}
+    state = {"scanned": 0, "scan_truncated": False, "items": items, "scan_errors": 0}
     limit_truncated = False
     for root in roots:
         root = Path(root).resolve()
@@ -111,6 +104,7 @@ def catalog_result(roots):
                     continue
                 size = p.stat().st_size
             except OSError:
+                state["scan_errors"] += 1
                 continue
             if size > (WorldStore.MAX_BYTES if replay else 256 * 1024):
                 continue
@@ -123,6 +117,7 @@ def catalog_result(roots):
                     kind="replay" if replay else "evidence",
                     bytes=size,
                     path=p.resolve(),
+                    root=root,
                 )
             )
         if limit_truncated or state["scan_truncated"]:
@@ -131,11 +126,16 @@ def catalog_result(roots):
     # catalog must never claim completeness when more entries may exist.
     if len(items) >= CATALOG_LIMIT:
         limit_truncated = True
+    # Sort only the bounded result, never the unbounded directory input.
+    items.sort(key=lambda item: (item["group"], item["relative"]))
+    for index, item in enumerate(items):
+        item["id"] = str(index)
     return {
         "items": items,
         "limit": CATALOG_LIMIT,
         "scan_limit": SCAN_LIMIT,
-        "truncated": bool(limit_truncated or state["scan_truncated"]),
+        "truncated": bool(limit_truncated or state["scan_truncated"] or state["scan_errors"]),
+        "scan_errors": state["scan_errors"],
         "limit_truncated": bool(limit_truncated),
         "scan_truncated": bool(state["scan_truncated"]),
     }
@@ -206,6 +206,11 @@ class Handler(BaseHTTPRequestHandler):
     def item(self, key, kind):
         for item in self.server.items:
             if item["id"] == key and item["kind"] == kind:
+                resolved = item["path"].resolve()
+                if resolved != item["path"] or not resolved.is_relative_to(
+                    item["root"]
+                ):
+                    raise ValueError("catalog path changed or escaped approved root")
                 return item
         raise ValueError("unknown catalog item")
 
@@ -220,7 +225,7 @@ class Handler(BaseHTTPRequestHandler):
                     {
                         **self.server.catalog,
                         "items": [
-                            {k: v for k, v in i.items() if k != "path"}
+                            {k: v for k, v in i.items() if k not in ("path", "root")}
                             for i in self.server.items
                         ],
                     }

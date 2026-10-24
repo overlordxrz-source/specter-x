@@ -4,6 +4,7 @@ Every thermal driver yields Measurement(kind="thermal_frame") with per-frame
 min/mean/max °C plus covariance, and exposes read_celsius() for raw per-pixel
 temperature. The HUD renders only the Measurement, never the raw array.
 """
+
 from __future__ import annotations
 
 import time
@@ -25,10 +26,13 @@ def thermal_measurement(
     t_host: Optional[float] = None,
     frame_index: Optional[int] = None,
     sim: bool = False,
-    verified: bool = True,
+    verified: bool = False,
 ) -> Measurement:
     c = np.asarray(celsius, dtype=float)
-    var = float(np.var(c)) if c.size else 0.0
+    if c.ndim != 2 or not c.size or not np.isfinite(c).all():
+        raise ValueError("thermal frame must be a nonempty finite 2D array")
+    if sim and verified:
+        raise ValueError("simulation cannot verify a physical thermal conversion")
     return Measurement(
         sensor=SENSOR,
         kind="thermal_frame",
@@ -42,13 +46,19 @@ def thermal_measurement(
             "max_c": float(np.max(c)) if c.size else 0.0,
             "sim": bool(sim),
             "verified": bool(verified),
+            "spatial_variance_c2": float(np.var(c)),
         },
-        confidence=0.9 if verified else 0.3,
-        covariance=np.array([[max(var, 0.25)]]),
+        # Pixel variation is scene structure, not calibrated error uncertainty.
+        confidence=None,
+        covariance=None,
         provenance=Provenance(
-            sensor_id=sensor_id, source=SENSOR, algorithm=algorithm,
+            sensor_id=sensor_id,
+            source=SENSOR,
+            algorithm=algorithm,
             frame_index=frame_index,
-            notes=None if verified else "UNVERIFIED: conversion not checked on hardware",
+            notes=None
+            if verified
+            else "UNVERIFIED: conversion not checked on hardware",
         ),
     )
 

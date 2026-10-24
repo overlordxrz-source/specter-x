@@ -103,7 +103,7 @@ function selected() {
   return !source || o?.sensor_id === source ? o : null;
 }
 function amplitudeChart(o) {
-  const a = o?.value?.amplitudes;
+  const a = o?.kind === "csi_lltf_amplitude" ? o.value.amplitudes : null;
   if (!a)
     return '<div class="empty"><div class="empty-icon">∿</div><h2>No signal available</h2><p>This source has no acquired observations in the selected recording. No substitute feed is generated.</p></div>';
   const values = a.filter((x) => x != null),
@@ -132,6 +132,73 @@ function amplitudeChart(o) {
         (svg += `<text x="${left + (i * 710) / (a.length - 1)}" y="193" text-anchor="middle">${i}</text>`),
     );
   return `<div class="panel-body"><div class="chart-top"><span class="chart-legend">LLTF amplitude · acquisition order</span><span class="value">Peak ${fmt(max, 2)}</span></div>${svg}</svg><div class="chart-foot"><span>${esc(o.units)} · slot index, not spatial position</span><span class="warning">UNCALIBRATED</span></div></div>`;
+}
+function packetHistory(o) {
+  if (o?.kind !== "csi_lltf_amplitude") return "";
+  const frames = state.series.filter((p) => Array.isArray(p.amplitudes));
+  if (!frames.length) return "";
+  const values = frames.flatMap((p) => p.amplitudes.filter((v) => v != null));
+  const peak = Math.max(1, ...values);
+  return panel(
+    "Channel history",
+    "Actual amplitudes · 64 acquisition-order slots × recent records",
+    `<div class="panel-body history-body"><div class="history-legend"><span>LOW <i></i> HIGH · ${fmt(peak, 2)} · ${esc(o.units)}</span><span>MASKED <b></b></span></div><div class="history-axis"><span>SLOT 63</span><canvas id="packet-history" width="${frames.length}" height="64" tabindex="0" role="img" aria-label="CSI packet history. Hover for values; click a record to inspect its evidence. Press Enter to inspect the selected record."></canvas><span>SLOT 0</span></div><div class="history-readout" id="history-readout" aria-live="polite">${frames.length} records · hover for packet / slot values · click to inspect</div><div class="chart-foot"><span>Record ${fmt(frames[0].index + 1)} → ${fmt(frames.at(-1).index + 1)} · uniform record spacing</span><span>Window-relative color scale · no inference</span></div></div>`,
+    badge("RECORDED"),
+  );
+}
+function drawHistory() {
+  const canvas = $("#packet-history");
+  if (!canvas) return;
+  const frames = state.series.filter((p) => Array.isArray(p.amplitudes));
+  const peak = Math.max(
+    1,
+    ...frames.flatMap((p) => p.amplitudes.filter((v) => v != null)),
+  );
+  const ctx = canvas.getContext("2d"),
+    image = ctx.createImageData(frames.length, 64);
+  frames.forEach((frame, x) =>
+    frame.amplitudes.forEach((v, slot) => {
+      const n = ((63 - slot) * frames.length + x) * 4;
+      const z = v == null ? null : Math.min(1, v / peak);
+      const rgb =
+        z == null
+          ? [57, 45, 65]
+          : [
+              Math.round(19 + 146 * z),
+              Math.round(35 + 166 * z),
+              Math.round(43 + 145 * z),
+            ];
+      image.data.set([...rgb, 255], n);
+    }),
+  );
+  ctx.putImageData(image, 0, 0);
+  let active = frames.at(-1);
+  canvas.onpointermove = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = Math.max(
+      0,
+      Math.min(
+        frames.length - 1,
+        Math.floor(((e.clientX - rect.left) / rect.width) * frames.length),
+      ),
+    );
+    const slot =
+      63 -
+      Math.max(
+        0,
+        Math.min(63, Math.floor(((e.clientY - rect.top) / rect.height) * 64)),
+      );
+    active = frames[x];
+    $("#history-readout").textContent =
+      `Record ${fmt(active.index + 1)} · slot ${slot} · ${active.amplitudes[slot] == null ? "MASKED" : fmt(active.amplitudes[slot], 3) + " amplitude units"} · ${fmt(active.rssi)} dBm · ${fmt(active.sig_len)} B · PHY ${fmt(active.phy_rate)}`;
+  };
+  canvas.onclick = () => inspect(active.index);
+  canvas.onkeydown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      inspect(active.index);
+    }
+  };
 }
 function rssiChart() {
   const seq = state.series.filter((p) => p.rssi != null);
@@ -180,13 +247,13 @@ function sensors() {
     {
       id: "bench/di188/analog",
       name: "DATAQ DI-188",
-      note: "Previously tested · currently disconnected",
+      note: "Bench adapter · currently disconnected",
       fallback: "OFFLINE",
     },
     {
       id: "future/thermal",
       name: "Radiometric thermal",
-      note: "Module not received · no driver opened",
+      note: "Receipt not confirmed here · no driver opened",
       fallback: "UNAVAILABLE",
     },
   ];
@@ -229,7 +296,7 @@ function table() {
   return `<div class="table-wrap"><table><thead><tr><th>RECORD</th><th>SEQUENCE</th><th>NATIVE TICK</th><th>RSSI / dBm</th><th>ORIGIN</th><th>VALIDITY</th></tr></thead><tbody>${state.rows.map((r) => `<tr tabindex="0" data-index="${r.index}" aria-label="Inspect record ${r.index + 1}"><td>${fmt(r.index + 1)}</td><td>${fmt(r.seq)}</td><td class="muted">${fmt(r.tick)}</td><td>${fmt(r.rssi)}</td><td>${esc(r.origin).toUpperCase()}</td><td class="warn">${esc(r.state)}</td></tr>`).join("") || '<tr><td colspan="6">No matching observations in this window.</td></tr>'}</tbody></table></div>`;
 }
 function filters() {
-  return `<div class="toolbar"><select id="source-filter" aria-label="Source filter"><option value="">All recorded sources</option>${state.sources.map((s) => `<option value="${esc(s.sensor_id)}" ${source === s.sensor_id ? "selected" : ""}>${esc(s.sensor_id)}</option>`).join("")}<option value="bench/di188/analog" ${source === "bench/di188/analog" ? "selected" : ""}>DI-188 · OFFLINE</option><option value="future/thermal" ${source === "future/thermal" ? "selected" : ""}>Thermal · UNAVAILABLE</option></select><input id="record-filter" placeholder="Filter sequence or source…" aria-label="Filter records" value="${esc(query)}"></div>`;
+  return `<div class="toolbar"><select id="source-filter" aria-label="Source filter"><option value="">All recorded sources</option>${state.sources.map((s) => `<option value="${esc(s.sensor_id)}" ${source === s.sensor_id ? "selected" : ""}>${esc(s.sensor_id)}</option>`).join("")}<option value="bench/di188/analog" ${source === "bench/di188/analog" ? "selected" : ""}>DI-188 · OFFLINE</option><option value="future/thermal" ${source === "future/thermal" ? "selected" : ""}>Thermal · UNAVAILABLE</option></select><input id="record-filter" placeholder="Search recent rows by sequence or source…" aria-label="Filter records" value="${esc(query)}"></div>`;
 }
 function render() {
   if (!state) return;
@@ -296,11 +363,11 @@ function render() {
     : "";
   let html = "";
   if (page === "overview") {
-    html = `<div class="metrics">${metric("INDEXED OBSERVATIONS", fmt(state.count), "records", state.limited ? "Configured limit reached" : "Preserved source · no live capture")}${metric("RECENT ACQUISITION RATE", fmt(h.rate_hz, 1), "records/s", "Native ticks · up to 128-record window")}${metric("SOURCE SEQUENCE GAPS", fmt(h.source_missing), "missing", "Through selected observation")}${metric("CALIBRATION", o ? esc(o.calibration.status).toUpperCase() : "UNKNOWN", "", "Not a calibrated sensing result")}</div><div class="grid"><div class="stack">${panel("Wi-Fi CSI / signal workspace", "Preserved ESP32-S3 evidence", amplitudeChart(o), badge(o ? o.origin.toUpperCase() : "OFFLINE"))}${panel("Receive-level history", "Metadata from the selected source window", rssiChart())}${panel("Observation timeline", "Select a row to inspect the original envelope", table(), '<span class="subtle">Latest 80 records</span>')}</div><div class="stack">${panel("Source availability", "One registry · distinct readiness states", sensors())}${panel("Observation inspector", "Selected recording position", inspector(o), badge(o ? o.validity.state.toUpperCase() : "UNKNOWN", "warn"))}${panel("Session activity", "Service events, not experimental findings", notifications())}</div></div>`;
+    html = `<div class="metrics">${metric("INDEXED OBSERVATIONS", fmt(state.count), "records", state.limited ? "Configured limit reached" : "Preserved source · no live capture")}${metric("RECENT ACQUISITION RATE", fmt(h.rate_hz, 1), "records/s", "Native ticks · up to 128-record window")}${metric("SOURCE SEQUENCE GAPS", fmt(h.source_missing), "missing", "Through selected observation")}${metric("CALIBRATION", o ? esc(o.calibration.status).toUpperCase() : "UNKNOWN", "", "Not a calibrated sensing result")}</div><div class="grid"><div class="stack">${panel("Wi-Fi CSI / signal workspace", "Preserved ESP32-S3 evidence", amplitudeChart(o), badge(o ? o.origin.toUpperCase() : "OFFLINE"))}${packetHistory(o)}${panel("Receive-level history", "Metadata from the selected source window", rssiChart())}${panel("Observation timeline", "Select a row to inspect the original envelope", table(), '<span class="subtle">Up to 80 matching records through cursor</span>')}</div><div class="stack">${panel("Source availability", "One registry · distinct readiness states", sensors())}${panel("Observation inspector", "Selected recording position", inspector(o), badge(o ? o.validity.state.toUpperCase() : "UNKNOWN", "warn"))}${panel("Session activity", "Service events, not experimental findings", notifications())}</div></div>`;
   } else if (page === "sensing") {
     html =
       filters() +
-      `<div class="grid"><div class="stack">${panel("Signal inspection", o ? esc(o.sensor_id) : "Unavailable source", amplitudeChart(o), badge(o ? o.origin.toUpperCase() : "OFFLINE"))}${o ? panel("RSSI history", "No received-power normalization applied here", rssiChart()) : ""}${panel("Recorded observations", "Filtered window through current timeline position", table())}</div><div class="stack">${panel("Source metadata", "Actual selected observation", inspector(o))}${panel(
+      `<div class="grid"><div class="stack">${panel("Signal inspection", o ? esc(o.sensor_id) : "Unavailable source", amplitudeChart(o), badge(o ? o.origin.toUpperCase() : "OFFLINE"))}${packetHistory(o)}${o ? panel("RSSI history", "No received-power normalization applied here", rssiChart()) : ""}${panel("Recorded observations", "Filtered window through current timeline position", table())}</div><div class="stack">${panel("Source metadata", "Actual selected observation", inspector(o))}${panel(
         "Acquisition quality",
         "Native timestamp and source accounting",
         `<div class="panel-body">${kv([
@@ -416,25 +483,31 @@ function render() {
   let caret =
     focused === "record-filter" ? document.activeElement.selectionStart : null;
   $("#content").innerHTML = error + quality + html;
+  drawHistory();
   if (focused === "record-filter") {
     const el = $("#record-filter");
     el?.focus();
     el?.setSelectionRange(caret, caret);
   }
 }
-function sessionButtons() {
-  const list = files.filter((f) => f.kind === "replay");
+function sessionButtons(search = "") {
+  const list = files.filter(
+    (f) =>
+      f.kind === "replay" &&
+      (f.name + " " + f.relative).toLowerCase().includes(search.toLowerCase()),
+  );
   const truncated = catalogInfo?.truncated
-    ? `<p class="subtle">Catalog limit reached (${fmt(catalogInfo.limit)} items; scan limit ${fmt(catalogInfo.scan_limit)}). Some evidence is not shown; this is not a complete listing.</p>`
+    ? `<p class="subtle">Catalog may be incomplete (${fmt(catalogInfo.limit)} item limit; ${fmt(catalogInfo.scan_limit)} scan limit; ${fmt(catalogInfo.scan_errors || 0)} scan errors). Some evidence is not shown; this is not a complete listing.</p>`
     : "";
-  return truncated + (
-    list
+  return (
+    truncated +
+    (list
       .map(
         (f) =>
           `<button class="session-item" data-session="${f.id}"><span><b>${esc(f.name)}</b><small>${esc(f.group)} / ${esc(f.relative)} · ${fmt(f.bytes / 1024, 1)} KiB</small></span><span>↗</span></button>`,
       )
       .join("") ||
-    '<p class="subtle">No recordings in approved roots. Restart with --root /path/to/recordings or --replay /path/to/capture.raw.csi.</p>'
+      '<p class="subtle">No recordings in approved roots. Restart with --root /path/to/recordings or --replay /path/to/capture.raw.csi.</p>')
   );
 }
 function evidenceButtons() {
@@ -451,7 +524,13 @@ function evidenceButtons() {
 async function refresh() {
   if (busy || switching) return;
   busy = true;
-  const requestGeneration = generation;
+  const requestGeneration = generation,
+    requestSource = source,
+    requestQuery = query;
+  const stale = () =>
+    requestGeneration !== generation ||
+    requestSource !== source ||
+    requestQuery !== query;
   try {
     const nextState = await api(
       "state?" +
@@ -460,13 +539,13 @@ async function refresh() {
           ...(query ? { q: query } : {}),
         }),
     );
-    if (requestGeneration !== generation) return;
+    if (stale()) return;
     state = nextState;
     $("#service-label").textContent = "Local service available";
     $("#service-dot").style.background = "#91a49c";
     render();
   } catch (e) {
-    if (requestGeneration !== generation) return;
+    if (stale()) return;
     $("#service-label").textContent = "Service disconnected";
     $("#service-dot").style.background = "#df8a8d";
     notice(e.message);
@@ -584,6 +663,28 @@ document.addEventListener("click", async (e) => {
   }
 });
 document.addEventListener("keydown", (e) => {
+  const editing = e.target.closest(
+    "input,select,textarea,button,[contenteditable],dialog",
+  );
+  if (
+    !editing &&
+    !$("dialog[open]") &&
+    state?.status === "READY" &&
+    !switching
+  ) {
+    if (e.code === "Space") {
+      e.preventDefault();
+      control("play", !state.playing);
+    }
+    if (e.key === "ArrowRight") {
+      e.preventDefault();
+      control("seek", Math.min(state.count - 1, state.position + 1));
+    }
+    if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      control("seek", Math.max(0, state.position - 1));
+    }
+  }
   if (e.key === "Enter" && e.target.dataset.index)
     inspect(e.target.dataset.index);
 });
@@ -606,8 +707,12 @@ document.addEventListener("input", (e) => {
   }
 });
 $("#open-session").onclick = () => {
+  $("#session-search").value = "";
   $("#session-list").innerHTML = sessionButtons();
   $("#sessions-dialog").showModal();
+};
+$("#session-search").oninput = (e) => {
+  $("#session-list").innerHTML = sessionButtons(e.target.value);
 };
 $("#close-dialog").onclick = () => $("#sessions-dialog").close();
 $("#close-inspection").onclick = () => $("#inspection").close();

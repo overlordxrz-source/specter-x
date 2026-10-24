@@ -22,6 +22,7 @@ Provenance: :class:`DI188Identity` and :class:`DeviceCalibration` describe
 exactly which instrument and which calibration basis produced a number, so the
 HUD can label it.
 """
+
 from __future__ import annotations
 
 import glob
@@ -484,8 +485,9 @@ class DI188Driver:
         if echo[:n] == buf[:n]:
             if len(buf) >= len(echo):
                 self._pending_echo = b""
-                return buf[len(echo):]
-            return b""            # wait for the rest of the echo
+                return buf[len(echo) :]
+            self._pending_echo = echo[n:]
+            return b""  # wait for the rest of the echo
         # the instrument did not echo (it was already scanning) - keep the data
         self._pending_echo = b""
         return buf
