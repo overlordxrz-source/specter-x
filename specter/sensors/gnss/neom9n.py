@@ -7,7 +7,9 @@ message. NMEA GGA is a fallback for fix + hAcc estimate only.
 Every fix is emitted as a Measurement(kind="gnss_fix", frame "wgs84") with
 hAcc/vAcc converted to a 3x3 covariance in m^2 (diagonal). No position is
 ever emitted without its accuracy: fix_type 0 (no fix) yields confidence 0
-and a large covariance, never a fake-precise point.
+and a large covariance, never a fake-precise point. UBX `height` is carried as
+explicit WGS84 ellipsoid height (`wgs84_hae`); NMEA GGA altitude is carried as
+explicit mean-sea-level (`msl`) and is not silently mixed with HAE.
 """
 
 from __future__ import annotations
@@ -104,7 +106,8 @@ def parse_nav_pvt(payload: bytes) -> dict:
         "num_sv": g(23, "<B"),
         "lon_deg": g(24, "<i") / 1e7,
         "lat_deg": g(28, "<i") / 1e7,
-        "height_m": g(32, "<i") / 1000.0,
+        "height_m": g(32, "<i") / 1000.0,  # WGS84 ellipsoid height
+        "alt_datum": "wgs84_hae",
         "h_acc_m": g(40, "<I") / 1000.0,
         "v_acc_m": g(44, "<I") / 1000.0,
     }
@@ -142,6 +145,7 @@ def pvt_to_measurement(
             "lat_deg": float(pvt["lat_deg"]),
             "lon_deg": float(pvt["lon_deg"]),
             "alt_m": float(pvt["height_m"]),
+            "alt_datum": str(pvt.get("alt_datum", "unspecified")),
             "fix_type": fix,
             "fix_label": pvt.get("fix_label", FIX_LABELS.get(fix, "?")),
             "num_sv": int(pvt["num_sv"]),
@@ -188,6 +192,7 @@ def parse_nmea_gga(line: str) -> Optional[dict]:
     # hdop -> rough horizontal accuracy; honest: mark as estimate.
     return {
         "lat_deg": lat, "lon_deg": lon, "height_m": alt,
+        "alt_datum": "msl",  # GGA altitude is above mean sea level, not HAE
         "fix_type": 3 if fix >= 1 else 0,
         "fix_label": ("FIX_3D" if fix >= 1 else "NO_FIX") + "+NMEA-EST",
         "num_sv": sats, "h_acc_m": max(hdop * 4.0, 2.5), "v_acc_m": max(hdop * 6.0, 4.0),
@@ -262,7 +267,7 @@ class Neom9nDriver:
 
 @dataclass
 class SyntheticGnss:
-    """CI synthetic GNSS: walks a straight line, UBX-accurate covariances, SIM-labelled."""
+    """CI synthetic GNSS on the simulation clock; SIM-labelled, never hardware."""
 
     sensor_id: str = "neom9n-sim"
     lat0: float = 47.3769
@@ -299,7 +304,10 @@ class SyntheticGnss:
             fix_type=3, num_sv=14, tow_ms=self._i * int(dt * 1000),
         )
         pvt = parse_nav_pvt(payload[6 : 6 + NAV_PVT_LEN])
-        m = pvt_to_measurement(pvt, sensor_id=self.sensor_id, sim=True)
+        m = pvt_to_measurement(
+            pvt, sensor_id=self.sensor_id, sim=True,
+            t_host=float(self._i * dt),  # simulation clock, not wall time
+        )
         object.__setattr__(m, "provenance", Provenance(
             sensor_id=self.sensor_id, source=SENSOR,
             algorithm=ALGORITHM_UBX + "-sim", frame_index=self._i))

@@ -106,6 +106,48 @@ start human experiments without explicit authorization.
 that conflicts with a raw artifact is corrected by a dated note.
 **Links:** [agent handoff](agent-handoff.md), [North Star](north-star.md).
 
+## ADR-008 — GNSS fix validity is explicit and fail-closed
+
+**Status:** accepted · 24 October 2026
+**Context:** The EKF previously accepted any `gnss_fix` Measurement. A
+receiver NO_FIX report could establish the ENU anchor and switch localization
+to GNSS mode, and the altitude datum was not carried in the measurement
+contract. ADR-007 is reserved for the pending team evidence-validity work.
+
+**Decision:** `PoseEKF.update_gnss()` validates the complete receiver fix
+before mutating any state:
+
+- kind `gnss_fix`, sensor `gnss`, frame `wgs84`;
+- integer fix type `3` (3D), satellite count `4..64`;
+- explicit boolean `sim` marker; simulated fixes require
+  `allow_simulated=True`;
+- explicit `alt_datum` in `{wgs84_hae, msl}`; the datum cannot change after
+  the first valid anchor;
+- finite latitude `[-90, 90]`, longitude `[-180, 180]`, altitude
+  `[-1000, 20000]` m, positive horizontal/vertical accuracy and an explicit
+  confidence in `(0, 1]`;
+- finite, symmetric, positive-diagonal positive-semidefinite 3x3 covariance;
+- finite nonnegative `t_host`; after the first valid GNSS fix establishes
+  the time epoch, later fixes may not be older than the filter clock beyond a
+  `1e-6` s numerical tolerance nor more than `1.0` s in the future.
+
+A rejected report raises `ValueError` before anchor, position, mode,
+measurement IDs or timestamps change. The existing relative state remains
+intact. Valid physical UBX fixes work as before. NMEA GGA fixes are accepted
+only with their explicit `msl` datum; UBX and NMEA datums cannot be mixed
+without a geoid conversion. `SyntheticGnss` uses simulation time and requires
+an explicit simulated-fix allowance.
+
+**Consequences:** No-fix, malformed, out-of-range, wrong-datum, synthetic or
+timestamp-invalid reports cannot promote a relative pose to GNSS. The filter
+does not infer a geoid correction, an anchor offset, or satellite truth from
+the absence of fields. This closes only the GNSS validity P1; the remaining
+audit blockers stay gated.
+
+**Links:** [GNSS regressions](../../tests/test_gnss_validity.py),
+[EKF](../../specter/localization/ekf.py), [audit](../audit/README.md),
+[team simulation](../../specter/sim/team.py).
+
 ---
 
 ## Adding a decision

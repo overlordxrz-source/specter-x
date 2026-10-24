@@ -94,7 +94,7 @@ def run_team(units: int = 2, steps: int = 40, dt: float = 0.2,
     for i in range(units):
         uid = f"unit-{i + 1}"
         hub.register(uid)  # membership upfront: no step-1 message loss
-        ekf = PoseEKF(uid)
+        ekf = PoseEKF(uid, allow_simulated=True)
         ekf.anchor = anchor
         vu.append(VirtualUnit(
             unit_id=uid,
