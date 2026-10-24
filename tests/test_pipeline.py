@@ -41,8 +41,9 @@ def test_tc001_split_and_convert():
 def test_radar_tlv_parse():
     pts = np.array([[1, 2, 0.5, -0.1], [0.2, 3, 0, 0.4]], "<f4")
     tlv = struct.pack("<2I", 1, pts.nbytes) + pts.tobytes()
-    total = struct.calcsize(HEADER_FMT) + len(tlv)
+    body = tlv + b"\x00" * ((32 - (struct.calcsize(HEADER_FMT) + len(tlv)) % 32) % 32)
+    total = struct.calcsize(HEADER_FMT) + len(body)
     hdr = struct.pack(HEADER_FMT, MAGIC, 0x03060000, total, 0x6843, 7, 0, 2, 1, 0)
-    h, p = parse_frame(hdr + tlv)
+    h, p = parse_frame(hdr + body)
     assert h.frame_number == 7 and h.num_detected == 2
     np.testing.assert_allclose(p, pts)
