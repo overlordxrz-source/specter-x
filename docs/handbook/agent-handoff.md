@@ -36,7 +36,8 @@ state, and do not overwrite uncommitted work.
 | FRONTIER-001 / SPECTER-WORLD | **Work-owned**, separate `specter-x-frontier001` worktree. Read-only from this documentation effort; do not touch, merge or overwrite. |
 | PR #5 final acceptance | **MERGED at `e20ec42`.** Reviewed head was `cf05def`; independent review: **195 passed, 1 hardware deselected**; 69 targeted; **31 browser checks**; 7,290-record replay and source hash reproduced. After merge: **195 passed, 1 deselected**, real CSI replay **7,290 observations**, 31 browser checks PASS. No merge-blocking defects. |
 | Work audit branch | `audit/world-os-hardening` at **`c419216`** is preserved unchanged. Its clean integration branch was merged as PR #6 at **`ec52a36`**; the original branch ref and Work checkout remain untouched. |
-| PR #6 integration | **MERGED at `ec52a36`.** Reviewed head **`2818705`**, base `main` `b2ea0ba`. Pre-merge review: 245 passed, 1 hardware deselected; 68 targeted; 37 browser checks; architecture PASS; 7,290-record replay. Post-merge on `main`: same counts, real CSI replay **7,290 observations**, source SHA unchanged. Five P1 legacy blockers remain explicitly documented and unavailable as validated WORLD capabilities. |
+| PR #6 integration | **MERGED at `ec52a36`.** Reviewed head **`2818705`**, base `main` `b2ea0ba`. Pre-merge review: 245 passed, 1 hardware deselected; 68 targeted; 37 browser checks; architecture PASS; 7,290-record replay. Post-merge on `main`: same counts, real CSI replay **7,290 observations**, source SHA unchanged. Five P1 legacy blockers were recorded at that point; two are fixed below and three remain unavailable as validated WORLD capabilities. |
+| Team evidence-validity branch | **DRAFT PR #7 — not merged**, branch `fix/team-evidence-validity`, implementation commit **`e7bec52`**, base `main` `35a1156`. Stale/future/unknown-age peer reports are rejected; shared/looped parent evidence cannot add precision. **266 passed, 1 deselected**; 79 focused; architecture **PASS**; probe shows the two team P1 controls fixed and the other three P1s still `true`. |
 | Hardware/firmware | No Alpha 003 hardware run. Do not flash firmware or start a human session without explicit owner authorization. |
 
 ## PR #5 final acceptance (`cf05def`)
@@ -114,17 +115,36 @@ Acceptable limitations, not merge blockers:
 - `audit_legacy_probes.py` reproduces the five known P1s: stale peer
   freshness, double-counted parent evidence, no-fix GNSS anchoring, impossible
   radar length, and non-finite quaternion acceptance.
-- These P1s stay blocked from entering `specter.world`; next work remains the
-  scoped fusion work order.
+- Two of these P1s are fixed on the team evidence-validity branch below; the
+  other three stay blocked from entering `specter.world`.
+
+## Team evidence-validity branch (`e7bec52`, PR #7)
+
+**Status: implemented, draft PR pending independent review; not merged.**
+
+- Peer `t_host` is report-creation time, not acquisition time. A finite
+  caller-supplied `peer_t - local_t` mapping is required; unknown age is rejected.
+- Peer age is accepted only within `max_future_s`/`max_age_s`; the merged
+  track retains evidence time rather than the fusion call time.
+- `own_anchor` is rejected and no calibration/anchor transform is invented.
+  `frame_id` is an additive shared-frame declaration.
+- Precision fusion requires non-empty, pairwise-disjoint parent measurement
+  IDs. Shared, looped or unknown parentage keeps one contribution and marks
+  `fusion_status="shared_evidence"`.
+- **266 passed, 1 deselected**; 79 focused; architecture gate **PASS**.
+  `audit_legacy_probes.py` reports stale/future/unknown-age/shared-parent as
+  `false`; the other three P1s remain `true`.
+- A mutation restoring unconditional age admission and duplicate precision
+  fails **8** of the new regressions.
+- Team fusion remains gated from WORLD. Remaining P1s: no-fix GNSS anchoring,
+  impossible radar length and non-finite quaternion acceptance.
 
 ## Next single task
 
-**PR #6 is merged at `ec52a36`.** The next recommended scoped work order is
-the existing
-[legacy team evidence validity task](https://github.com/overlordxrz-source/specter-x/blob/ec52a36/docs/architecture/NEXT_WORK_ORDER.md):
-close one P1 at a time, starting with stale/future report eligibility and
-duplicate-parent/cross-correlation handling in `specter/fusion/team.py`.
-Do not enable team fusion in WORLD until that review passes.
+**PR #7 is a draft awaiting independent review.** Do not merge it without owner
+authorization. After review, the next scoped blocker is the no-fix GNSS state
+mutation in `specter/localization/ekf.py`; keep team fusion gated until its
+anchor/calibration limitations are separately resolved.
 
 **Alpha 003 screening is prepared but not authorized.** Read
 [alpha003-screening-v1.md](https://github.com/overlordxrz-source/specter-x/blob/e7af1ad/docs/design/alpha003-screening-v1.md)
