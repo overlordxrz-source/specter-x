@@ -1,6 +1,6 @@
 # Agent handoff index
 
-**PR #10 corrected candidate — independent re-review required, 24 October:**
+**PR #10 corrected candidate — independently re-reviewed: APPROVE, 24 October:**
 Reviewed head `2b54410508118ae4e2c75d0f162467ada98dba28`; OpenCode review
 `760a3f6e6c98b46578f53cce712c06b97266b003` imported verbatim. Regression-first
 commit `f99db9a10448cbd86e7af4e834885133af0d39a8` had 18 failing cases;
@@ -15,6 +15,11 @@ dirty captures carry `clean_first_run=FAIL` and exit 2. Scientific acceptance
 always remains NOT_EVALUATED here. Operator/device evidence and specific
 ESP32-test authorization are still required; no physical acquisition, merge,
 flash or Alpha evidence change. PR #7–#9 follow-ups below remain required.
+Independent re-review at `8a84369941c74d5f884c9ec6cc33d10395223597` passes
+the five controls, full offline CI, architecture, 7,290 replay and 5/5
+targeted mutations; see the
+[re-review](../review/pr10-rereview-20261024.md). Approval does not authorize
+the physical ESP32 test.
 
 **Local bench candidate — 24 October 2026, not integrated into main:**
 `review/bench-foundation-20261024`, base `f2ef96b`. See the
