@@ -21,6 +21,7 @@ reference.
 | **EXP-FRONTIER-001** | FRONTIER-001 observation/replay slice | **INTEGRATED — main at `e20ec42`; Work worktree unchanged** | Integration is software/replay provenance only, not a new sensing result. Separate `specter-x-frontier001` worktree owned by Work. |
 | **EXP-WORLD-001** | SPECTER-WORLD desktop replay/inspection platform | **INTEGRATED — main at `e20ec42`** | Offline replay and inspection UI only. 7,290-record real-CSI replay and browser checks recorded; no live acquisition or hardware claim. |
 | **EXP-A001/002** | DI-188, Alpha 001/002 acquisition and integration | **historical — see each record** | Acquisition/integration evidence only; not a motion, presence or vital-sign claim. |
+| **EXP-SYNC-001** | SPECTER-SYNC Shrike Lite FPGA event timing | **PLANNED / UNVALIDATED** | Owner reports board physically received; no power, external signal, flash or timing run. Exact board revision UNKNOWN. First gate is stable MCU/FPGA proof-of-life, then a known 3.3 V pulse train, 32-bit event capture and RP2040 readout. No timing-accuracy claim before oscillator reference calibration and repeatability evidence. |
 
 ## Alpha 002-C evidence map
 

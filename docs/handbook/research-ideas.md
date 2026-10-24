@@ -77,6 +77,7 @@ What it does **not** mean:
 | **RI-008** | **Information-gain-driven active perception**: choose the next observation (viewpoint, longer window, different modality) that most reduces uncertainty. | **RESEARCH** | Start with recommendations, not actuation; human authorization and local safety for any moving platform; measure decision benefit and cost. |
 | **RI-009** | **Learned world models**: a persistent, uncertainty-aware spatial state learned from multimodal history. | **VISION** | Requires validated fusion, provenance, time alignment and independent evaluation; a track list or rendered scene is not a world model. |
 | **RI-010** | **Confidence versus spatial information**: a high-confidence channel-change label must not be presented as a 3-D detection. | **RESEARCH** constraint | Enforced by [ADR-003](decisions.md); test with a CSI-only high-confidence condition and no range/bearing evidence. |
+| **RI-011** | **SPECTER-SYNC / Shrike Lite FPGA timing**: use the RP2040 + Renesas SLG47910 board for deterministic event counters, timestamp capture and a minimal sensor-interface bridge. | **PLANNED** | Identify the physical board revision; verify stable power and 3.3 V I/O; measure the nominal 50 MHz oscillator against an external reference; characterize input latency, jitter, counter wrap and RP2040 readout. Any CORE/WORLD record must use the existing Observation v1 contract, not a new schema. No timing-accuracy claim before calibration. See [Phase 0 design](../design/specter-sync-phase0.md). |
 
 ## Adding an idea
 

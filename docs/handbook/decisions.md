@@ -106,6 +106,26 @@ start human experiments without explicit authorization.
 that conflicts with a raw artifact is corrected by a dated note.
 **Links:** [agent handoff](agent-handoff.md), [North Star](north-star.md).
 
+## ADR-010 — SPECTER-SYNC uses the existing Observation contract
+
+**Status:** proposed · 24 October 2026
+**Context:** The Shrike Lite event counter will produce a raw FPGA tick and an
+RP2040 readout. Adding a separate FPGA-event schema would fragment CORE/WORLD
+provenance. ADR-007–009 are reserved by the pending team, GNSS and radar PRs.
+**Decision:** SPECTER-SYNC adapters must emit the existing
+`specter.observation/1.0.0` contract. FPGA ticks map to acquisition
+domain/epoch/ticks/tick_hz/wrap_bits/unwrapped_ticks; RP2040 readout time maps
+to `received`; raw capture maps to evidence hash/line. Nominal 50 MHz is
+explicitly uncalibrated, and 32-bit wraps/resets create explicit epochs.
+The bench CSV is a raw artifact, not a replacement schema. No FPGA module may
+be imported by WORLD; only validated Observations cross CORE/WORLD.
+**Consequences:** No duplicate envelope, no invented covariance, confidence or
+absolute-time accuracy. SPECTER-SYNC remains UNVALIDATED until a reviewed
+hardware run, oscillator reference, repeatability evidence and raw hashes exist.
+**Links:** [Phase 0 design](../design/specter-sync-phase0.md),
+[Observation boundary](../design/specter-sync-observation-boundary.md),
+[inventory](hardware-inventory.md), [observation schema](../../specter/platform/observation.py).
+
 ---
 
 ## Adding a decision
