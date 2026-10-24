@@ -1,6 +1,8 @@
 # Agent handoff index
 
-[Hub](../README.md) · **Current handoff · 23 October 2026.**
+**Open independent-review packet:** [PRs #7, #8 and #9 consolidated review handoff](pr7-pr8-pr9-review-handoff.md). These are unreviewed draft PRs; no approval or merge is implied.
+
+[Hub](../README.md) · **Current handoff · 24 October 2026.**
 
 **Canonical startup reference for every future agent — ChatGPT, OpenCode,
 Work and any other coding agent.** Read it after the North Star and the
