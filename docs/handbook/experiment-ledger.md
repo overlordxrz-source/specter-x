@@ -1,6 +1,6 @@
 # Experiment ledger
 
-[Hub](../README.md) · **Index of experiment families and current gates · updated 23 October 2026.**
+[Hub](../README.md) · **Index of experiment families and current gates · updated 24 October 2026.**
 
 This ledger is an **index**, not a replacement for the checkpoints. The
 original checkpoint, protocol, raw artifact and result remain canonical; this
@@ -18,7 +18,8 @@ reference.
 |---|---|---|---|
 | **EXP-A002C-001** | Controlled CSI hand motion vs stationary (Alpha 002-C) | **IN PROGRESS — exploratory positive; independent replication pending** | One completed 20-trial session, 20/20 valid. Primary `roughness_used`: exact one-sided p = 1/1024 = 0.00098, d_z = 1.69, 95% CI [1.34, 2.91], all 10 paired differences positive; rate/PHY confounds clear. The raw validator was corrected after the first INVALID; the original INVALID and corrected PASS are both preserved. Single session, estimated geometry, 3 s lead-in, post-data correction, no independent replication. **Do not call confirmatory or general motion detection.** |
 | **EXP-A003-001** | Human presence: empty / stationary / moving | **PLANNED — protocols and offline code only; no human session** | 3 sessions are exploratory only; confirmatory needs 7 sessions and a session-level exact sign test. Screening is one session, 6 blocks × 3 × 20 s, seed `20261024`. No presence claim. |
-| **EXP-FRONTIER-001** | FRONTIER-001 observation/replay slice | **PLANNED / Work-owned** | Separate `specter-x-frontier001` worktree owned by Work. This documentation branch does not inspect, merge or modify it. |
+| **EXP-FRONTIER-001** | FRONTIER-001 observation/replay slice | **INTEGRATED — main at `e20ec42`; Work worktree unchanged** | Integration is software/replay provenance only, not a new sensing result. Separate `specter-x-frontier001` worktree owned by Work. |
+| **EXP-WORLD-001** | SPECTER-WORLD desktop replay/inspection platform | **INTEGRATED — main at `e20ec42`** | Offline replay and inspection UI only. 7,290-record real-CSI replay and browser checks recorded; no live acquisition or hardware claim. |
 | **EXP-A001/002** | DI-188, Alpha 001/002 acquisition and integration | **historical — see each record** | Acquisition/integration evidence only; not a motion, presence or vital-sign claim. |
 
 ## Alpha 002-C evidence map

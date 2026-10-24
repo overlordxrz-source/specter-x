@@ -34,7 +34,8 @@ state, and do not overwrite uncommitted work.
 | Alpha 002-C | **IN PROGRESS — exploratory positive, independent replication pending.** One 20-trial session, 20/20 valid; p = 1/1024, d_z = 1.69, CI [1.34, 2.91]. Original INVALID and corrected PASS preserved. Not confirmatory. |
 | Alpha 003 screening | **PREPARED — software rehearsal complete; no human session and no authorization yet.** Screening endpoints remain frozen at `e7af1ad`; execution checklist at `285bc2c` (`docs/design/alpha003-screening-execution.md`). Readiness: 32 targeted preflight/acquisition/cue tests and `414 passed, 1 deselected` for the automatic suite. |
 | FRONTIER-001 / SPECTER-WORLD | **Work-owned**, separate `specter-x-frontier001` worktree. Read-only from this documentation effort; do not touch, merge or overwrite. |
-| PR #5 final acceptance | **APPROVE — not merged**, head **`cf05def`**, base `main`. Independent final review: **195 passed, 1 hardware deselected**; 69 targeted; **31 browser checks**; 7,290-record replay and source hash reproduced. No merge-blocking defects. |
+| PR #5 final acceptance | **MERGED at `e20ec42`.** Reviewed head was `cf05def`; independent review: **195 passed, 1 hardware deselected**; 69 targeted; **31 browser checks**; 7,290-record replay and source hash reproduced. After merge: **195 passed, 1 deselected**, real CSI replay **7,290 observations**, 31 browser checks PASS. No merge-blocking defects. |
+| Work audit branch | `audit/world-os-hardening` at **`c419216`** remains **separate and unmerged**. It needs its own PR and independent review before any merge. |
 | Hardware/firmware | No Alpha 003 hardware run. Do not flash firmware or start a human session without explicit owner authorization. |
 
 ## PR #5 final acceptance (`cf05def`)
@@ -74,12 +75,13 @@ Acceptable documented desktop-alpha limitations, not merge blockers:
 
 No hardware, firmware, human trial, Alpha checkout or Work checkout was
 modified. The `.github`, canonical handbook and frozen Alpha files remain
-unchanged. PR #5 is approved but **not merged**; merge requires owner action.
+unchanged. PR #5 was merged with owner authorization at **`e20ec42`**; the
+merge is a merge commit, not a fast-forward/squash rewrite.
 
 ## Next single task
 
-**PR #5 is approved but not merged.** It is ready for owner integration
-review; do not merge or amend Work's checkout from this documentation branch.
+**PR #5 is merged at `e20ec42`.** Continue with the separate audit branch only
+through its own PR and independent review.
 
 **Alpha 003 screening is prepared but not authorized.** Read
 [alpha003-screening-v1.md](https://github.com/overlordxrz-source/specter-x/blob/e7af1ad/docs/design/alpha003-screening-v1.md)
@@ -95,8 +97,9 @@ also only with authorization.
 
 ## Do not
 
-- Do not merge PR #5 while the review verdict is REQUEST CHANGES.
-- Do not merge unfinished Alpha 003 or SPECTER-WORLD code.
+- Do not merge a PR without owner authorization and an APPROVE/valid gate.
+- Do not include the Work audit branch `audit/world-os-hardening` until its
+  own review is complete.
 - Do not merge the documentation branch with feature/Work branches.
 - Do not touch or modify Work's `specter-x-frontier001` worktree.
 - Do not flash firmware or start human trials without explicit authorization.
