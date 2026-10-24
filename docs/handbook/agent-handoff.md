@@ -1,5 +1,21 @@
 # Agent handoff index
 
+**PR #10 corrected candidate — independent re-review required, 24 October:**
+Reviewed head `2b54410508118ae4e2c75d0f162467ada98dba28`; OpenCode review
+`760a3f6e6c98b46578f53cce712c06b97266b003` imported verbatim. Regression-first
+commit `f99db9a10448cbd86e7af4e834885133af0d39a8` had 18 failing cases;
+implementation `57c8be07a5e728808c998224f1712cf79b459dbb` closes the five
+reported defects with **59 focused / 304 offline tests passed, 1 hardware
+deselected**, architecture PASS, all five targeted mutants detected, and
+7,290-record exact-byte replay. Read the [response and commands](../review/pr10-remediation-20261024.md).
+Raw/receipt write returns and persisted counts/hashes are enforced; interrupts
+publish a terminal state then re-raise; clocks are checked; huge quaternion
+conversion overflow becomes ValueError without state mutation. Complete but
+dirty captures carry `clean_first_run=FAIL` and exit 2. Scientific acceptance
+always remains NOT_EVALUATED here. Operator/device evidence and specific
+ESP32-test authorization are still required; no physical acquisition, merge,
+flash or Alpha evidence change. PR #7–#9 follow-ups below remain required.
+
 **Local bench candidate — 24 October 2026, not integrated into main:**
 `review/bench-foundation-20261024`, base `f2ef96b`. See the
 [independent PR #7–#9 review](../review/pr7-pr9-independent-review-20261024.md)

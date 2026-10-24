@@ -1,5 +1,8 @@
 # Bench foundation review checkpoint
 
+**PR #10 re-review:** [OpenCode's original REQUEST CHANGES](pr10-independent-review-20261024.md)
+and [regression-first remediation, compatibility and reproduction](pr10-remediation-20261024.md).
+
 24 October 2026 · isolated local candidate, not merged or pushed.
 
 - [Independent PR #7–#9 findings and reproduction](pr7-pr9-independent-review-20261024.md)

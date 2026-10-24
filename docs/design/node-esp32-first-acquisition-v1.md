@@ -1,6 +1,10 @@
 # EXP-NODE-ESP32-001 — first acquisition-to-WORLD demonstration
 
 **Version 1, prepared 24 October 2026. NOT AUTHORIZED / NOT RUN.**
+**Pre-data Amendment 1, 24 October:** PR #10's corrected recorder now enforces
+raw/receipt integrity and publishes a clean-run gate. Acquisition completion
+alone is insufficient; dirty captures exit nonzero. This amendment changes
+no Alpha protocol/evidence and grants no physical authorization.
 This is a single empty-bench acquisition demonstration using the already
 available ESP32-S3. It is not Alpha 003, a human trial, a motion experiment,
 a firmware validation campaign or authorization to open any port.
@@ -117,10 +121,15 @@ from specter.platform.replay import read_capture, sha256_file
 p = Path('/tmp/specter-node-esp32-001-new-session')
 s = json.loads((p/'status.json').read_text())
 assert s['state'] == 'COMPLETE' and s['reason'] == 'duration'
+assert s['acquisition_complete'] and s['clean_first_run']['status'] == 'PASS'
+assert s['scientific_acceptance'] == 'NOT_EVALUATED'
 assert not s['errors'] and s['rejected_bytes'] == s['unaccounted_bytes'] == 0
 assert s['raw_file_bytes'] == s['bytes'] == s['read_bytes']
 assert sha256_file(p/'session.raw.csi') == s['raw_sha256']
+assert s['accepted_read_sha256'] == s['raw_sha256']
 assert sha256_file(p/'receipts.jsonl') == s['receipts_sha256']
+assert s['receipt_write_sha256'] == s['receipts_sha256']
+assert s['counters'].get('payload_frames', 0) >= 1
 count = sum(1 for _ in read_capture(p/'session.observations.jsonl'))
 assert count == s['observations'] and count >= 10
 print({'count': count, 'raw_sha256': s['raw_sha256'], 'physical_claim': 'pending review'})

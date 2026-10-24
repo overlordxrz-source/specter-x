@@ -25,6 +25,13 @@ and automatic reconnect are not implemented. No physical capture was run.
 ## Lifecycle and accounting
 
 `RECORDING → FINALIZING → COMPLETE`, or `FAILED` / `CANCELLED`.
+COMPLETE means byte acquisition and derived artifacts completed. It does not
+mean clean or scientific acceptance. `clean_first_run.status/reasons` rejects
+sequence gaps, malformed/recovered/spliced/unsupported records and clock
+discontinuities; dirty captures remain inspectable but CLI exits 2.
+`scientific_acceptance` remains NOT_EVALUATED. Raw/receipt write lengths,
+persisted sizes/counts/end offsets and expected/persisted hashes must reconcile
+before COMPLETE; integrity failures always end FAILED/nonzero.
 The status is operational metadata (`format_version=1`), not a new observation
 envelope. A unique session directory is created exclusively. Existing output
 directories are refused, and source files are opened read-only.
@@ -42,6 +49,11 @@ Artifacts inside a session:
 On parser failure the partial derived JSONL may remain without a manifest;
 WORLD rejects it as incomplete. Raw evidence remains available for diagnosis.
 Cancellation preserves raw bytes but does not finalize a successful replay.
+A late finalization cancellation may retain a complete derived artifact;
+terminal session status and gates, not file existence, determine acceptance.
+Direct BaseException/KeyboardInterrupt is re-raised after terminal publication
+and cleanup. Uncatchable termination and storage failure cannot guarantee
+terminal publication; storage errors are never reported as success.
 Device-open failure occurs before recording starts and is an explicit CLI
 error. A process crash may leave `RECORDING`/`FINALIZING`; neither means complete.
 
