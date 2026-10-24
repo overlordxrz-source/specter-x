@@ -1,5 +1,7 @@
 # SPECTER-X documentation hub
 
+**FRONTIER-001 and SPECTER-WORLD integration:** [FRONTIER-001](frontier001/README.md) and [SPECTER-WORLD desktop](world/README.md) · [integration and verification](world/integration.md). These are offline software/replay milestones, not new sensing claims. Canonical project memory below remains authoritative.
+
 **Edition 3 · 22 October 2026 · Alpha snapshot `933e856` · hardware preflight passed.**
 
 **Edition 4 memory note · 23 October 2026.** Persistent project memory now

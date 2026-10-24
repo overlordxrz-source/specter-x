@@ -18,12 +18,15 @@ daq = ["pyserial>=3.5"]
 
 [project.scripts]
 specter = "specter.app:main"
+specter-world = "specter.world.server:main"
 
 [tool.setuptools.packages.find]
 include = ["specter*"]
 
 [tool.setuptools.package-data]
 "specter.calibration" = ["*.json"]
+"specter.platform" = ["*.json"]
+"specter.world" = ["web/*.html", "web/*.css", "web/*.js"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

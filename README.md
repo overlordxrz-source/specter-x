@@ -1,4 +1,8 @@
+**Desktop research application: [SPECTER-WORLD launch and status](docs/world/README.md).** Run `./SPECTER-WORLD.command` from this worktree.
+
 # SPECTER-X
+
+**FRONTIER-001:** [platform foundation, diagnostic console and exact run commands](docs/frontier001/README.md). `python -m specter.app --console --windowed` opens an offline console without activating cameras or devices. The [hardware ledger](docs/frontier001/hardware-readiness.md) distinguishes receipt from verified integration.
 
 ![CI](https://github.com/overlordxrz-source/specter-x/actions/workflows/pytest.yml/badge.svg)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)

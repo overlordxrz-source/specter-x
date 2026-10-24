@@ -1,0 +1,287 @@
+{
+  "snapshot_date": "2026-10-22",
+  "stage_order": [
+    "RECEIVED",
+    "INSPECTED",
+    "ELECTRICALLY VERIFIED",
+    "DRIVER WORKING",
+    "CALIBRATED",
+    "INTEGRATED",
+    "EXPERIMENTALLY VALIDATED"
+  ],
+  "items": [
+    {
+      "item": "ESP32-S3 development board",
+      "logistics": "RECEIVED",
+      "readiness": "Recorded CSI acquisition; motion not validated",
+      "next_gate": "Preserve Alpha ownership; platform replay only",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "DATAQ DI-188",
+      "logistics": "RECEIVED",
+      "readiness": "Prior USB streaming; analog calibration pending",
+      "next_gate": "Safe reference/ground and driver-specific approved session",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "Newhaven NHD-7.0-HDMI-N-RSXV-CTU + adapter",
+      "logistics": "RECEIVED",
+      "readiness": "User reports powered; HDMI/touch untested; cables missing",
+      "next_gate": "Identify revision/adapter; obtain HDMI and USB-HID cables",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "Carbon-fiber PLA spools",
+      "logistics": "RECEIVED",
+      "readiness": "Printing unverified",
+      "next_gate": "Identify formulation; printer/nozzle/process suitability",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "Unistellar eVscope 1",
+      "logistics": "RECEIVED",
+      "readiness": "Functional testing outstanding",
+      "next_gate": "Identify serial/revision/charger and supported data access",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "Innov8tive BadAss 2814 980KV motor",
+      "logistics": "RECEIVED",
+      "readiness": "Unintegrated; not operated",
+      "next_gate": "Motor/ESC compatibility review only; no exposed-prop operation",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "Innov8tive Rebel V2 50A ESC",
+      "logistics": "RECEIVED",
+      "readiness": "Unintegrated; not operated",
+      "next_gate": "Exact revision, control/power/arming manual",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "APC 8x6E propellers (two)",
+      "logistics": "RECEIVED",
+      "readiness": "Unintegrated; not operated",
+      "next_gate": "Inspect identity/fit; no assembly or spin in this task",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "Northwest Blue: LightWare LW20/HA",
+      "logistics": "CONFIRMED_OR_REPORTED_SHIPPING",
+      "readiness": "Not received/validated here; single-point range, not scanning 3D LiDAR",
+      "next_gate": "Receipt, exact variant, electrical/protocol/manual review",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "Northwest Blue: Here4 RTK GNSS",
+      "logistics": "CONFIRMED_OR_REPORTED_SHIPPING",
+      "readiness": "Delivery not assumed; RTK accuracy not established",
+      "next_gate": "Receipt/antenna/correction path and reference survey",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "Northwest Blue: RFD900x telemetry pair",
+      "logistics": "CONFIRMED_OR_REPORTED_SHIPPING",
+      "readiness": "Delivery not assumed; link untested",
+      "next_gate": "Exact regional variants/antennas/power/authorization",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "Northwest Blue: Power Brick Mini",
+      "logistics": "CONFIRMED_OR_REPORTED_SHIPPING",
+      "readiness": "Delivery not assumed",
+      "next_gate": "Connector polarity, input/output/current ratings",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "Seengreat Raspberry Pi 5",
+      "logistics": "CONFIRMED_OR_REPORTED_SHIPPING",
+      "readiness": "RAM/configuration unverified",
+      "next_gate": "Read actual board/RAM; PSU/cooling/storage/cables",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "Camemake OX05B1S RGB-IR MIPI camera",
+      "logistics": "CONFIRMED_OR_REPORTED_SHIPPING",
+      "readiness": "Driver and host compatibility unverified",
+      "next_gate": "Exact module/FPC, overlay, tuning and IR optics",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "Camemake GC4023 MIPI camera",
+      "logistics": "CONFIRMED_OR_REPORTED_SHIPPING",
+      "readiness": "Driver and host compatibility unverified",
+      "next_gate": "Exact module/FPC, supported host and kernel",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "Supertek USB low-light camera",
+      "logistics": "CONFIRMED_OR_REPORTED_SHIPPING",
+      "readiness": "Exact model unconfirmed; not a validated feed",
+      "next_gate": "Model/UVC modes, USB cable, lens, exposure",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "Nooploop LinkTrack UWB units",
+      "logistics": "CONFIRMED_OR_REPORTED_SHIPPING",
+      "readiness": "Quantity/revision/anchor access unverified",
+      "next_gate": "Receipt/topology/power/NLink protocol",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "Nooploop TOFSense-M S multizone ToF",
+      "logistics": "CONFIRMED_OR_REPORTED_SHIPPING",
+      "readiness": "Not a scanning LiDAR; range output unvalidated",
+      "next_gate": "Revision/protocol/grid/FOV/reference targets",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "ComNav K901 GNSS evaluation kit",
+      "logistics": "CONFIRMED_OR_REPORTED_SHIPPING",
+      "readiness": "Delivery and correction configuration unverified",
+      "next_gate": "Board variant/antenna/cables/reference corrections",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "Heltec WiFi LoRa 32 V4 / ESP32-S3",
+      "logistics": "CONFIRMED_OR_REPORTED_SHIPPING",
+      "readiness": "Not a received dedicated CSI peer",
+      "next_gate": "Regional radio, board pinout/power/software support",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "Bioenno LiFePO4 battery + charger",
+      "logistics": "CONFIRMED_OR_REPORTED_SHIPPING",
+      "readiness": "Exact pack/charger ratings unconfirmed",
+      "next_gate": "Matched chemistry/voltage/polarity/BMS; no operation here",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "Mini-Circuits RF front-end samples",
+      "logistics": "CONFIRMED_OR_REPORTED_SHIPPING",
+      "readiness": "Exact part numbers/roles unconfirmed",
+      "next_gate": "Frequency, bias, impedance, limits and intended observable",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "Appcon LoRa modules",
+      "logistics": "CONFIRMED_OR_REPORTED_SHIPPING",
+      "readiness": "Exact module/region unconfirmed",
+      "next_gate": "Electrical/protocol/regional compatibility",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "TEKTELIC LoRaWAN gateway/sensors",
+      "logistics": "CONFIRMED_OR_REPORTED_SHIPPING",
+      "readiness": "Not equivalent to LoRa peer-to-peer",
+      "next_gate": "Region/backhaul/network-server and sensor profiles",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "Lansitec tracker",
+      "logistics": "CONFIRMED_OR_REPORTED_SHIPPING",
+      "readiness": "Exact model/network unconfirmed",
+      "next_gate": "Protocol, location observable and privacy review",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "Vicharak Shrike Lite FPGA",
+      "logistics": "CONFIRMED_OR_REPORTED_SHIPPING",
+      "readiness": "Toolchain/host and device revision unconfirmed",
+      "next_gate": "Pinout/programming/recovery path before development",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "EKB E4500 DLP module",
+      "logistics": "CONFIRMED_OR_REPORTED_SHIPPING",
+      "readiness": "Not a validated HUD",
+      "next_gate": "Exact module/light source/driver/electrical/optical review",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "OPCO collimator/mirrors",
+      "logistics": "CONFIRMED_OR_REPORTED_SHIPPING",
+      "readiness": "Prescription and compatibility unverified",
+      "next_gate": "Optical prescription, coatings, mounts and safe beam plan",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "XR Depot nonbooting HoloLens 2 for parts",
+      "logistics": "CONFIRMED_OR_REPORTED_SHIPPING",
+      "readiness": "Explicitly nonbooting; not a working AR platform",
+      "next_gate": "Receipt/condition/repair permissions and parts evaluation",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "BigRedBee GPS telemetry/tracker",
+      "logistics": "CONFIRMED_OR_REPORTED_SHIPPING",
+      "readiness": "Possible loan/return terms unresolved",
+      "next_gate": "Terms first; exact regional transmitter/receiver",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "CORVON H743v2 flight controller",
+      "logistics": "CONFIRMED_OR_REPORTED_SHIPPING",
+      "readiness": "Not an integrated aircraft",
+      "next_gate": "Exact board/firmware/connectors and bench plan",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "Lemon Rx radio components",
+      "logistics": "CONFIRMED_OR_REPORTED_SHIPPING",
+      "readiness": "Exact components/protocol unconfirmed",
+      "next_gate": "Model, matched receiver/transmitter and failsafe review",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "TI IWR6843AOP / DCA1000",
+      "logistics": "PENDING_OR_NEEDED",
+      "readiness": "Not confirmed/received",
+      "next_gate": "Exact EVM/capture-card role and source",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "Radiometric thermal module",
+      "logistics": "PENDING_OR_NEEDED",
+      "readiness": "No validated thermal stream",
+      "next_gate": "Select exact model/raw radiometry and reference",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "Scanning 3D LiDAR",
+      "logistics": "PENDING_OR_NEEDED",
+      "readiness": "LW20 does not fill this requirement",
+      "next_gate": "Select aperture/scan/calibration and safety requirements",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "Dedicated second ESP32 CSI node",
+      "logistics": "PENDING_OR_NEEDED",
+      "readiness": "Not confirmed received",
+      "next_gate": "Receipt/pinned target and controlled-link plan",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "North Star HUD optics/components",
+      "logistics": "PENDING_OR_NEEDED",
+      "readiness": "System integration unverified",
+      "next_gate": "Prescription, optical safety and mechanical budget",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "RK3588 / advanced edge AI hardware",
+      "logistics": "PENDING_OR_NEEDED",
+      "readiness": "No integration or performance claim",
+      "next_gate": "Workload/power/toolchain evidence before acquisition",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    },
+    {
+      "item": "Additional IMUs / optics / power accessories",
+      "logistics": "PENDING_OR_NEEDED",
+      "readiness": "Exact selections unconfirmed",
+      "next_gate": "Prioritize calibrated rig dependencies",
+      "source": "Owner supplied FRONTIER-001 request, 2026-10-22; physical state not inspected in this task"
+    }
+  ]
+}
