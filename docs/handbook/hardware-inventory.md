@@ -81,7 +81,7 @@ function. It does not revise the historical Alpha snapshot above.
 
 | Item | Logistics evidence | Readiness | Next evidence needed |
 |---|---|---|---|
-| **Vicharak Shrike Lite FPGA board** | **Have — USB-detected 24 October 2026; owner reports physical receipt.** USB `SHRIKE`, VID `0x2e8a`, PID `0x0005`, serial `de621c3003395627`; `/dev/cu.usbmodem101`. Exact physical **board revision remains UNKNOWN**; public hardware trees contain `v1_r0.4` and `v1_r0.5`, while factory/demo bitstreams are under `v1_4`. | **RP2040 verified; FPGA custom path UNVALIDATED.** MicroPython `1.26.0-preview` at 125 MHz; a transient GPIO4 heartbeat toggled the onboard MCU LED 12 times and the factory `main.py` was restored by soft reset. Factory `main.py` and `blink_all.bin` are backed up; SHA-256 `0e3b259a…` and `cd40b215…`. The factory bitstream matches vendor `v1_4/blink_all.bin`. No external signal, custom FPGA bitstream or OTP operation. Go Configure is not installed. | Physical silkscreen/revision photo; J3/PMOD population; electrical/pin review; install and verify Go Configure on Apple Silicon; suspend/replace the factory `main.py` loop before custom FPGA programming; build/hash a reviewed bitstream; then run the F1/F17/F18 timing experiment. |
+| **Vicharak Shrike Lite FPGA board** | **Have — USB-detected 24 October 2026; owner reports physical receipt and supplied photographs.** USB `SHRIKE`, VID `0x2e8a`, PID `0x0005`, serial `de621c3003395627`; `/dev/cu.usbmodem101`. Owner photos show both 19×1 GPIO headers populated, no populated 2×6 J3, and illegible revision text. v1_r0.4 and v1_r0.5 PCB sources have identical pad/net lists; only the front silkscreen `R0.4`/`R0.5` distinguishes them. Exact physical **revision remains UNKNOWN**. | **RP2040 verified; custom FPGA bitstream built in software; hardware flash NOT performed.** MicroPython `1.26.0-preview` at 125 MHz; transient GPIO4 heartbeat passed and factory `main.py` was restored. Factory `main.py` and `blink_all.bin` backed up (`0e3b259a…`, `cd40b215…`); factory image matches vendor `v1_4`. Go Configure 6.56.01 installed and verified native ARM64; Yosys 0.59 + eda-placer v23 built the F16 heartbeat (`FPGA_bitstream_MCU.bin`, 46,408 bytes, SHA-256 `6931f347…`) with 50 MHz WNS +8585 ps. Not flashed; no external signal, alternate supply or OTP operation. | Focused, high-resolution photo of the `R0.4`/`R0.5` silkscreen (front, below `V1.0`) or explicit acceptance of the electrically identical revision pair; authorize suspending/replacing factory `main.py`; authorize flashing the exact reviewed hash; then observe the F16 heartbeat and later run the F1/F17/F18 timing experiment. |
 
 ### Hardware/toolchain unknowns
 
@@ -90,16 +90,24 @@ function. It does not revise the historical Alpha snapshot above.
 - Per-pin voltage/current/protection limits beyond manufacturer “3.3 V logic”:
   **UNKNOWN**.
 - Native Apple Silicon support for Renesas Go Configure / ForgeFPGA Workshop:
-  **UNVERIFIED**; the tool is not installed. The official macOS package is
-  v6.56.001 (572.30 MB) but its release page requires a **Renesas account
-  sign-in**. A Rosetta, VM or separate-host fallback may be required after
-  installation.
+  **VERIFIED 24 October 2026** with Go Configure 6.56.01 (universal, running
+  native ARM64). Yosys 0.59 synthesis, eda-placer v23 place-and-route and
+  `FPGA_bitstream_MCU.bin` generation succeeded. No Rosetta or VM was needed.
+- v1_r0.4 vs v1_r0.5 board revision: **UNKNOWN**; the two published PCB sources
+  have identical pad/net lists, so the only clear visual discriminator is the
+  front silkscreen `R0.4`/`R0.5` text. The available photos do not resolve it.
 - FPGA oscillator frequency accuracy, drift and temperature behavior:
-  **UNKNOWN**; no timing accuracy is claimed.
+  **UNKNOWN**; no physical timing accuracy is claimed. The bitstream timing
+  constraint is 50 MHz with +8.585 ns slack.
+- Custom F16 heartbeat image: **BUILT, NOT FLASHED**; SHA-256
+  `6931f347e6fb521435efda5004a0300e9ccb4aa7fc4e5d71b229c327ce87e267`,
+  46,408 bytes. Physical LED output is unverified.
 - Factory `main.py` drives MCU GPIO14/15, which are internally connected to FPGA
-  F18/F17. A future custom FPGA readout must first stop that loop and establish
-  reviewed pin ownership.
-- J3 2×6 header population: **UNKNOWN**; the v1_r0.5 PCB source labels it DNP.
+  F18/F17. It does not conflict electrically with the F16 heartbeat, but it
+  reflashes `blink_all.bin` at boot and would overwrite a custom image. Stop it
+  before custom FPGA programming and before the future F17/F18 readout.
+- J3 2×6 header population: **UNKNOWN**; owner photos show it unpopulated, and
+  both v1_r0.4 and v1_r0.5 PCB sources mark it DNP.
 
 Do not treat this receipt entry as a validated SPECTER-SYNC capability. No
 hardware operation, flashing, external signal or timing measurement is

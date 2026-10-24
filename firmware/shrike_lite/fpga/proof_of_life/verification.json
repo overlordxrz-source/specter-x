@@ -16,5 +16,18 @@
     "led_en": "GPIO16_OE"
   },
   "bitstream_name": "FPGA_bitstream_MCU.bin",
-  "bitstream_sha256": null
+  "bitstream_size": 46408,
+  "bitstream_sha256": "6931f347e6fb521435efda5004a0300e9ccb4aa7fc4e5d71b229c327ce87e267",
+  "bitstream_build": {
+    "status": "built, not flashed",
+    "built": "2026-10-24",
+    "tool": "Renesas Go Configure Software Hub 6.56.01 / ForgeFPGA Workshop",
+    "target": "SLG47910V (Rev BB)",
+    "yosys": "0.59",
+    "place_route": "eda-placer v23",
+    "clock_constraint": "create_clock -name clk {clk} -period 20.000 -waveform {0 10.000}",
+    "timing_wns_ps": 8585,
+    "achievable_period_ps": 11414,
+    "pnr_warning": "Clock clk directly fed by port without CLKBUF"
+  }
 }

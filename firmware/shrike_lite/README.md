@@ -10,6 +10,7 @@ rp2040/heartbeat.py              MicroPython proof-of-life (GPIO4)
 rp2040/event_counter_readout.py  future 64-bit event readout (GPIO14/15)
 rp2040/pulse_loopback.py         future non-independent RP2040 pulse source
 fpga/proof_of_life/main.v        FPGA LED heartbeat (F16)
+fpga/proof_of_life/shrike_50mhz.sdc  50 MHz timing constraint for the heartbeat
 fpga/event_counter/main.v        event timestamp + 2-wire readout
 fpga/event_counter/tb_event_counter.v
 ```
@@ -29,15 +30,19 @@ Shrike Lite has two independent programming paths:
 
 Do not use the FPGA OTP programming option. The MCU/SPI bitstream path is the
 only intended path for this work. The exact FPGA image is not committed here;
-generate it from the reviewed Verilog and record its hash.
+it was generated from the reviewed Verilog on 24 October 2026 and its SHA-256
+is recorded in `fpga/proof_of_life/verification.json`.
 
 ## macOS / Apple Silicon
 
 - The vendor's RP2040 paths (MicroPython UF2, Thonny, `mpremote`, Arduino) are
   expected to work on macOS. No Linux dependency is known for the MCU side.
 - Renesas publishes a macOS 11+ Go Configure installer and lists SLG47910
-  support. Native Apple Silicon behavior is **unverified**; if it fails, use
-  Rosetta 2, a Linux/Windows VM with USB passthrough, or a separate host.
+  support. **Verified 24 October 2026:** Go Configure Software Hub 6.56.01 is
+  universal (arm64 + x86_64), ran natively as ARM64, selected `SLG47910V
+  (Rev BB)`, and completed Yosys 0.59 synthesis plus eda-placer v23
+  place-and-route and `FPGA_bitstream_MCU.bin` generation. No Rosetta or VM was
+  needed.
 - Go Configure requires a Renesas account. No cloud/LLM service is required by
   the examples.
 - Verilog simulation is available with Icarus Verilog/GTKWave via Homebrew; it
@@ -105,8 +110,9 @@ vvp /tmp/shrike_event.vvp
 ```
 
 The verifier checks the frozen heartbeat source hash, top-level ports and
-IO-planner mapping. Pass `--bitstream path/to/FPGA_bitstream_MCU.bin` only after
-a reviewed build; the manifest deliberately has no bitstream hash yet.
+IO-planner mapping. The manifest records the reviewed MCU bitstream hash; pass
+`--bitstream path/to/FPGA_bitstream_MCU.bin` to compare a generated image
+without opening a serial port or writing to the board.
 
 ## Future command shapes (do not execute yet)
 
