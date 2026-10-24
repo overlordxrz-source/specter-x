@@ -13,6 +13,8 @@ fpga/proof_of_life/main.v        FPGA LED heartbeat (F16)
 fpga/proof_of_life/shrike_50mhz.sdc  50 MHz timing constraint for the heartbeat
 fpga/event_counter/main.v        event timestamp + 2-wire readout
 fpga/event_counter/tb_event_counter.v
+fpga/event_counter/tb_event_counter_hazards.v  CDC/idle reload hazard control
+rp2040/event_counter_readout_bounded.py        bounded future readout
 ```
 
 The design rationale, pin tables, electrical limits and experiment protocol are
@@ -96,8 +98,11 @@ do not guess if the UI presents a different label.
 
 The FPGA loads `{event_count[31:0], last_timestamp[31:0]}` after ≥1 ms of read
 clock idle. The RP2040 samples data while holding clock low and raises the
-clock 64 times, MSB first. The code waits 3 ms between snapshots. This is a
-minimal custom link; it is not a vendor sensor protocol.
+clock 64 times, MSB first. The legacy code waits 3 ms between snapshots. The
+event-counter hazard test shows that a host pause longer than the idle reload
+interval can mix two snapshots; the bounded future readout aborts on an edge
+gap above 250 µs. This is a minimal custom link; it is not a vendor sensor
+protocol. See the [prepared event-counter gate](../../docs/design/shrike-lite-event-counter-experiment-20261024.md).
 
 ## Software-only checks
 
@@ -110,6 +115,10 @@ iverilog -g2012 -o /tmp/shrike_event.vvp \
   firmware/shrike_lite/fpga/event_counter/main.v \
   firmware/shrike_lite/fpga/event_counter/tb_event_counter.v
 vvp /tmp/shrike_event.vvp
+iverilog -g2012 -o /tmp/shrike_event_hazards.vvp \
+  firmware/shrike_lite/fpga/event_counter/main.v \
+  firmware/shrike_lite/fpga/event_counter/tb_event_counter_hazards.v
+vvp /tmp/shrike_event_hazards.vvp
 ```
 
 The verifier checks the frozen heartbeat source hash, top-level ports and

@@ -248,3 +248,31 @@ No custom FPGA bitstream is present after rollback. No external signal,
 alternate supply or OTP operation was used. No physical timing accuracy is
 claimed. The existing Observation v1 boundary remains the only future
 CORE/WORLD record format.
+
+## Next event-counter gate — PREPARED, NOT AUTHORIZED
+
+The existing event-counter source was assessed offline on the isolated
+`research/specter-sync-event-counter` branch. No event-counter bitstream was
+generated, staged or programmed, and no external signal/jumper was connected.
+
+- F17/F18 are the internal MCU–FPGA link. The factory `main.py` drives RP2040
+  GPIO14/15 as outputs, so the factory loop must be interrupted and GPIO15 set
+  to input before any future event-counter load. No external wires are
+  permitted on J2 pins 11/12/14/15.
+- The event count and timestamp are updated on the same 50 MHz edge and the
+  snapshot shift register loads only after idle; nominal snapshot coherence is
+  confirmed. An event during a read is excluded from the active snapshot.
+- A host pause longer than the 1 ms idle reload can mix two snapshots. The new
+  hazard test reproduces this, and the bounded future readout aborts on an edge
+  gap above 250 µs.
+- F1 has no bias resistor in the published PCB sources. Event-count claims
+  require a separately authorized 3.3 V CMOS bias/pulse path; this preparation
+  makes no count claim.
+- Offline nominal and hazard simulations pass. Bundled Yosys 0.59 synthesis
+  reports 596 cells and 0 problems; full Go Configure PNR, timing and bitstream
+  generation are not run.
+- Exact source/readout hashes, protocol phases, stop rules and rollback are in
+  [the event-counter protocol](shrike-lite-event-counter-experiment-20261024.md).
+
+No physical event-counter run is authorized by the F16 heartbeat result or by
+this preparation.
