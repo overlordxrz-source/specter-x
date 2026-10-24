@@ -1,5 +1,63 @@
 # Bench foundation verification
 
+**PR-preparation addendum, 24 October 2026:** the current tested acquisition
+implementation is `1a94fa7686c3e66c22a6de327a56e54b1bf154a3`, based on
+freshly fetched remote main `f2ef96b0cfe48e2e47c9d4ac02b3ac8e3376a2a2`.
+The original 4e2e889 local checkpoint below is retained as history.
+
+- Latest offline suite: **284 passed, 1 hardware deselected**, 3.16 s;
+  **39 focused IMU/NODE/ownership controls**, architecture PASS.
+- Latest actual-source rehearsal: **2,788,217 bytes, 681 reads, 7,290
+  observations, zero rejected/unaccounted bytes**; raw hash remains
+  `f0323be3d79af1bd5f29fd21b483323c90eeb7be3f90c8e89c980e92d8432b2c`.
+- Error accounting preserves both read and close failures; parser counts
+  survive partial derivation failure. CLI limits are validated before any
+  serial-open request. Oversized transport results are rejected and counted.
+- Cooperating second-process refusal and release/reopen verified on an
+  OS-created pseudo-terminal. Fake-ioctl controls cover acquire/release errors
+  and inactive DTR/RTS requested before open. Physical ports were not opened.
+- The first kernel-only assertion **failed** on this Mac: TIOCEXCL returned
+  success but a raw noncooperating open succeeded. That hypothesis was not
+  declared passing or hidden. Its test/log are retained privately as
+  `serial-owner-before.py` / `kernel-exclusivity-before.log`; the permanent
+  [diagnostic](../../tools/node_ownership_probe.py) reproduces the limitation
+  in [committed JSON](node-ownership-20261024.json). The passing regression
+  now tests the enforceable cooperating-owner contract. Physical/alias and
+  already-open noncooperating ownership remain unverified/preflight gates.
+- A disposable mutation changing pyserial `exclusive=True` to `False`
+  causes **one expected focused failure**; original source is untouched.
+- Unchanged WORLD v2 `4e1c920` consumes the latest generated JSONL.
+  First/middle/last envelopes match exactly at indices 0 / 3645 / 7289;
+  browser record jumps work, READY/REPLAY count is 7,290, LIVE is false.
+  This focused interface check was rerun; the earlier 52-check full UI
+  regression run below was not needlessly repeated because UI/backend
+  application code did not change.
+
+Additional private artifacts: this task's `outputs/bench-foundation-pr/`
+contains latest Python/architecture logs, ownership failure/mutation logs,
+raw/receipt/observation rehearsal, interface JSON and screenshot. No raw
+capture or device identity was added to Git. Remote publication is explicitly
+authorized for this isolated draft; no merge or hardware permission follows.
+
+Reproduction additions (no physical device):
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python -m pytest -q -p no:cacheprovider \
+  tests/test_imu_validity.py tests/test_node_capture.py tests/test_serial_owner.py
+PYTHONDONTWRITEBYTECODE=1 python tools/node_ownership_probe.py
+# With unchanged WORLD v2 serving the NODE-generated JSONL:
+WORLD_URL=http://127.0.0.1:PORT NODE_CAPTURE=/path/to/session.observations.jsonl \
+  NODE_COUNT=7290 node tools/node_world_verify.cjs
+```
+
+Use the existing installed Playwright/Chromium paths via `NODE_PATH` and
+`WORLD_CHROMIUM` when necessary, as in the WORLD v2 verification document.
+The [first live plan](../design/node-esp32-first-acquisition-v1.md) is
+prepared only. Exact port/current firmware are UNKNOWN; no physical test
+has been authorized or performed.
+
+---
+
 24 October 2026 · branch `review/bench-foundation-20261024`, base `f2ef96b`.
 This is an offline software acceptance record. No physical device, firmware,
 Alpha protocol, CI workflow, remote branch or PR was modified.
