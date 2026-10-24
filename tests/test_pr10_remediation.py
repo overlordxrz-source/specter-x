@@ -51,6 +51,9 @@ def test_short_writes_never_complete(tmp_path, monkeypatch, line, filename, lie)
     status = capture.record_session(reader, tmp_path / "session", transport="file")
     assert reader.closed and status["state"] == "FAILED"
     assert status["errors"]
+    source = tmp_path / "input.raw.csi"
+    source.write_bytes(line)
+    assert capture.main(["--input", str(source), "--out", str(tmp_path / "cli")]) == 2
 
 
 @pytest.mark.parametrize("stage", ["read", "finalize"])
@@ -129,3 +132,29 @@ def test_stop_during_finalization_cannot_be_success(tmp_path, monkeypatch, line)
     monkeypatch.setattr(capture, "write_capture", cancel_after_write)
     status = capture.record_session(Reader(line), tmp_path / "session", transport="file", stop=stop)
     assert status["state"] == "CANCELLED"
+
+
+def test_startup_clock_interrupt_closes_and_publishes(tmp_path):
+    reader = Reader()
+    directory = tmp_path / "session"
+    def interrupt(): raise KeyboardInterrupt("startup")
+    with pytest.raises(KeyboardInterrupt, match="startup"):
+        capture.record_session(reader, directory, transport="file", clock=interrupt)
+    status = json.loads((directory / "status.json").read_text())
+    assert reader.closed and status["state"] in ("CANCELLED", "FAILED")
+
+
+def test_equal_size_raw_corruption_cannot_complete(tmp_path, monkeypatch, line):
+    original = Path.open
+    class CorruptWriter:
+        def __init__(self, f): self.f = f
+        def __enter__(self): return self
+        def __exit__(self, *args): return self.f.__exit__(*args)
+        def __getattr__(self, name): return getattr(self.f, name)
+        def write(self, data): return self.f.write(data[:-1] + b" ")
+    def open_file(path, mode="r", *args, **kwargs):
+        f = original(path, mode, *args, **kwargs)
+        return CorruptWriter(f) if path.name == "session.raw.csi" and mode == "xb" else f
+    monkeypatch.setattr(Path, "open", open_file)
+    status = capture.record_session(Reader(line), tmp_path / "session", transport="file")
+    assert status["state"] == "FAILED" and "hash" in status["error"]

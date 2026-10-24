@@ -31,7 +31,7 @@ def quat_measurement(
 ) -> Measurement:
     try:
         q = np.asarray(list(quat_wxyz), dtype=float)
-    except (TypeError, ValueError) as exc:
+    except (TypeError, ValueError, OverflowError) as exc:
         raise ValueError("quaternion must be a finite 4-vector") from exc
     if q.shape != (4,) or not np.isfinite(q).all():
         raise ValueError("quaternion must be a finite 4-vector")
