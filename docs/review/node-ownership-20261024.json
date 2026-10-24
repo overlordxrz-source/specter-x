@@ -1,0 +1,11 @@
+{
+  "host": "Darwin",
+  "release": "27.2.0",
+  "transport": "OS-created pseudo-terminal; no physical device",
+  "physical_test": false,
+  "kernel_exclusive_request_succeeded": true,
+  "cooperating_owner_rejected": true,
+  "noncooperating_open_rejected": false,
+  "ownership_released": true,
+  "physical_exclusive_ownership": "UNVERIFIED; operator preflight required"
+}

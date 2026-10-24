@@ -1,0 +1,62 @@
+{
+  "team": {
+    "head": "939240eb34e158a9cf038291cb9c73c468ebe5d3",
+    "probes": {
+      "stale_rejected": true,
+      "shared_covariance_xx": 1.0,
+      "direct_api_nan_confidence_accepted": true
+    }
+  },
+  "gnss": {
+    "head": "9ca4f3aa32d410ebcc2e04ec30167fdda3234ba2",
+    "probes": {
+      "gnssFixOK_clear": {
+        "accepted": true,
+        "mode": "GNSS",
+        "anchor": [
+          47.0,
+          8.0,
+          400.0
+        ]
+      },
+      "gnssFixOK_set": {
+        "accepted": true,
+        "mode": "GNSS",
+        "anchor": [
+          47.0,
+          8.0,
+          400.0
+        ]
+      },
+      "invalid_nmea_checksum": {
+        "accepted": true,
+        "mode": "GNSS",
+        "anchor": [
+          48.11729999999999,
+          11.516666666666667,
+          545.4
+        ]
+      },
+      "nmea_unknown_quality_99": {
+        "accepted": true,
+        "mode": "GNSS",
+        "anchor": [
+          48.11729999999999,
+          11.516666666666667,
+          545.4
+        ]
+      },
+      "duplicate_fix_covariance_before": 12.5,
+      "duplicate_fix_covariance_after": 8.333333333333332
+    }
+  },
+  "radar": {
+    "head": "9e2f1d57bf1826f30b0c871284761388e46c3fc9",
+    "probes": {
+      "reference_parses": true,
+      "complete_frames_after_corrupt_length": 0,
+      "complete_frames_after_ten_more": 0,
+      "recovered_after_4096_extra_bytes": 11
+    }
+  }
+}

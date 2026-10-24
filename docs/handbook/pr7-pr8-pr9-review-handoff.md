@@ -1,5 +1,15 @@
 # Consolidated independent-review handoff — PRs #7, #8 and #9
 
+**24 October independent-review addendum (bench draft, not main integration):**
+The exact heads below have now been reviewed. The owner requires follow-up
+for #7 direct-API validation, #8 UBX/NMEA validity/integrity and duplicate
+evidence, and #9 incomplete-frame recovery. Read the
+[canonical branch handoff](agent-handoff.md) and
+[exact findings/reproducers](../review/pr7-pr9-independent-review-20261024.md).
+The original implementation packet below remains historical and unchanged;
+its green tests do not resolve the newly reproduced gaps. No PR approved,
+merged or modified by this review.
+
 **Checkpoint: 24 October 2026.** These are three unreviewed draft PRs. This
 document is an engineering handoff, **not an approval** and not authorization
 to merge. The implementing agent did not independently approve its own work.

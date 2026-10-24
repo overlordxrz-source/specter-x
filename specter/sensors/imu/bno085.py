@@ -29,11 +29,18 @@ def quat_measurement(
     frame_index: Optional[int] = None,
     sim: bool = False,
 ) -> Measurement:
-    q = np.asarray(list(quat_wxyz), dtype=float)
-    n = float(np.linalg.norm(q))
-    if n == 0:
+    try:
+        q = np.asarray(list(quat_wxyz), dtype=float)
+    except (TypeError, ValueError, OverflowError) as exc:
+        raise ValueError("quaternion must be a finite 4-vector") from exc
+    if q.shape != (4,) or not np.isfinite(q).all():
+        raise ValueError("quaternion must be a finite 4-vector")
+    scale = float(np.max(np.abs(q)))
+    if scale == 0:
         raise ValueError("zero quaternion")
-    q = (q / n).tolist()
+    # Scaling first avoids both overflow and underflow for finite inputs.
+    q = q / scale
+    q = (q / np.linalg.norm(q)).tolist()
     var = ACCURACY_TO_COV.get(int(accuracy), 0.10)
     return Measurement(
         sensor=SENSOR,
@@ -59,9 +66,12 @@ class Bno085Driver:
     _i: int = 0
 
     def report(self, quat_wxyz: Sequence, accuracy: int = 2) -> Measurement:
+        measurement = quat_measurement(
+            quat_wxyz, sensor_id=self.sensor_id,
+            accuracy=accuracy, frame_index=self._i + 1,
+        )
         self._i += 1
-        return quat_measurement(quat_wxyz, sensor_id=self.sensor_id,
-                                accuracy=accuracy, frame_index=self._i)
+        return measurement
 
     def try_open_hardware(self) -> bool:
         """True if an I2C BNO085 answers; False otherwise (never raises)."""
