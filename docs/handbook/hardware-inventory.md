@@ -81,7 +81,7 @@ function. It does not revise the historical Alpha snapshot above.
 
 | Item | Logistics evidence | Readiness | Next evidence needed |
 |---|---|---|---|
-| **Vicharak Shrike Lite FPGA board** | **Owner reports physically received 24 October 2026.** No photo, serial, invoice, board marking or revision source has been inspected in this task. | **UNINSPECTED / UNVALIDATED.** Not powered, not connected to external signals, not flashed, no bitstream or firmware run. Exact received **board revision is UNKNOWN**; public hardware trees contain Shrike-Lite design revisions `v1_r0.4` and `v1_r0.5`, while demo bitstreams are filed under `v1_4`. Board is described as RP2040 + Renesas SLG47910 ForgeFPGA, 4 MB QSPI, 23 MCU GPIO, 14 FPGA GPIO, 6-bit FPGA–MCU link, USB-C and 3.3 V I/O, per manufacturer documentation. | Read the physical silkscreen/revision and photograph it; confirm J3/PMOD population and board revision; review electrical limits and per-pin current; verify Apple Silicon Go Configure behavior; run only an authorized USB-powered MCU heartbeat, then an authorized FPGA proof-of-life; record exact firmware/bitstream hashes and raw timing data. |
+| **Vicharak Shrike Lite FPGA board** | **Have — USB-detected 24 October 2026; owner reports physical receipt.** USB `SHRIKE`, VID `0x2e8a`, PID `0x0005`, serial `de621c3003395627`; `/dev/cu.usbmodem101`. Exact physical **board revision remains UNKNOWN**; public hardware trees contain `v1_r0.4` and `v1_r0.5`, while factory/demo bitstreams are under `v1_4`. | **RP2040 verified; FPGA custom path UNVALIDATED.** MicroPython `1.26.0-preview` at 125 MHz; a transient GPIO4 heartbeat toggled the onboard MCU LED 12 times and the factory `main.py` was restored by soft reset. Factory `main.py` and `blink_all.bin` are backed up; SHA-256 `0e3b259a…` and `cd40b215…`. The factory bitstream matches vendor `v1_4/blink_all.bin`. No external signal, custom FPGA bitstream or OTP operation. Go Configure is not installed. | Physical silkscreen/revision photo; J3/PMOD population; electrical/pin review; install and verify Go Configure on Apple Silicon; suspend/replace the factory `main.py` loop before custom FPGA programming; build/hash a reviewed bitstream; then run the F1/F17/F18 timing experiment. |
 
 ### Hardware/toolchain unknowns
 
@@ -90,9 +90,13 @@ function. It does not revise the historical Alpha snapshot above.
 - Per-pin voltage/current/protection limits beyond manufacturer “3.3 V logic”:
   **UNKNOWN**.
 - Native Apple Silicon support for Renesas Go Configure / ForgeFPGA Workshop:
-  **UNVERIFIED**; a Rosetta, VM or separate-host fallback may be required.
+  **UNVERIFIED**; the tool is not installed. A Rosetta, VM or separate-host
+  fallback may be required.
 - FPGA oscillator frequency accuracy, drift and temperature behavior:
   **UNKNOWN**; no timing accuracy is claimed.
+- Factory `main.py` drives MCU GPIO14/15, which are internally connected to FPGA
+  F18/F17. A future custom FPGA readout must first stop that loop and establish
+  reviewed pin ownership.
 - J3 2×6 header population: **UNKNOWN**; the v1_r0.5 PCB source labels it DNP.
 
 Do not treat this receipt entry as a validated SPECTER-SYNC capability. No
