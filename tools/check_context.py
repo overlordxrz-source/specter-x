@@ -42,6 +42,7 @@ REQUIRED = (
     "docs/context/BRANCH_HANDOFF_TEMPLATE.md",
     "docs/context/AUTOMATION_LIMITS.md",
     "docs/context/CHATGPT_RECOVERY.md",
+    "docs/context/REVIEW.md",
     "docs/context/CONTEXT_TRUTHS.md",
     "docs/context/CONTEXT_STATE.json",
     "docs/context/sources.json",

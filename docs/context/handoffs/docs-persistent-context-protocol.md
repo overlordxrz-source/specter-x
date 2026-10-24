@@ -3,9 +3,9 @@
 - **Branch / worktree:** `docs/persistent-context-protocol` in
   `specter-x-context`.
 - **Base commit:** `f2ef96b0cfe48e2e47c9d4ac02b3ac8e3376a2a2` (current main).
-- **Source commit:** `d0497f3fcf046442d3b237d5ce6cc92d0e7bbd0f` (contains
-  every hashed source). **Final head:** the branch tip / draft PR; the Brief
-  records its source commit separately.
+- **Source commit:** `71a54ede6a295189bdaae67f30da86f5914ad231` (contains
+  every hashed source; provenance is checked). **Reviewed head:** `d5870317f3179036898eb862ef3aec3f454c836a`.
+  **Final head:** the PR head; the Brief records its source commit separately.
 - **Owner / task:** owner-directed Persistent Context Protocol implementation;
   no merge/hardware/purchase authorization.
 - **Context receipt:** included below.
@@ -31,8 +31,8 @@
   `docs/context/CONTEXT_BRIEF.md`, protected/source manifests, CI output.
 - **Known gaps / unknowns:** semantic contradictions cannot be fully checked
   automatically; no live Hark procurement evidence; no ChatGPT-without-repo
-  session was run (procedure documented); initial independent review requested
-  changes and the findings were addressed; re-review pending;
+  session was run (procedure documented); independent re-review is APPROVE at
+  `d587031`, followed only by hardening/documentation changes;
   central/headset/distributed hardware remains PLANNED/VISION.
 - **Rollback:** abandon this branch; main and all other branches/worktrees are
   untouched. No hardware, purchase, flash or deployment occurred.
@@ -48,8 +48,8 @@ Context Receipt
 - Agent/session: OpenCode, current task
 - Task / owner request: implement Persistent Context Protocol and draft PR
 - Authorization limit: docs/tooling only; no merge/hardware/purchase
-- Repository commit reviewed: d0497f3 source commit; final head in PR
-- Context Brief generated commit / source hashes: d0497f3; hashes in Brief
+- Repository commit reviewed: `71a54ed` source commit; final head is the PR head
+- Context Brief generated commit / source hashes: `71a54ed`; hashes verified
 - Canonical sources read: AGENTS, North Star, architecture, engineering
   contract, decisions, research ideas, experiment ledger, verification baseline,
   hardware inventory, roadmap, agent handoff, docs hub, work order
