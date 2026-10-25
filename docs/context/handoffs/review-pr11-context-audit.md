@@ -24,3 +24,20 @@
 - Unknowns: no independent authentication of earlier owner approvals; no hardware or procurement verification. No claim of universal semantic enforcement.
 - Tests/stop condition: preserve failing regressions and rerun offline gates; stop adoption pending independent re-review. Context Receipt is not approval.
 - Decision change needed: no architecture or policy change; fixes enforce existing documented integrity intent.
+
+## PR12 follow-up — identity-scoped legacy status
+
+Owner-authorized remediation of OpenCode's remaining alias finding; no new
+architecture decision or capability promotion. New failing regressions were
+committed at `a662a8d`; parser/process documentation fix at
+`5b4b120ad0f14c5afa788bdaccf00d15b65863fa`; regenerated Brief checkpoint
+`4dd2c3d4299f88ba4f2b19b1c557d09c421dde01`.
+
+Only the historical research-policy ADR may use its legacy spelling. Other
+identities reject it. Full grammar and manual-consent limit are in
+[decision change](../DECISION_CHANGE.md#adr-status-grammar).
+All 46 context tests and 291 offline tests pass (one hardware test deselected);
+architecture and context/provenance/freshness pass. Twelve mutation cases were
+rerun before/after. Exact reproductions and results:
+[remediation report](../../review/pr12-alias-remediation-20261025.md).
+PR10 integration remains separate; no merge/hardware/frozen-evidence change.

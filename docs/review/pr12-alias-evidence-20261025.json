@@ -1,0 +1,179 @@
+{
+  "old_head": "e30c1e58e93a27f55a99fa3857aac354693a5463",
+  "fixed_checkpoint": "4dd2c3d4299f88ba4f2b19b1c557d09c421dde01",
+  "before_regressions": ".........FF.....................FF.                                      [100%]\n=================================== FAILURES ===================================\n___________ test_legacy_status_requires_exact_adr_identity[7-False] ____________\n\ntarget = 7, valid = False\n\n    @pytest.mark.parametrize(\"target,valid\", [(4, True), (7, False), (10, False)])\n    def test_legacy_status_requires_exact_adr_identity(target, valid):\n        text = _decision_series(target, \"accepted research policy\")\n        if valid:\n            adrs = cb.parse_adrs(text)\n            assert adrs[-1][\"id\"] == \"ADR-004\"\n            assert adrs[-1][\"status\"] == \"accepted\"\n            assert adrs[-1] in cb.active_decisions(adrs)\n        else:\n>           with pytest.raises(ValueError, match=f\"ADR-{target:03d}: invalid status\"):\nE           Failed: DID NOT RAISE ValueError\n\ntests/test_context_review.py:54: Failed\n___________ test_legacy_status_requires_exact_adr_identity[10-False] ___________\n\ntarget = 10, valid = False\n\n    @pytest.mark.parametrize(\"target,valid\", [(4, True), (7, False), (10, False)])\n    def test_legacy_status_requires_exact_adr_identity(target, valid):\n        text = _decision_series(target, \"accepted research policy\")\n        if valid:\n            adrs = cb.parse_adrs(text)\n            assert adrs[-1][\"id\"] == \"ADR-004\"\n            assert adrs[-1][\"status\"] == \"accepted\"\n            assert adrs[-1] in cb.active_decisions(adrs)\n        else:\n>           with pytest.raises(ValueError, match=f\"ADR-{target:03d}: invalid status\"):\nE           Failed: DID NOT RAISE ValueError\n\ntests/test_context_review.py:54: Failed\n________ test_generator_and_checker_share_identity_scoped_validation[7] ________\n\ntmp_path = PosixPath('/private/var/folders/_p/fbqbbk0x7sbf8l4wjwzrz4d80000gn/T/pytest-of-overlord/pytest-72/test_generator_and_checker_sha1')\nmonkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1083c6b50>\ntarget = 7\n\n    @pytest.mark.parametrize(\"target\", [4, 7, 10])\n    def test_generator_and_checker_share_identity_scoped_validation(tmp_path, monkeypatch, target):\n        decisions = tmp_path / \"decisions.md\"\n        decisions.write_text(_decision_series(target, \"accepted research policy\"))\n        monkeypatch.setattr(cb, \"DECISIONS\", decisions)\n        if target == 4:\n            assert check_context.check_adrs() == []\n            assert \"**ADR-004**\" in cb.build_brief(commit=\"test\")\n        else:\n>           with pytest.raises(ValueError, match=f\"ADR-{target:03d}: invalid status\"):\nE           Failed: DID NOT RAISE ValueError\n\ntests/test_context_review.py:86: Failed\n_______ test_generator_and_checker_share_identity_scoped_validation[10] ________\n\ntmp_path = PosixPath('/private/var/folders/_p/fbqbbk0x7sbf8l4wjwzrz4d80000gn/T/pytest-of-overlord/pytest-72/test_generator_and_checker_sha2')\nmonkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1083ddd50>\ntarget = 10\n\n    @pytest.mark.parametrize(\"target\", [4, 7, 10])\n    def test_generator_and_checker_share_identity_scoped_validation(tmp_path, monkeypatch, target):\n        decisions = tmp_path / \"decisions.md\"\n        decisions.write_text(_decision_series(target, \"accepted research policy\"))\n        monkeypatch.setattr(cb, \"DECISIONS\", decisions)\n        if target == 4:\n            assert check_context.check_adrs() == []\n            assert \"**ADR-004**\" in cb.build_brief(commit=\"test\")\n        else:\n>           with pytest.raises(ValueError, match=f\"ADR-{target:03d}: invalid status\"):\nE           Failed: DID NOT RAISE ValueError\n\ntests/test_context_review.py:86: Failed\n=========================== short test summary info ============================\nFAILED tests/test_context_review.py::test_legacy_status_requires_exact_adr_identity[7-False]\nFAILED tests/test_context_review.py::test_legacy_status_requires_exact_adr_identity[10-False]\nFAILED tests/test_context_review.py::test_generator_and_checker_share_identity_scoped_validation[7]\nFAILED tests/test_context_review.py::test_generator_and_checker_share_identity_scoped_validation[10]\n4 failed, 31 passed in 0.12s\n",
+  "same_line_before": "...............................F....                                     [100%]\n=================================== FAILURES ===================================\n_____ test_malformed_or_pending_statuses_block_even_legacy_adr[\\naccepted] _____\n\nstatus = '\\naccepted'\n\n    @pytest.mark.parametrize(\"status\", [\n        \"accepted_pending_owner_approval\", \"accepted-pending-owner-approval\",\n        \"accepted pending owner approval\", \"proposed_pending_owner_approval\",\n        \"superseded_pending_owner_approval\", \"accepted research policy pending\",\n        \"accept\", \"acceptedness\", \"accepted/research policy\", \"\", \"\u00b7 pending approval\",\n        \"\\naccepted\",\n    ])\n    def test_malformed_or_pending_statuses_block_even_legacy_adr(status):\n>       with pytest.raises(ValueError):\nE       Failed: DID NOT RAISE ValueError\n\ntests/test_context_review.py:74: Failed\n=========================== short test summary info ============================\nFAILED tests/test_context_review.py::test_malformed_or_pending_statuses_block_even_legacy_adr[\\naccepted]\n1 failed, 35 passed in 0.04s\n",
+  "full_offline": "........................................................................ [ 24%]\n........................................................................ [ 49%]\n........................................................................ [ 74%]\n........................................................................ [ 98%]\n...                                                                      [100%]\n291 passed, 1 deselected in 2.79s\n",
+  "before_probes": [
+    {
+      "case": "baseline",
+      "exit_code": 0,
+      "checker_output": "{\n  \"accepted_decisions\": 9,\n  \"errors\": [],\n  \"protected_documents\": 18,\n  \"source_commit\": \"e30c1e58e93a27f55a99fa3857aac354693a5463\",\n  \"source_count\": 23,\n  \"status\": \"PASS\"\n}\n",
+      "generation_exit": null,
+      "generation_error": null
+    },
+    {
+      "case": "missing_source",
+      "exit_code": 1,
+      "checker_output": "{\n  \"accepted_decisions\": 9,\n  \"errors\": [\n    \"README.md: missing link target: docs/handbook/north-star.md\",\n    \"brief generation failed: source missing: docs/handbook/north-star.md\",\n    \"docs/README.md: missing link target: handbook/north-star.md\",\n    \"docs/architecture/ENGINEERING_CONTRACT.md: missing link target: ../handbook/north-star.md\",\n    \"docs/context/CONTEXT_BRIEF.md: missing link target: ../handbook/north-star.md\",\n    \"docs/context/CONTEXT_TRUTHS.md: missing link target: ../handbook/north-star.md\",\n    \"docs/context/README.md: missing link target: ../handbook/north-star.md\",\n    \"docs/handbook/agent-handoff.md: missing link target: north-star.md\",\n    \"docs/handbook/architecture.md: missing link target: north-star.md\",\n    \"docs/handbook/decisions.md: missing link target: north-star.md\",\n    \"docs/handbook/hardware-inventory.md: missing link target: north-star.md\",\n    \"docs/handbook/roadmap.md: missing link target: north-star.md\",\n    \"docs/handbook/verification-baseline.md: missing link target: north-star.md\",\n    \"docs/procurement/HARK_CONTEXT.md: missing link target: ../handbook/north-star.md\",\n    \"north-star: missing source file docs/handbook/north-star.md\",\n    \"protected document missing: docs/handbook/north-star.md\"\n  ],\n  \"protected_documents\": 18,\n  \"source_commit\": \"e30c1e58e93a27f55a99fa3857aac354693a5463\",\n  \"source_count\": 23,\n  \"status\": \"FAIL\"\n}\n",
+      "generation_exit": null,
+      "generation_error": null
+    },
+    {
+      "case": "tampered_hash",
+      "exit_code": 1,
+      "checker_output": "{\n  \"accepted_decisions\": 9,\n  \"errors\": [\n    \"generated context brief is stale or hand-edited; run python tools/context_brief.py --write\",\n    \"source hash mismatch at recorded commit 2a5b7489330d4c0dd4c57717d5192c1a02e2a382: AGENTS.md\"\n  ],\n  \"protected_documents\": 18,\n  \"source_commit\": \"e30c1e58e93a27f55a99fa3857aac354693a5463\",\n  \"source_count\": 23,\n  \"status\": \"FAIL\"\n}\n",
+      "generation_exit": null,
+      "generation_error": null
+    },
+    {
+      "case": "stale_state",
+      "exit_code": 1,
+      "checker_output": "{\n  \"accepted_decisions\": 9,\n  \"errors\": [\n    \"generated context brief is stale or hand-edited; run python tools/context_brief.py --write\"\n  ],\n  \"protected_documents\": 18,\n  \"source_commit\": \"e30c1e58e93a27f55a99fa3857aac354693a5463\",\n  \"source_count\": 23,\n  \"status\": \"FAIL\"\n}\n",
+      "generation_exit": null,
+      "generation_error": null
+    },
+    {
+      "case": "invalid_adr_reference",
+      "exit_code": 1,
+      "checker_output": "{\n  \"accepted_decisions\": 9,\n  \"errors\": [\n    \"docs/context/CONTEXT_RECEIPT.md: missing decision ID ADR-999\",\n    \"generated context brief is stale or hand-edited; run python tools/context_brief.py --write\",\n    \"protected document changed without reviewed manifest update: docs/context/CONTEXT_RECEIPT.md\"\n  ],\n  \"protected_documents\": 18,\n  \"source_commit\": \"e30c1e58e93a27f55a99fa3857aac354693a5463\",\n  \"source_count\": 23,\n  \"status\": \"FAIL\"\n}\n",
+      "generation_exit": null,
+      "generation_error": null
+    },
+    {
+      "case": "protected_unrefreshed",
+      "exit_code": 1,
+      "checker_output": "{\n  \"accepted_decisions\": 9,\n  \"errors\": [\n    \"generated context brief is stale or hand-edited; run python tools/context_brief.py --write\",\n    \"protected document changed without reviewed manifest update: docs/handbook/north-star.md\"\n  ],\n  \"protected_documents\": 18,\n  \"source_commit\": \"e30c1e58e93a27f55a99fa3857aac354693a5463\",\n  \"source_count\": 23,\n  \"status\": \"FAIL\"\n}\n",
+      "generation_exit": null,
+      "generation_error": null
+    },
+    {
+      "case": "governance_refreshed_without_brief",
+      "exit_code": 1,
+      "checker_output": "{\n  \"accepted_decisions\": 9,\n  \"errors\": [\n    \"generated context brief is stale or hand-edited; run python tools/context_brief.py --write\"\n  ],\n  \"protected_documents\": 18,\n  \"source_commit\": \"4d981a5c4ee884a3cff4eef49f2afab7f66263b3\",\n  \"source_count\": 23,\n  \"status\": \"FAIL\"\n}\n",
+      "generation_exit": null,
+      "generation_error": null
+    },
+    {
+      "case": "unauthorized_all_refreshed",
+      "exit_code": 0,
+      "checker_output": "{\n  \"accepted_decisions\": 9,\n  \"errors\": [],\n  \"protected_documents\": 18,\n  \"source_commit\": \"02608de81d82d93b9ed5bc4fd38e065207539f70\",\n  \"source_count\": 23,\n  \"status\": \"PASS\"\n}\n",
+      "generation_exit": 0,
+      "generation_error": ""
+    },
+    {
+      "case": "invalid_status_prefix",
+      "exit_code": 1,
+      "checker_output": "{\n  \"accepted_decisions\": 0,\n  \"errors\": [\n    \"brief generation failed: ADR-007: invalid status 'accepted_pending_owner_approval \\u00b7 24 October 2026 \\u00b7 owner-directed design intent; implementation draft under review'\",\n    \"decisions: ADR-007: invalid status 'accepted_pending_owner_approval \\u00b7 24 October 2026 \\u00b7 owner-directed design intent; implementation draft under review'\"\n  ],\n  \"protected_documents\": 18,\n  \"source_commit\": \"1eddb6372e16afcf72ecb77bb14e45865693e845\",\n  \"source_count\": 23,\n  \"status\": \"FAIL\"\n}\n",
+      "generation_exit": 1,
+      "generation_error": "Traceback (most recent call last):\n  File \"/private/var/folders/_p/fbqbbk0x7sbf8l4wjwzrz4d80000gn/T/context-probes-smdb8x93/repo/tools/context_brief.py\", line 260, in <module>\n    raise SystemExit(main())\n                     ^^^^^^\n  File \"/private/var/folders/_p/fbqbbk0x7sbf8l4wjwzrz4d80000gn/T/context-probes-smdb8x93/repo/tools/context_brief.py\", line 251, in main\n    print(write_brief())\n          ^^^^^^^^^^^^^\n  File \"/private/var/folders/_p/fbqbbk0x7sbf8l4wjwzrz4d80000gn/T/context-probes-smdb8x93/repo/tools/context_brief.py\", line 220, in write_brief\n    BRIEF.write_text(build_brief(), encoding=\"utf-8\")\n                     ^^^^^^^^^^^^^\n  File \"/private/var/folders/_p/fbqbbk0x7sbf8l4wjwzrz4d80000gn/T/context-probes-smdb8x93/repo/tools/context_brief.py\", line 152, in build_brief\n    adrs = parse_adrs(DECISIONS.read_text(encoding=\"utf-8\"))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/var/folders/_p/fbqbbk0x7sbf8l4wjwzrz4d80000gn/T/context-probes-smdb8x93/repo/tools/context_brief.py\", line 105, in parse_adrs\n    raise ValueError(f\"{match.group(1)}: invalid status {raw_status!r}\")\nValueError: ADR-007: invalid status 'accepted_pending_owner_approval \u00b7 24 October 2026 \u00b7 owner-directed design intent; implementation draft under review'\n"
+    },
+    {
+      "case": "legacy_alias_adr004",
+      "exit_code": 0,
+      "checker_output": "{\n  \"accepted_decisions\": 9,\n  \"errors\": [],\n  \"protected_documents\": 18,\n  \"source_commit\": \"a28fb130026301b8cdf7d34f00c4ac38258bf53d\",\n  \"source_count\": 23,\n  \"status\": \"PASS\"\n}\n",
+      "generation_exit": 0,
+      "generation_error": ""
+    },
+    {
+      "case": "legacy_alias_adr007",
+      "exit_code": 0,
+      "checker_output": "{\n  \"accepted_decisions\": 9,\n  \"errors\": [],\n  \"protected_documents\": 18,\n  \"source_commit\": \"618d5db6484f1b3970fbe5c819b6c25a40f843d5\",\n  \"source_count\": 23,\n  \"status\": \"PASS\"\n}\n",
+      "generation_exit": 0,
+      "generation_error": ""
+    },
+    {
+      "case": "legacy_alias_adr010",
+      "exit_code": 0,
+      "checker_output": "{\n  \"accepted_decisions\": 10,\n  \"errors\": [],\n  \"protected_documents\": 18,\n  \"source_commit\": \"ce03a4614a71407b7a395ae3f1ff8450ef9e794f\",\n  \"source_count\": 23,\n  \"status\": \"PASS\"\n}\n",
+      "generation_exit": 0,
+      "generation_error": ""
+    }
+  ],
+  "after_probes": [
+    {
+      "case": "baseline",
+      "exit_code": 0,
+      "checker_output": "{\n  \"accepted_decisions\": 9,\n  \"errors\": [],\n  \"protected_documents\": 18,\n  \"source_commit\": \"4dd2c3d4299f88ba4f2b19b1c557d09c421dde01\",\n  \"source_count\": 23,\n  \"status\": \"PASS\"\n}\n",
+      "generation_exit": null,
+      "generation_error": null
+    },
+    {
+      "case": "missing_source",
+      "exit_code": 1,
+      "checker_output": "{\n  \"accepted_decisions\": 9,\n  \"errors\": [\n    \"README.md: missing link target: docs/handbook/north-star.md\",\n    \"brief generation failed: source missing: docs/handbook/north-star.md\",\n    \"docs/README.md: missing link target: handbook/north-star.md\",\n    \"docs/architecture/ENGINEERING_CONTRACT.md: missing link target: ../handbook/north-star.md\",\n    \"docs/context/CONTEXT_BRIEF.md: missing link target: ../handbook/north-star.md\",\n    \"docs/context/CONTEXT_TRUTHS.md: missing link target: ../handbook/north-star.md\",\n    \"docs/context/README.md: missing link target: ../handbook/north-star.md\",\n    \"docs/handbook/agent-handoff.md: missing link target: north-star.md\",\n    \"docs/handbook/architecture.md: missing link target: north-star.md\",\n    \"docs/handbook/decisions.md: missing link target: north-star.md\",\n    \"docs/handbook/hardware-inventory.md: missing link target: north-star.md\",\n    \"docs/handbook/roadmap.md: missing link target: north-star.md\",\n    \"docs/handbook/verification-baseline.md: missing link target: north-star.md\",\n    \"docs/procurement/HARK_CONTEXT.md: missing link target: ../handbook/north-star.md\",\n    \"north-star: missing source file docs/handbook/north-star.md\",\n    \"protected document missing: docs/handbook/north-star.md\"\n  ],\n  \"protected_documents\": 18,\n  \"source_commit\": \"4dd2c3d4299f88ba4f2b19b1c557d09c421dde01\",\n  \"source_count\": 23,\n  \"status\": \"FAIL\"\n}\n",
+      "generation_exit": null,
+      "generation_error": null
+    },
+    {
+      "case": "tampered_hash",
+      "exit_code": 1,
+      "checker_output": "{\n  \"accepted_decisions\": 9,\n  \"errors\": [\n    \"generated context brief is stale or hand-edited; run python tools/context_brief.py --write\",\n    \"source hash mismatch at recorded commit 5b4b120ad0f14c5afa788bdaccf00d15b65863fa: AGENTS.md\"\n  ],\n  \"protected_documents\": 18,\n  \"source_commit\": \"4dd2c3d4299f88ba4f2b19b1c557d09c421dde01\",\n  \"source_count\": 23,\n  \"status\": \"FAIL\"\n}\n",
+      "generation_exit": null,
+      "generation_error": null
+    },
+    {
+      "case": "stale_state",
+      "exit_code": 1,
+      "checker_output": "{\n  \"accepted_decisions\": 9,\n  \"errors\": [\n    \"generated context brief is stale or hand-edited; run python tools/context_brief.py --write\"\n  ],\n  \"protected_documents\": 18,\n  \"source_commit\": \"4dd2c3d4299f88ba4f2b19b1c557d09c421dde01\",\n  \"source_count\": 23,\n  \"status\": \"FAIL\"\n}\n",
+      "generation_exit": null,
+      "generation_error": null
+    },
+    {
+      "case": "invalid_adr_reference",
+      "exit_code": 1,
+      "checker_output": "{\n  \"accepted_decisions\": 9,\n  \"errors\": [\n    \"docs/context/CONTEXT_RECEIPT.md: missing decision ID ADR-999\",\n    \"generated context brief is stale or hand-edited; run python tools/context_brief.py --write\",\n    \"protected document changed without reviewed manifest update: docs/context/CONTEXT_RECEIPT.md\"\n  ],\n  \"protected_documents\": 18,\n  \"source_commit\": \"4dd2c3d4299f88ba4f2b19b1c557d09c421dde01\",\n  \"source_count\": 23,\n  \"status\": \"FAIL\"\n}\n",
+      "generation_exit": null,
+      "generation_error": null
+    },
+    {
+      "case": "protected_unrefreshed",
+      "exit_code": 1,
+      "checker_output": "{\n  \"accepted_decisions\": 9,\n  \"errors\": [\n    \"generated context brief is stale or hand-edited; run python tools/context_brief.py --write\",\n    \"protected document changed without reviewed manifest update: docs/handbook/north-star.md\"\n  ],\n  \"protected_documents\": 18,\n  \"source_commit\": \"4dd2c3d4299f88ba4f2b19b1c557d09c421dde01\",\n  \"source_count\": 23,\n  \"status\": \"FAIL\"\n}\n",
+      "generation_exit": null,
+      "generation_error": null
+    },
+    {
+      "case": "governance_refreshed_without_brief",
+      "exit_code": 1,
+      "checker_output": "{\n  \"accepted_decisions\": 9,\n  \"errors\": [\n    \"generated context brief is stale or hand-edited; run python tools/context_brief.py --write\"\n  ],\n  \"protected_documents\": 18,\n  \"source_commit\": \"2d88a8b523c6c93bb6ec785d1ee910b60e29a3ee\",\n  \"source_count\": 23,\n  \"status\": \"FAIL\"\n}\n",
+      "generation_exit": null,
+      "generation_error": null
+    },
+    {
+      "case": "unauthorized_all_refreshed",
+      "exit_code": 0,
+      "checker_output": "{\n  \"accepted_decisions\": 9,\n  \"errors\": [],\n  \"protected_documents\": 18,\n  \"source_commit\": \"5f289b58f146ccdf9f9f1800059878e6c5c72318\",\n  \"source_count\": 23,\n  \"status\": \"PASS\"\n}\n",
+      "generation_exit": 0,
+      "generation_error": ""
+    },
+    {
+      "case": "invalid_status_prefix",
+      "exit_code": 1,
+      "checker_output": "{\n  \"accepted_decisions\": 0,\n  \"errors\": [\n    \"brief generation failed: ADR-007: invalid status 'accepted_pending_owner_approval \\u00b7 24 October 2026 \\u00b7 owner-directed design intent; implementation draft under review'\",\n    \"decisions: ADR-007: invalid status 'accepted_pending_owner_approval \\u00b7 24 October 2026 \\u00b7 owner-directed design intent; implementation draft under review'\"\n  ],\n  \"protected_documents\": 18,\n  \"source_commit\": \"c80f02432015691e655d72a790fdc61f8d85cf72\",\n  \"source_count\": 23,\n  \"status\": \"FAIL\"\n}\n",
+      "generation_exit": 1,
+      "generation_error": "Traceback (most recent call last):\n  File \"/private/var/folders/_p/fbqbbk0x7sbf8l4wjwzrz4d80000gn/T/context-probes-yo6jhaoi/repo/tools/context_brief.py\", line 260, in <module>\n    raise SystemExit(main())\n                     ^^^^^^\n  File \"/private/var/folders/_p/fbqbbk0x7sbf8l4wjwzrz4d80000gn/T/context-probes-yo6jhaoi/repo/tools/context_brief.py\", line 251, in main\n    print(write_brief())\n          ^^^^^^^^^^^^^\n  File \"/private/var/folders/_p/fbqbbk0x7sbf8l4wjwzrz4d80000gn/T/context-probes-yo6jhaoi/repo/tools/context_brief.py\", line 220, in write_brief\n    BRIEF.write_text(build_brief(), encoding=\"utf-8\")\n                     ^^^^^^^^^^^^^\n  File \"/private/var/folders/_p/fbqbbk0x7sbf8l4wjwzrz4d80000gn/T/context-probes-yo6jhaoi/repo/tools/context_brief.py\", line 152, in build_brief\n    adrs = parse_adrs(DECISIONS.read_text(encoding=\"utf-8\"))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/var/folders/_p/fbqbbk0x7sbf8l4wjwzrz4d80000gn/T/context-probes-yo6jhaoi/repo/tools/context_brief.py\", line 105, in parse_adrs\n    raise ValueError(f\"{match.group(1)}: invalid status {raw_status!r}\")\nValueError: ADR-007: invalid status 'accepted_pending_owner_approval \u00b7 24 October 2026 \u00b7 owner-directed design intent; implementation draft under review'\n"
+    },
+    {
+      "case": "legacy_alias_adr004",
+      "exit_code": 0,
+      "checker_output": "{\n  \"accepted_decisions\": 9,\n  \"errors\": [],\n  \"protected_documents\": 18,\n  \"source_commit\": \"a817795dc1e908359544ec9e45c957c23e074e03\",\n  \"source_count\": 23,\n  \"status\": \"PASS\"\n}\n",
+      "generation_exit": 0,
+      "generation_error": ""
+    },
+    {
+      "case": "legacy_alias_adr007",
+      "exit_code": 1,
+      "checker_output": "{\n  \"accepted_decisions\": 0,\n  \"errors\": [\n    \"brief generation failed: ADR-007: invalid status 'accepted research policy \\u00b7 identity probe'\",\n    \"decisions: ADR-007: invalid status 'accepted research policy \\u00b7 identity probe'\"\n  ],\n  \"protected_documents\": 18,\n  \"source_commit\": \"5b835e87cbd12618d211f2563a84275c3cc248a7\",\n  \"source_count\": 23,\n  \"status\": \"FAIL\"\n}\n",
+      "generation_exit": 1,
+      "generation_error": "Traceback (most recent call last):\n  File \"/private/var/folders/_p/fbqbbk0x7sbf8l4wjwzrz4d80000gn/T/context-probes-yo6jhaoi/repo/tools/context_brief.py\", line 260, in <module>\n    raise SystemExit(main())\n                     ^^^^^^\n  File \"/private/var/folders/_p/fbqbbk0x7sbf8l4wjwzrz4d80000gn/T/context-probes-yo6jhaoi/repo/tools/context_brief.py\", line 251, in main\n    print(write_brief())\n          ^^^^^^^^^^^^^\n  File \"/private/var/folders/_p/fbqbbk0x7sbf8l4wjwzrz4d80000gn/T/context-probes-yo6jhaoi/repo/tools/context_brief.py\", line 220, in write_brief\n    BRIEF.write_text(build_brief(), encoding=\"utf-8\")\n                     ^^^^^^^^^^^^^\n  File \"/private/var/folders/_p/fbqbbk0x7sbf8l4wjwzrz4d80000gn/T/context-probes-yo6jhaoi/repo/tools/context_brief.py\", line 152, in build_brief\n    adrs = parse_adrs(DECISIONS.read_text(encoding=\"utf-8\"))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/var/folders/_p/fbqbbk0x7sbf8l4wjwzrz4d80000gn/T/context-probes-yo6jhaoi/repo/tools/context_brief.py\", line 105, in parse_adrs\n    raise ValueError(f\"{match.group(1)}: invalid status {raw_status!r}\")\nValueError: ADR-007: invalid status 'accepted research policy \u00b7 identity probe'\n"
+    },
+    {
+      "case": "legacy_alias_adr010",
+      "exit_code": 1,
+      "checker_output": "{\n  \"accepted_decisions\": 0,\n  \"errors\": [\n    \"brief generation failed: ADR-010: invalid status 'accepted research policy \\u00b7 identity probe'\",\n    \"decisions: ADR-010: invalid status 'accepted research policy \\u00b7 identity probe'\"\n  ],\n  \"protected_documents\": 18,\n  \"source_commit\": \"a6b3561907418e3078beefd00a933df0b2df305c\",\n  \"source_count\": 23,\n  \"status\": \"FAIL\"\n}\n",
+      "generation_exit": 1,
+      "generation_error": "Traceback (most recent call last):\n  File \"/private/var/folders/_p/fbqbbk0x7sbf8l4wjwzrz4d80000gn/T/context-probes-yo6jhaoi/repo/tools/context_brief.py\", line 260, in <module>\n    raise SystemExit(main())\n                     ^^^^^^\n  File \"/private/var/folders/_p/fbqbbk0x7sbf8l4wjwzrz4d80000gn/T/context-probes-yo6jhaoi/repo/tools/context_brief.py\", line 251, in main\n    print(write_brief())\n          ^^^^^^^^^^^^^\n  File \"/private/var/folders/_p/fbqbbk0x7sbf8l4wjwzrz4d80000gn/T/context-probes-yo6jhaoi/repo/tools/context_brief.py\", line 220, in write_brief\n    BRIEF.write_text(build_brief(), encoding=\"utf-8\")\n                     ^^^^^^^^^^^^^\n  File \"/private/var/folders/_p/fbqbbk0x7sbf8l4wjwzrz4d80000gn/T/context-probes-yo6jhaoi/repo/tools/context_brief.py\", line 152, in build_brief\n    adrs = parse_adrs(DECISIONS.read_text(encoding=\"utf-8\"))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/var/folders/_p/fbqbbk0x7sbf8l4wjwzrz4d80000gn/T/context-probes-yo6jhaoi/repo/tools/context_brief.py\", line 105, in parse_adrs\n    raise ValueError(f\"{match.group(1)}: invalid status {raw_status!r}\")\nValueError: ADR-010: invalid status 'accepted research policy \u00b7 identity probe'\n"
+    }
+  ]
+}
