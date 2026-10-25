@@ -88,6 +88,8 @@ def check_sources(root: Path = cb.ROOT) -> list[str]:
         paths.add(relative)
         if not (root / relative).is_file():
             errors.append(f"{source_id}: missing source file {relative}")
+    for relative in sorted(set(cb.PROTECTED_PATHS) - paths):
+        errors.append(f"protected governance document missing from Brief sources: {relative}")
     return errors
 
 

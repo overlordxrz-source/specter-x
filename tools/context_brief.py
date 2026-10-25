@@ -55,6 +55,7 @@ ADR_HEADING = re.compile(r"^## (ADR-(\d{3}))\s+—\s+(.+)$", re.MULTILINE)
 ADR_ANY = re.compile(r"^#{1,6}\s+ADR(?:\b|[- ]).*$", re.MULTILINE)
 ADR_STATUS = re.compile(r"\*\*Status:\*\*\s*([^\n]+)")
 VALID_STATUS = ("accepted", "proposed", "superseded")
+STATUS_ALIASES = {"accepted research policy": "accepted"}  # historical ADR-004
 
 
 def sha256_file(path: Path) -> str:
@@ -99,7 +100,8 @@ def parse_adrs(text: str) -> list[dict]:
             raise ValueError(f"{match.group(1)}: missing **Status:** line")
         raw_status = status_match.group(1).strip()
         status = raw_status.split("·", 1)[0].strip().lower()
-        if not any(status.startswith(value) for value in VALID_STATUS):
+        status = STATUS_ALIASES.get(status, status)
+        if status not in VALID_STATUS:
             raise ValueError(f"{match.group(1)}: invalid status {raw_status!r}")
         adrs.append(
             dict(
@@ -120,7 +122,7 @@ def parse_adrs(text: str) -> list[dict]:
 
 
 def active_decisions(adrs: list[dict]) -> list[dict]:
-    return [adr for adr in adrs if adr["status"].startswith("accepted")]
+    return [adr for adr in adrs if adr["status"] == "accepted"]
 
 
 def state() -> dict:
@@ -159,7 +161,7 @@ def build_brief(commit: str | None = None) -> str:
         )
     accepted = active_decisions(adrs)
     decision_lines = "\n".join(
-        f"- **{adr['id']}** — {adr['title']} (`{adr['status']}`)" for adr in accepted
+        f"- **{adr['id']}** — {adr['title']} (`{adr['raw_status']}`)" for adr in accepted
     )
     unresolved = "\n".join(
         f"- **{item['id']}** — {item.get('question', '')} "
