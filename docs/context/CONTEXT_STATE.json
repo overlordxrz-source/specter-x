@@ -4,9 +4,9 @@
   "milestone": {
     "id": "M-CTX-001",
     "name": "Persistent Context Protocol adoption",
-    "status": "DRAFT PR / IN REVIEW",
-    "summary": "Persistent Context Protocol, ADR-007/008/009, protected-document checks, branch-safe handoff, Hark procurement context and context-free recovery tests are implemented on an isolated docs/tooling branch.",
-    "next_action": "Independent review of docs/persistent-context-protocol; address findings; owner acceptance before any merge. No hardware, purchase or capability promotion."
+    "status": "ACCEPTED / MERGED TO MAIN",
+    "summary": "Persistent Context Protocol, ADR-007/008/009, protected-document checks, branch-safe handoff, Hark procurement context and recovery tests are integrated on main at f2e511a; the approved PR10 bench foundation is a separate workstream recorded in the combined integration history.",
+    "next_action": "Maintain the generated Brief through source/Brief commits; further governance changes require the documented owner-review and decision-change process. No hardware, purchase or capability promotion."
   },
   "unresolved_questions": [
     {

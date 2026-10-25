@@ -6,6 +6,10 @@ PR10 integration. The pre-approval wording below is retained as provenance;
 PR10's review is complete and owner-approved. It is not a new physical test
 authorization and does not promote a hardware capability.
 
+`docs/review/README.md` is a byte-preserved historical PR10 artifact; its
+"not merged or pushed" line predates this controlled integration. PR10 is
+approved and integrated here, with no new physical-test authorization.
+
 
 **PR #10 corrected candidate — independent re-review required, 24 October:**
 Reviewed head `2b54410508118ae4e2c75d0f162467ada98dba28`; OpenCode review

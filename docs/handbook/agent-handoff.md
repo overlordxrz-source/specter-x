@@ -8,7 +8,7 @@ the process. The generated Brief is an index, not evidence or authorization.
 This is a stable cross-feature pointer only; feature status belongs in the
 [branch handoff](../context/BRANCH_HANDOFF_TEMPLATE.md), not here.
 
-**Open independent-review packet:** [PRs #7, #8 and #9 consolidated review handoff](pr7-pr8-pr9-review-handoff.md). These are unreviewed draft PRs; no approval or merge is implied.
+**Open independent-review packet:** [PRs #7, #8 and #9 consolidated review handoff](pr7-pr8-pr9-review-handoff.md). These drafts have been reviewed; they are not approved or merged, and their recorded follow-ups remain required.
 
 **SPECTER-SYNC:** Phase 0 design `docs/design/specter-sync-phase0.md` and Phase 1 bring-up log `docs/design/shrike-lite-bringup-log-20261024.md` exist on the isolated research branch, not on `main`. The Shrike Lite is USB-detected (MicroPython RP2040, factory `main.py`/`blink_all.bin` backed up, GPIO4 heartbeat passed). Exact physical board revision remains **UNKNOWN**; the factory loop drives GPIO14/15, Go Configure is not installed, and no custom FPGA bitstream has been built or flashed. Timing accuracy is not claimed.
 
@@ -42,7 +42,7 @@ does not override this canonical page until integration review.
 
 | Item | State |
 |---|---|
-| `main` | Canonical documentation/Alpha/CI base at **`f2ef96b`** (24 October 2026). Historical docs merge `49cb2e5`, CI merge `4b09d40`; both remain history. |
+| `main` | Canonical documentation/Alpha/CI base. Use `git fetch origin main && git rev-parse origin/main` for the exact current head; this integration branch is based on **`f2e511a`** (the PR #11/PR #12 merge). Historical docs merge `49cb2e5`, CI merge `4b09d40`; both remain history. |
 | Documentation branch / worktree | `docs/main-handbook-sync` was merged into `main` at `49cb2e5`. The worktree remains available for historical documentation review. |
 | Alpha code / evidence branch | `feature/alpha002-esp32-supervisor` at **`285bc2c`** in the main research worktree. The CI repair was integrated at `4d8e30b`; frozen Alpha evidence remains at **`e7af1ad`**, forensic record at `a3c540d`. |
 | CI fix to main | **PR #4 merged at `4b09d40`.** Six files only; automatic GitHub Actions is green. |
@@ -136,7 +136,7 @@ Acceptable limitations, not merge blockers:
 
 ## Team evidence-validity branch (`e7bec52`, PR #7)
 
-**Status: implemented, draft PR pending independent review; not merged.**
+**Status: implemented and reviewed; not approved or merged; follow-ups required.**
 
 - Peer `t_host` is report-creation time, not acquisition time. A finite
   caller-supplied `peer_t - local_t` mapping is required; unknown age is rejected.
@@ -157,7 +157,7 @@ Acceptable limitations, not merge blockers:
 
 ## GNSS validity branch (`4398638`, PR #8)
 
-**Status: implemented, draft PR pending independent review; not merged.**
+**Status: implemented and reviewed; not approved or merged; follow-ups required.**
 
 - `PoseEKF.update_gnss()` now validates the complete receiver fix before any
   state mutation: explicit 3D fix type, satellite count, finite/range-checked
@@ -178,7 +178,7 @@ Acceptable limitations, not merge blockers:
 
 ## Radar packet validation (`30b6870`, PR #9)
 
-**Status: implemented, draft PR pending independent review; not merged.**
+**Status: implemented and reviewed; not approved or merged; follow-ups required.**
 
 - Frozen TI OOB contract: 40-byte header, 32-byte total-length alignment,
   8-byte TLV headers, `totalPacketLen` including header, and detected-points
@@ -198,9 +198,9 @@ Acceptable limitations, not merge blockers:
 
 ## Next single task
 
-**PR #7, PR #8 and PR #9 are drafts awaiting independent review.** Do not merge
-any without owner authorization. After those reviews, the remaining P1 is the
-BNO085 non-finite quaternion check; team fusion stays gated until its
+**PR #7, PR #8 and PR #9 are reviewed drafts, not approved or merged.** Do not
+merge any without owner authorization. Their recorded follow-ups remain
+required. The remaining P1 is the BNO085 non-finite quaternion check; team fusion stays gated until its
 anchor/calibration limitations are separately resolved.
 
 **Alpha 003 screening is prepared but not authorized.** Read
