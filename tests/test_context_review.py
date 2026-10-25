@@ -68,6 +68,7 @@ def test_standard_statuses_are_independent_of_legacy_identity(target, status, ac
     "accepted pending owner approval", "proposed_pending_owner_approval",
     "superseded_pending_owner_approval", "accepted research policy pending",
     "accept", "acceptedness", "accepted/research policy", "", "· pending approval",
+    "\naccepted",
 ])
 def test_malformed_or_pending_statuses_block_even_legacy_adr(status):
     with pytest.raises(ValueError):

@@ -53,9 +53,9 @@ PROTECTED_PATHS = (
 
 ADR_HEADING = re.compile(r"^## (ADR-(\d{3}))\s+—\s+(.+)$", re.MULTILINE)
 ADR_ANY = re.compile(r"^#{1,6}\s+ADR(?:\b|[- ]).*$", re.MULTILINE)
-ADR_STATUS = re.compile(r"\*\*Status:\*\*\s*([^\n]+)")
+ADR_STATUS = re.compile(r"\*\*Status:\*\*[^\S\r\n]*([^\r\n]+)")
 VALID_STATUS = ("accepted", "proposed", "superseded")
-STATUS_ALIASES = {"accepted research policy": "accepted"}  # historical ADR-004
+STATUS_ALIASES = {("ADR-004", "accepted research policy"): "accepted"}
 
 
 def sha256_file(path: Path) -> str:
@@ -100,7 +100,7 @@ def parse_adrs(text: str) -> list[dict]:
             raise ValueError(f"{match.group(1)}: missing **Status:** line")
         raw_status = status_match.group(1).strip()
         status = raw_status.split("·", 1)[0].strip().lower()
-        status = STATUS_ALIASES.get(status, status)
+        status = STATUS_ALIASES.get((match.group(1), status), status)
         if status not in VALID_STATUS:
             raise ValueError(f"{match.group(1)}: invalid status {raw_status!r}")
         adrs.append(

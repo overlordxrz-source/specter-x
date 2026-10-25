@@ -37,7 +37,8 @@ def main():
         cases = ['baseline', 'missing_source', 'tampered_hash', 'stale_state',
                  'invalid_adr_reference', 'protected_unrefreshed',
                  'governance_refreshed_without_brief', 'unauthorized_all_refreshed',
-                 'invalid_status_prefix']
+                 'invalid_status_prefix', 'legacy_alias_adr004',
+                 'legacy_alias_adr007', 'legacy_alias_adr010']
         for case in cases:
             require('git', 'reset', '--hard', args.ref)
             generation = None
@@ -63,7 +64,19 @@ def main():
                 text = p.read_text()
                 prefix, section = text.split('## ADR-007', 1)
                 p.write_text(prefix + '## ADR-007' + section.replace('**Status:** accepted ·', '**Status:** accepted_pending_owner_approval ·', 1))
-            if case in ('governance_refreshed_without_brief', 'unauthorized_all_refreshed', 'invalid_status_prefix'):
+            elif case.startswith('legacy_alias_adr'):
+                p = root / 'docs/handbook/decisions.md'
+                number = int(case[-3:])
+                if number == 10:
+                    append('docs/handbook/decisions.md', '\n## ADR-010 — Disposable legacy status probe\n**Status:** accepted research policy · identity probe\n')
+                else:
+                    text = p.read_text()
+                    prefix, section = text.split(f'## ADR-{number:03d}', 1)
+                    import re
+                    section = re.sub(r'\*\*Status:\*\*[^\n]+',
+                                     '**Status:** accepted research policy · identity probe', section, count=1)
+                    p.write_text(prefix + f'## ADR-{number:03d}' + section)
+            if case in ('governance_refreshed_without_brief', 'unauthorized_all_refreshed', 'invalid_status_prefix') or case.startswith('legacy_alias_adr'):
                 require(sys.executable, 'tools/context_brief.py', '--update-protected')
                 require('git', 'add', '-A')
                 require('git', 'commit', '--quiet', '-m', 'Disposable synthetic context mutation')
