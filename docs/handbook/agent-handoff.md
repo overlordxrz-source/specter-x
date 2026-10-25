@@ -268,3 +268,11 @@ Implemented and physically verified (with evidence IDs):
 Unknown, exploratory, pending, or blocked:
 Next action + coordination constraints:
 ```
+
+## Approved PR10 bench evidence
+
+Approved PR10 head `8a84369941c74d5f884c9ec6cc33d10395223597` is integrated
+after PR #11. The historical bench evidence is retained in the
+[branch-safe handoff](../context/handoffs/approved-pr10-bench-evidence.md).
+This is evidence/memory, not a new physical test authorization or a capability
+promotion. No hardware operation is implied.

@@ -1,5 +1,9 @@
 # SPECTER-WORLD desktop command center
 
+**Local bench candidate:** [NODE capture → completed WORLD replay workflow](../architecture/bench-device-workflow.md)
+and [offline verification](../review/bench-foundation-verification.md).
+Physical acquisition and live WORLD streaming remain unvalidated.
+
 [Master hub](../README.md) · [Architecture decision](architecture.md) · [Verification](verification.md) · [FRONTIER contracts](../frontier001/README.md)
 
 WORLD is the Mac desktop research application; VIEW remains the compact Newhaven/HUD interface. WORLD reuses FRONTIER's Observation, Registry and replay adapter. It runs a local Python service and opens the default browser; no internet connection is needed for ordinary operation. There is no Electron bundle or separately installed native `.app` yet.
