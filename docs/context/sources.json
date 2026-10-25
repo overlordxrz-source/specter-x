@@ -85,6 +85,36 @@
       "id": "root-readme",
       "path": "README.md",
       "role": "historical system overview and legacy compute rows; dated clarification defers to ADR-007"
+    },
+    {
+      "id": "governance-automation-limits",
+      "path": "docs/context/AUTOMATION_LIMITS.md",
+      "role": "protected recovery/governance process; snapshot freshness, not approval proof"
+    },
+    {
+      "id": "governance-branch-handoff-template",
+      "path": "docs/context/BRANCH_HANDOFF_TEMPLATE.md",
+      "role": "protected recovery/governance process; snapshot freshness, not approval proof"
+    },
+    {
+      "id": "governance-chatgpt-recovery",
+      "path": "docs/context/CHATGPT_RECOVERY.md",
+      "role": "protected recovery/governance process; snapshot freshness, not approval proof"
+    },
+    {
+      "id": "governance-context-receipt",
+      "path": "docs/context/CONTEXT_RECEIPT.md",
+      "role": "protected recovery/governance process; snapshot freshness, not approval proof"
+    },
+    {
+      "id": "governance-decision-change",
+      "path": "docs/context/DECISION_CHANGE.md",
+      "role": "protected recovery/governance process; snapshot freshness, not approval proof"
+    },
+    {
+      "id": "governance-readme",
+      "path": "docs/context/README.md",
+      "role": "protected recovery/governance process; snapshot freshness, not approval proof"
     }
   ]
 }
