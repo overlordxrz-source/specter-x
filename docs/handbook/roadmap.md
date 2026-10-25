@@ -21,6 +21,30 @@
 | SPECTER-CORE mission coordination | **VISION** | Architecture boundary only; no hub service. |
 | SPECTER-AIR fleet / SPECTER-LINK / Ferettux | **VISION / RESEARCH** | Documents only; no hardware, flight or kernel adoption. |
 
+## Compute topology and procurement sequence
+
+**Owner-directed clarification, 24 October 2026.** This sequence applies
+[ADR-007](decisions.md), which is normative; it is PLANNED, not a purchase or
+deployment claim.
+
+1. Establish the **central command compute** baseline first: workstation/server
+   GPU capacity or a Jetson AGX Thor-class system with defined power, cooling,
+   storage, network, remote-operation and backup constraints. This tier carries
+   high-performance AI, persistent WORLD history and cross-platform
+   coordination.
+2. Define the **SPECTER-X AR headset interface** as a separate product: optics,
+   display, sensors, ergonomics, battery/thermal envelope and local low-latency
+   safety. It is not required to contain all AI compute.
+3. Add distributed **AIR/GROUND/NODE** participants only after local safety,
+   timing, communications and field constraints are specified. Local safety
+   must survive a central-link outage.
+4. Select sensors and accelerators through measured compatibility, calibration,
+   power, RF, security and support gates. Use the
+   [Hark procurement context](../procurement/HARK_CONTEXT.md) as a question set,
+   not a bill of materials or order.
+5. Keep LONG-TERM ORBIT, BIO and advanced-AI research behind their own
+   evidence, safety and partner gates; no roadmap position is a capability.
+
 ## First 30 days — through 21 November 2026
 
 Goal: reproducible bench acquisition and one honest physical reference experiment.

@@ -55,6 +55,15 @@ Names and interfaces below are repository design selections, not purchasing conf
 | CO / CO2 gas sensors | Unknown, candidate | Advisory stub + simulator | Exact gas technology, calibration and cross-sensitivity; no safety certification |
 | Vitals-capable radar configuration | Unknown; could reuse radar, not a separate receipt | Experimental stub + simulator | Approved reference protocol and motion-artifact rejection |
 
+## Hark procurement context — PLANNED, no possession or order
+
+Procurement questions for central command compute, the AR headset interface,
+distributed nodes and future sensors are in the
+[Hark procurement context](../procurement/HARK_CONTEXT.md). It explicitly
+separates central workstation/server/Jetson AGX Thor-class compute from the
+wearable and from local-safety nodes. It is a compatibility and acceptance
+checklist, not a bill of materials, budget, receipt or purchase authorization.
+
 ## Needed dependencies: proposals, not purchases
 
 | Dependency | Why / readiness gate |

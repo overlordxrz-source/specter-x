@@ -20,6 +20,26 @@
 
 The [charter](north-star.md) defines product/program identities. CORE, NODE, SENSE, LINK, FUSION and VIEW remain implementation boundaries, not replacement names for that vision. WORLD spans persistent spatial semantics, uncertainty and history. AIR/GROUND/ORBIT are future platform/data/comms extensions; BIO is the experimental physiology/quantum laboratory track. These names do not claim shipped subsystems or require a package rename.
 
+## Compute topology
+
+**Accepted intent — [ADR-007](decisions.md) is normative; this table is the
+architecture view, not a deployed system.**
+
+| Tier | Primary role | Boundary |
+|---|---|---|
+| **Central command** | High-performance AI training/inference, persistent WORLD state, cross-platform coordination and historical analysis; workstation/server GPUs or Jetson AGX Thor-class hardware | Not wearable; may be remote or local; availability, power, cooling, storage, network and operator policy matter |
+| **SPECTER-X headset** | AR display/optics, sensors and the user interface; local low-latency processing and independent safety functions | **Not a self-contained high-performance compute system**; may be tethered or wireless; must degrade safely when central links fail |
+| **Distributed participants** | SPECTER-AIR, SPECTER-GROUND and other NODEs; local acquisition, latency-critical processing, safety and bounded autonomy | No dependency on central compute for local safety; evidence and authorization remain explicit |
+
+The headset is both the user-interface tier and a distributed participant for
+local safety; AIR/GROUND/NODE are the other distributed participants. CORE/OS
+coordinates software, devices, calibration, logging and communication across
+these tiers; WORLD owns the persistent evidence state; VIEW is a client
+of WORLD and is not a world model. The central tier may host expensive AI and
+cross-session analysis, but it cannot manufacture observations, override local
+safety or turn an inference into a measurement. Distributed nodes may continue
+local safety and time-critical functions when disconnected.
+
 ## Data path and trust boundaries
 
 ```mermaid

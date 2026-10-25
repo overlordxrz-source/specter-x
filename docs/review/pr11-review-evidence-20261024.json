@@ -1,0 +1,239 @@
+{
+  "original_head": "b58c96ef998e68e841b12d9ad671325053c009e4",
+  "corrected_checkpoint": "bd3433c8410dd0d3ac51de6f1a64760a00fd4521",
+  "verdict_original": "REQUEST CHANGES",
+  "snapshot_comparison": {
+    "all_declared_and_protected_equal": true,
+    "files": {
+      "docs/handbook/agent-handoff.md": true,
+      "docs/handbook/experiment-ledger.md": true,
+      "README.md": true,
+      "docs/architecture/WORK_ORDER.md": true,
+      "AGENTS.md": true,
+      "docs/architecture/ENGINEERING_CONTRACT.md": true,
+      "docs/README.md": true,
+      "docs/context/CONTEXT_RECEIPT.md": true,
+      "docs/context/CHATGPT_RECOVERY.md": true,
+      "docs/handbook/research-ideas.md": true,
+      "docs/handbook/north-star.md": true,
+      "docs/context/CONTEXT_TRUTHS.md": true,
+      "docs/context/BRANCH_HANDOFF_TEMPLATE.md": true,
+      "docs/context/DECISION_CHANGE.md": true,
+      "docs/context/README.md": true,
+      "docs/handbook/decisions.md": true,
+      "docs/procurement/HARK_CONTEXT.md": true,
+      "docs/handbook/architecture.md": true,
+      "docs/context/AUTOMATION_LIMITS.md": true,
+      "docs/handbook/hardware-inventory.md": true,
+      "docs/handbook/verification-baseline.md": true,
+      "docs/context/CONTEXT_STATE.json": true,
+      "docs/handbook/roadmap.md": true
+    },
+    "protected_omitted_from_brief": [
+      "docs/context/AUTOMATION_LIMITS.md",
+      "docs/context/BRANCH_HANDOFF_TEMPLATE.md",
+      "docs/context/CHATGPT_RECOVERY.md",
+      "docs/context/CONTEXT_RECEIPT.md",
+      "docs/context/DECISION_CHANGE.md",
+      "docs/context/README.md"
+    ]
+  },
+  "original_probes": [
+    {
+      "case": "baseline",
+      "exit_code": 0,
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "case": "missing_source",
+      "exit_code": 1,
+      "status": "FAIL",
+      "errors": [
+        "README.md: missing link target: docs/handbook/north-star.md",
+        "brief generation failed: source missing: docs/handbook/north-star.md",
+        "docs/README.md: missing link target: handbook/north-star.md",
+        "docs/architecture/ENGINEERING_CONTRACT.md: missing link target: ../handbook/north-star.md",
+        "docs/context/CONTEXT_BRIEF.md: missing link target: ../handbook/north-star.md",
+        "docs/context/CONTEXT_TRUTHS.md: missing link target: ../handbook/north-star.md",
+        "docs/context/README.md: missing link target: ../handbook/north-star.md",
+        "docs/handbook/agent-handoff.md: missing link target: north-star.md",
+        "docs/handbook/architecture.md: missing link target: north-star.md",
+        "docs/handbook/decisions.md: missing link target: north-star.md",
+        "docs/handbook/hardware-inventory.md: missing link target: north-star.md",
+        "docs/handbook/roadmap.md: missing link target: north-star.md",
+        "docs/handbook/verification-baseline.md: missing link target: north-star.md",
+        "docs/procurement/HARK_CONTEXT.md: missing link target: ../handbook/north-star.md",
+        "north-star: missing source file docs/handbook/north-star.md",
+        "protected document missing: docs/handbook/north-star.md"
+      ]
+    },
+    {
+      "case": "tampered_hash",
+      "exit_code": 1,
+      "status": "FAIL",
+      "errors": [
+        "generated context brief is stale or hand-edited; run python tools/context_brief.py --write",
+        "source hash mismatch at recorded commit 71a54ede6a295189bdaae67f30da86f5914ad231: AGENTS.md"
+      ]
+    },
+    {
+      "case": "stale_state",
+      "exit_code": 1,
+      "status": "FAIL",
+      "errors": [
+        "generated context brief is stale or hand-edited; run python tools/context_brief.py --write"
+      ]
+    },
+    {
+      "case": "invalid_adr_reference",
+      "exit_code": 1,
+      "status": "FAIL",
+      "errors": [
+        "docs/context/CONTEXT_RECEIPT.md: missing decision ID ADR-999",
+        "protected document changed without reviewed manifest update: docs/context/CONTEXT_RECEIPT.md"
+      ]
+    },
+    {
+      "case": "protected_unrefreshed",
+      "exit_code": 1,
+      "status": "FAIL",
+      "errors": [
+        "generated context brief is stale or hand-edited; run python tools/context_brief.py --write",
+        "protected document changed without reviewed manifest update: docs/handbook/north-star.md"
+      ]
+    },
+    {
+      "case": "governance_refreshed_without_brief",
+      "exit_code": 0,
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "case": "unauthorized_all_refreshed",
+      "exit_code": 0,
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "case": "invalid_status_prefix",
+      "exit_code": 0,
+      "status": "PASS",
+      "errors": []
+    }
+  ],
+  "corrected_probes": [
+    {
+      "case": "baseline",
+      "exit_code": 0,
+      "checker_output": "{\n  \"accepted_decisions\": 9,\n  \"errors\": [],\n  \"protected_documents\": 18,\n  \"source_commit\": \"bd3433c8410dd0d3ac51de6f1a64760a00fd4521\",\n  \"source_count\": 23,\n  \"status\": \"PASS\"\n}\n",
+      "generation_exit": null,
+      "generation_error": null
+    },
+    {
+      "case": "missing_source",
+      "exit_code": 1,
+      "checker_output": "{\n  \"accepted_decisions\": 9,\n  \"errors\": [\n    \"README.md: missing link target: docs/handbook/north-star.md\",\n    \"brief generation failed: source missing: docs/handbook/north-star.md\",\n    \"docs/README.md: missing link target: handbook/north-star.md\",\n    \"docs/architecture/ENGINEERING_CONTRACT.md: missing link target: ../handbook/north-star.md\",\n    \"docs/context/CONTEXT_BRIEF.md: missing link target: ../handbook/north-star.md\",\n    \"docs/context/CONTEXT_TRUTHS.md: missing link target: ../handbook/north-star.md\",\n    \"docs/context/README.md: missing link target: ../handbook/north-star.md\",\n    \"docs/handbook/agent-handoff.md: missing link target: north-star.md\",\n    \"docs/handbook/architecture.md: missing link target: north-star.md\",\n    \"docs/handbook/decisions.md: missing link target: north-star.md\",\n    \"docs/handbook/hardware-inventory.md: missing link target: north-star.md\",\n    \"docs/handbook/roadmap.md: missing link target: north-star.md\",\n    \"docs/handbook/verification-baseline.md: missing link target: north-star.md\",\n    \"docs/procurement/HARK_CONTEXT.md: missing link target: ../handbook/north-star.md\",\n    \"north-star: missing source file docs/handbook/north-star.md\",\n    \"protected document missing: docs/handbook/north-star.md\"\n  ],\n  \"protected_documents\": 18,\n  \"source_commit\": \"bd3433c8410dd0d3ac51de6f1a64760a00fd4521\",\n  \"source_count\": 23,\n  \"status\": \"FAIL\"\n}\n",
+      "generation_exit": null,
+      "generation_error": null
+    },
+    {
+      "case": "tampered_hash",
+      "exit_code": 1,
+      "checker_output": "{\n  \"accepted_decisions\": 9,\n  \"errors\": [\n    \"generated context brief is stale or hand-edited; run python tools/context_brief.py --write\",\n    \"source hash mismatch at recorded commit 2a5b7489330d4c0dd4c57717d5192c1a02e2a382: AGENTS.md\"\n  ],\n  \"protected_documents\": 18,\n  \"source_commit\": \"bd3433c8410dd0d3ac51de6f1a64760a00fd4521\",\n  \"source_count\": 23,\n  \"status\": \"FAIL\"\n}\n",
+      "generation_exit": null,
+      "generation_error": null
+    },
+    {
+      "case": "stale_state",
+      "exit_code": 1,
+      "checker_output": "{\n  \"accepted_decisions\": 9,\n  \"errors\": [\n    \"generated context brief is stale or hand-edited; run python tools/context_brief.py --write\"\n  ],\n  \"protected_documents\": 18,\n  \"source_commit\": \"bd3433c8410dd0d3ac51de6f1a64760a00fd4521\",\n  \"source_count\": 23,\n  \"status\": \"FAIL\"\n}\n",
+      "generation_exit": null,
+      "generation_error": null
+    },
+    {
+      "case": "invalid_adr_reference",
+      "exit_code": 1,
+      "checker_output": "{\n  \"accepted_decisions\": 9,\n  \"errors\": [\n    \"docs/context/CONTEXT_RECEIPT.md: missing decision ID ADR-999\",\n    \"generated context brief is stale or hand-edited; run python tools/context_brief.py --write\",\n    \"protected document changed without reviewed manifest update: docs/context/CONTEXT_RECEIPT.md\"\n  ],\n  \"protected_documents\": 18,\n  \"source_commit\": \"bd3433c8410dd0d3ac51de6f1a64760a00fd4521\",\n  \"source_count\": 23,\n  \"status\": \"FAIL\"\n}\n",
+      "generation_exit": null,
+      "generation_error": null
+    },
+    {
+      "case": "protected_unrefreshed",
+      "exit_code": 1,
+      "checker_output": "{\n  \"accepted_decisions\": 9,\n  \"errors\": [\n    \"generated context brief is stale or hand-edited; run python tools/context_brief.py --write\",\n    \"protected document changed without reviewed manifest update: docs/handbook/north-star.md\"\n  ],\n  \"protected_documents\": 18,\n  \"source_commit\": \"bd3433c8410dd0d3ac51de6f1a64760a00fd4521\",\n  \"source_count\": 23,\n  \"status\": \"FAIL\"\n}\n",
+      "generation_exit": null,
+      "generation_error": null
+    },
+    {
+      "case": "governance_refreshed_without_brief",
+      "exit_code": 1,
+      "checker_output": "{\n  \"accepted_decisions\": 9,\n  \"errors\": [\n    \"generated context brief is stale or hand-edited; run python tools/context_brief.py --write\"\n  ],\n  \"protected_documents\": 18,\n  \"source_commit\": \"5909072113f873a66ca660000845784ae9d3a354\",\n  \"source_count\": 23,\n  \"status\": \"FAIL\"\n}\n",
+      "generation_exit": null,
+      "generation_error": null
+    },
+    {
+      "case": "unauthorized_all_refreshed",
+      "exit_code": 0,
+      "checker_output": "{\n  \"accepted_decisions\": 9,\n  \"errors\": [],\n  \"protected_documents\": 18,\n  \"source_commit\": \"c47ef03b5a44b969d8b1d2e1a3976d7bd8c4c7bf\",\n  \"source_count\": 23,\n  \"status\": \"PASS\"\n}\n",
+      "generation_exit": 0,
+      "generation_error": ""
+    },
+    {
+      "case": "invalid_status_prefix",
+      "exit_code": 1,
+      "checker_output": "{\n  \"accepted_decisions\": 0,\n  \"errors\": [\n    \"brief generation failed: ADR-007: invalid status 'accepted_pending_owner_approval \\u00b7 24 October 2026 \\u00b7 owner-directed design intent; implementation draft under review'\",\n    \"decisions: ADR-007: invalid status 'accepted_pending_owner_approval \\u00b7 24 October 2026 \\u00b7 owner-directed design intent; implementation draft under review'\"\n  ],\n  \"protected_documents\": 18,\n  \"source_commit\": \"b3507885cf4cd042996ce7270071fd8f3553d494\",\n  \"source_count\": 23,\n  \"status\": \"FAIL\"\n}\n",
+      "generation_exit": 1,
+      "generation_error": "Traceback (most recent call last):\n  File \"/private/var/folders/_p/fbqbbk0x7sbf8l4wjwzrz4d80000gn/T/context-probes-couu9dy4/repo/tools/context_brief.py\", line 260, in <module>\n    raise SystemExit(main())\n                     ^^^^^^\n  File \"/private/var/folders/_p/fbqbbk0x7sbf8l4wjwzrz4d80000gn/T/context-probes-couu9dy4/repo/tools/context_brief.py\", line 251, in main\n    print(write_brief())\n          ^^^^^^^^^^^^^\n  File \"/private/var/folders/_p/fbqbbk0x7sbf8l4wjwzrz4d80000gn/T/context-probes-couu9dy4/repo/tools/context_brief.py\", line 220, in write_brief\n    BRIEF.write_text(build_brief(), encoding=\"utf-8\")\n                     ^^^^^^^^^^^^^\n  File \"/private/var/folders/_p/fbqbbk0x7sbf8l4wjwzrz4d80000gn/T/context-probes-couu9dy4/repo/tools/context_brief.py\", line 152, in build_brief\n    adrs = parse_adrs(DECISIONS.read_text(encoding=\"utf-8\"))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/var/folders/_p/fbqbbk0x7sbf8l4wjwzrz4d80000gn/T/context-probes-couu9dy4/repo/tools/context_brief.py\", line 105, in parse_adrs\n    raise ValueError(f\"{match.group(1)}: invalid status {raw_status!r}\")\nValueError: ADR-007: invalid status 'accepted_pending_owner_approval \u00b7 24 October 2026 \u00b7 owner-directed design intent; implementation draft under review'\n"
+    }
+  ],
+  "integration": {
+    "actual_branches_merged": false,
+    "original_handoff_conflict": true,
+    "original_head": "b58c96ef998e68e841b12d9ad671325053c009e4",
+    "approved_pr10": "8a84369941c74d5f884c9ec6cc33d10395223597",
+    "corrections": "bd3433c8410dd0d3ac51de6f1a64760a00fd4521",
+    "preserved_pr10": {
+      "docs/architecture/bench-device-workflow.md": true,
+      "docs/design/node-esp32-first-acquisition-v1.md": true,
+      "docs/handbook/pr7-pr8-pr9-review-handoff.md": true,
+      "docs/review/README.md": true,
+      "docs/review/bench-foundation-verification.md": true,
+      "docs/review/bench-foundation-work-order.md": true,
+      "docs/review/node-ownership-20261024.json": true,
+      "docs/review/pr10-independent-review-20261024.md": true,
+      "docs/review/pr10-remediation-20261024.md": true,
+      "docs/review/pr7-pr9-independent-review-20261024.md": true,
+      "docs/review/pr7-pr9-probes-20261024.json": true,
+      "docs/world/README.md": true,
+      "specter/node/__init__.py": true,
+      "specter/node/csi_capture.py": true,
+      "specter/node/serial_owner.py": true,
+      "specter/sensors/imu/bno085.py": true,
+      "tests/test_imu_validity.py": true,
+      "tests/test_node_capture.py": true,
+      "tests/test_pr10_remediation.py": true,
+      "tests/test_serial_owner.py": true,
+      "tools/node_ownership_probe.py": true,
+      "tools/node_world_verify.cjs": true,
+      "tools/pr10_mutation_verify.py": true,
+      "tools/review_pending_prs.py": true
+    },
+    "context_exit": 0,
+    "pytest_exit": 0,
+    "architecture_exit": 0
+  },
+  "counts": {
+    "original": "255 passed, 1 deselected",
+    "before_fix": "7 failed, 1 passed",
+    "corrected": "263 passed, 1 deselected",
+    "temporary_combined": "322 passed, 1 deselected"
+  },
+  "limits": [
+    "No actual branch merges",
+    "No remote changes",
+    "No hardware access",
+    "Owner authorization remains manual",
+    "Local checker mutations are not hosted mutant CI runs"
+  ]
+}

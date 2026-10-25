@@ -1,0 +1,120 @@
+{
+  "schema": "specter.context.sources/1.0.0",
+  "sources": [
+    {
+      "id": "agents",
+      "path": "AGENTS.md",
+      "role": "agent entry contract and context preflight"
+    },
+    {
+      "id": "north-star",
+      "path": "docs/handbook/north-star.md",
+      "role": "canonical identity, intent and compute topology"
+    },
+    {
+      "id": "architecture",
+      "path": "docs/handbook/architecture.md",
+      "role": "technical architecture and central/headset/distributed boundaries"
+    },
+    {
+      "id": "engineering-contract",
+      "path": "docs/architecture/ENGINEERING_CONTRACT.md",
+      "role": "engineering ownership, evidence and lifecycle rules"
+    },
+    {
+      "id": "decisions",
+      "path": "docs/handbook/decisions.md",
+      "role": "accepted/proposed/superseded architectural decisions"
+    },
+    {
+      "id": "research-ideas",
+      "path": "docs/handbook/research-ideas.md",
+      "role": "research directions and boundaries"
+    },
+    {
+      "id": "experiment-ledger",
+      "path": "docs/handbook/experiment-ledger.md",
+      "role": "experiment gates and evidence index"
+    },
+    {
+      "id": "verification-baseline",
+      "path": "docs/handbook/verification-baseline.md",
+      "role": "measured/software/hardware evidence baseline"
+    },
+    {
+      "id": "hardware-inventory",
+      "path": "docs/handbook/hardware-inventory.md",
+      "role": "logistics, readiness and receipt boundaries"
+    },
+    {
+      "id": "roadmap",
+      "path": "docs/handbook/roadmap.md",
+      "role": "gated roadmap and compute procurement sequence"
+    },
+    {
+      "id": "agent-handoff",
+      "path": "docs/handbook/agent-handoff.md",
+      "role": "current canonical handoff; feature branches use branch-safe template"
+    },
+    {
+      "id": "work-order",
+      "path": "docs/architecture/WORK_ORDER.md",
+      "role": "scoped task and acceptance template"
+    },
+    {
+      "id": "context-truths",
+      "path": "docs/context/CONTEXT_TRUTHS.md",
+      "role": "compact derived context digest"
+    },
+    {
+      "id": "context-state",
+      "path": "docs/context/CONTEXT_STATE.json",
+      "role": "current milestone and unresolved questions"
+    },
+    {
+      "id": "hark-context",
+      "path": "docs/procurement/HARK_CONTEXT.md",
+      "role": "central, headset, distributed and sensor procurement context"
+    },
+    {
+      "id": "docs-hub",
+      "path": "docs/README.md",
+      "role": "documentation map and evidence labels"
+    },
+    {
+      "id": "root-readme",
+      "path": "README.md",
+      "role": "historical system overview and legacy compute rows; dated clarification defers to ADR-007"
+    },
+    {
+      "id": "governance-automation-limits",
+      "path": "docs/context/AUTOMATION_LIMITS.md",
+      "role": "protected recovery/governance process; snapshot freshness, not approval proof"
+    },
+    {
+      "id": "governance-branch-handoff-template",
+      "path": "docs/context/BRANCH_HANDOFF_TEMPLATE.md",
+      "role": "protected recovery/governance process; snapshot freshness, not approval proof"
+    },
+    {
+      "id": "governance-chatgpt-recovery",
+      "path": "docs/context/CHATGPT_RECOVERY.md",
+      "role": "protected recovery/governance process; snapshot freshness, not approval proof"
+    },
+    {
+      "id": "governance-context-receipt",
+      "path": "docs/context/CONTEXT_RECEIPT.md",
+      "role": "protected recovery/governance process; snapshot freshness, not approval proof"
+    },
+    {
+      "id": "governance-decision-change",
+      "path": "docs/context/DECISION_CHANGE.md",
+      "role": "protected recovery/governance process; snapshot freshness, not approval proof"
+    },
+    {
+      "id": "governance-readme",
+      "path": "docs/context/README.md",
+      "role": "protected recovery/governance process; snapshot freshness, not approval proof"
+    }
+  ]
+}

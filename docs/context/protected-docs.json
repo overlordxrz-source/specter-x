@@ -1,0 +1,23 @@
+{
+  "files": {
+    "AGENTS.md": "c57c1cbce3a1b9c516a07dc46b65d673f6cf749ae752818f127fdca3facb453b",
+    "docs/architecture/ENGINEERING_CONTRACT.md": "2c250cebfb9fea5ed46436a9072645f95e9b56d6849137ecdd630ad3eac8f8d6",
+    "docs/context/AUTOMATION_LIMITS.md": "f70b8617f2e619b754f6f26a38024b917f1c1b66370782e93db901836d0dc398",
+    "docs/context/BRANCH_HANDOFF_TEMPLATE.md": "d9407b80d0732a4ba88138b7d2137c61476b40447835ce6629967ff7016378a1",
+    "docs/context/CHATGPT_RECOVERY.md": "041ceb96c965bf7334143b7597ec894ee5ad3bed8c50b353470fa3d84199d663",
+    "docs/context/CONTEXT_RECEIPT.md": "d10ca075bec9b6eb2c068a1b79f80d93abff4d8f3d107bd32d500c45b95e8b39",
+    "docs/context/CONTEXT_TRUTHS.md": "aee0c4d259a4f0dffefede62044af1c153fdc08eba78eeb3e961b202dcf04f51",
+    "docs/context/DECISION_CHANGE.md": "9d2870862131657215a9fa3d74f4f059652f982a547073e8cfdd64d9838bdece",
+    "docs/context/README.md": "cac133173996633f2af15334a7c9d20568e751df95a212065d04690cdaddb50b",
+    "docs/handbook/agent-handoff.md": "e4100419513aeb6459e0d4360071bfbf9aa7c55f5381692b615c006138a76c88",
+    "docs/handbook/architecture.md": "1808600d430c8b1f3bc9c443c30e5de158d727f5ed33da39e824c719c4383078",
+    "docs/handbook/decisions.md": "33595e2e65839dba789fd44c72d7772880be2455e68a054e81dba7eaa2aa5de2",
+    "docs/handbook/experiment-ledger.md": "53734f0833eea2de37d46234380e35f4d115da4278efc375b509eb2376ec7813",
+    "docs/handbook/hardware-inventory.md": "ba312e82da14047f1287bac7220c6ec0a719aeb39bb853b90cc56e10edb008dc",
+    "docs/handbook/north-star.md": "863baf4795dcd9e29ecd0f77862bf1b751dd4a629b5ab4a31efb655f94873c0f",
+    "docs/handbook/research-ideas.md": "aece1766bf864921fa69f4af97d4931d774e5150caf68f3ac0fd69e1746a1e98",
+    "docs/handbook/roadmap.md": "341deaebbc4c8ff10ddff865221acc717c3d3f628e953158bbcd8c29800bab07",
+    "docs/procurement/HARK_CONTEXT.md": "17502d2ea106606e85f6893f14ff9199f0bc3249d60326e36907f1a7585e0f89"
+  },
+  "schema": "specter.context.protected/1.0.0"
+}
